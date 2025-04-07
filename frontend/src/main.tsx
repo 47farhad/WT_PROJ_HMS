@@ -7,9 +7,8 @@ import App from './App.tsx'
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: '/*',
     element: <App />,
-    errorElement: <div>404 Not Found</div>
   }
 ]);
 
