@@ -1,0 +1,12 @@
+.selected{
+    background-color: #A2F2EF;
+    font-weight: 600;
+}
+
+.deselected{
+    background-color: #F5F5F5;
+}
+
+.deselected:hover{
+    background-color: #d5f5f4;
+}
