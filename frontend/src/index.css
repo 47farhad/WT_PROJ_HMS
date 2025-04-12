@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-body{
+body {
   user-select: none;
-  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', 'Verdana', 'sans-serif';
+  font-family: 'Arial';
 }
