@@ -10,6 +10,20 @@ const appointmentIcon = "/svgs/appointment-icon.svg"
 const appointmentIconH = "/svgs/appointment-icon-h.svg"
 const paymentIcon = "/svgs/payment-icon.svg"
 const paymentIconH = "/svgs/payment-icon-h.svg"
+const pharmacyIcon = "/svgs/pharmacy-icon.svg"
+const pharmacyIconH = "/svgs/pharmacy-icon-h.svg"
+const labtestsIcon = "/svgs/labtests-icon.svg"
+const labtestsIconH = "/svgs/labtests-icon-h.svg"
+const patientIcon = "/svgs/patient-icon.svg"
+const patientIconH = "/svgs/patient-icon-h.svg"
+const statsIcon = "/svgs/stats-icon.svg"
+const statsIconH = "/svgs/stats-icon-h.svg"
+const inventoryIcon = "/svgs/inventory-icon.svg"
+const inventoryIconH = "/svgs/inventory-icon-h.svg"
+const doctorIcon = "/svgs/doctor-icon.svg"
+const doctorIconH = "/svgs/doctor-icon-h.svg"
+const scheduleIcon = "/svgs/schedule-icon.svg"
+const scheduleIconH = "/svgs/schedule-icon-h.svg"
 
 function Navbar() {
 
@@ -30,14 +44,14 @@ function Navbar() {
             <NavbarItem imageURI={dashIcon} imageURIH={dashIconH} text="Dashboard"/>
             <NavbarItem imageURI={appointmentIcon} imageURIH={appointmentIconH} text="Appointments"/>
             {(userType === 'Patient' || userType === 'Admin') && (<NavbarItem imageURI={paymentIcon} imageURIH={paymentIconH} text="Payments"/>)}
-            {(userType === 'Admin') && (<NavbarItem imageURI={''} imageURIH={''} text="Doctors"/>)}
-            {(userType === 'Admin') && (<NavbarItem imageURI={''} imageURIH={''} text="Schedule"/>)}
-            {(userType === 'Admin') && (<NavbarItem imageURI={''} imageURIH={''} text="Inventory"/>)}
-            {(userType === 'Patient') && (<NavbarItem imageURI={''} imageURIH={''} text="Pharmacy"/>)}
-            {(userType === 'Patient') && (<NavbarItem imageURI={''} imageURIH={''} text="Labtests"/>)}
-            {(userType === 'Doctor' || userType === 'Admin') && (<NavbarItem imageURI={''} imageURIH={''} text="Patients"/>)}
+            {(userType === 'Admin') && (<NavbarItem imageURI={doctorIcon} imageURIH={doctorIconH} text="Doctors"/>)}
+            {(userType === 'Admin') && (<NavbarItem imageURI={scheduleIcon} imageURIH={scheduleIconH} text="Schedule"/>)}
+            {(userType === 'Admin') && (<NavbarItem imageURI={inventoryIcon} imageURIH={inventoryIconH} text="Inventory"/>)}
+            {(userType === 'Patient') && (<NavbarItem imageURI={pharmacyIcon} imageURIH={pharmacyIconH} text="Pharmacy"/>)}
+            {(userType === 'Patient') && (<NavbarItem imageURI={labtestsIcon} imageURIH={labtestsIconH} text="Labtests"/>)}
+            {(userType === 'Doctor' || userType === 'Admin') && (<NavbarItem imageURI={patientIcon} imageURIH={patientIconH} text="Patients"/>)}
             <NavbarItem imageURI={chatIcon} imageURIH={chatIconH} text="Messages"/>
-            {(userType === 'Doctor') && (<NavbarItem imageURI={''} imageURIH={''} text="Stats"/>)}
+            {(userType === 'Doctor') && (<NavbarItem imageURI={statsIcon} imageURIH={statsIconH} text="Stats"/>)}
         </div>
     )
 }
