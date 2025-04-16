@@ -50,7 +50,6 @@ function MainPage() {
   }
 
   const userType = authUser.userType;
-  console.log(userType);
 
   return (
     <div className='flex flex-row w-full'>

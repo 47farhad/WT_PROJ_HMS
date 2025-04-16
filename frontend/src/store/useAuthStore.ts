@@ -2,6 +2,8 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
+import defaultPFP from '/pictures/avatar.png'
+
 export const useAuthStore = create((set, get) => ({
     authUser: null,
 
@@ -10,6 +12,19 @@ export const useAuthStore = create((set, get) => ({
     isLoggingOut: false,
     isUpdatingProfile: false,
     isCheckingAuth: true,
+
+    applyPFP: () => {
+        const { authUser } = get();
+
+        if (authUser && (!authUser.profilePic || authUser.profilePic === '')) {
+            set({
+                authUser: {
+                    ...authUser,
+                    profilePic: defaultPFP
+                }
+            });
+        }
+    },
 
     checkAuth: async () => {
         try {
@@ -23,6 +38,8 @@ export const useAuthStore = create((set, get) => ({
         }
         finally {
             set({ isCheckingAuth: false })
+            const { applyPFP } = get()
+            applyPFP();
         }
     },
 
@@ -39,6 +56,8 @@ export const useAuthStore = create((set, get) => ({
         }
         finally {
             set({ isSigningUp: false });
+            const { applyPFP } = get()
+            applyPFP();
         }
     },
 
@@ -55,6 +74,8 @@ export const useAuthStore = create((set, get) => ({
         }
         finally {
             set({ isLoggingIn: false });
+            const { applyPFP } = get()
+            applyPFP();
         }
     },
 
