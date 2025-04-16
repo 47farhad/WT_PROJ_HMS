@@ -23,6 +23,10 @@ import AdminPatients from './Admin/AdminPatients.tsx'
 import DoctorPatients from './Doctor/DoctorPatients.tsx'
 import DoctorStats from './Doctor/DoctorStats.tsx'
 
+import bellIcon from '/svgs/bell-icon.svg'
+import Dropdown from '../components/Dropdown.tsx'
+import Settings from './Settings.tsx'
+
 
 function MainPage() {
 
@@ -49,24 +53,38 @@ function MainPage() {
   console.log(userType);
 
   return (
-    <div className='flex flex-row'>
+    <div className='flex flex-row w-full'>
       <Navbar />
 
-      <Routes>
+      <div className='flex flex-col w-full'>
+        <div className='flex flex-row w-full justify-end p-5'>
+          <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>
+            <img src={bellIcon} className="w-7 h-7" />
+          </button>
 
-        <Route path='Dashboard/*' element={userType === 'Admin' ? <AdminDashboard /> : userType === 'Doctor' ? <DoctorDashboard /> : <PatientDashboard />} />
-        <Route path='Messages/*' element={<Messages />} />
-        <Route path='Appointments/*' element={userType === 'Admin' ? <AdminAppointments /> : userType === 'Doctor' ? <DoctorSchedule /> : userType === 'Patient' ? <PatientAppointments /> : <Navigate to={'/404'} replace />} />
-        <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <Navigate to={'/404'} replace />} />
-        <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />
-        <Route path='Schedule/*' element={userType === 'Admin' ? <AdminSchedule /> : <Navigate to={'/404'} replace />} />
-        <Route path='Inventory/*' element={userType === 'Admin' ? <AdminInventory /> : <Navigate to={'/404'} replace />} />
-        <Route path='Pharmacy/*' element={userType === 'Patient' ? <PatientPharmacy /> : <Navigate to={'/404'} replace />} />
-        <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : <Navigate to={'/404'} replace />} />
-        <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
-        <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
+          <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic}/>
+        </div>
 
-      </Routes>
+
+        <Routes>
+
+          <Route path='Dashboard/*' element={userType === 'Admin' ? <AdminDashboard /> : userType === 'Doctor' ? <DoctorDashboard /> : <PatientDashboard />} />
+          <Route path='Messages/*' element={<Messages />} />
+          <Route path='Settings/*' element={<Settings />} />
+          <Route path='Appointments/*' element={userType === 'Admin' ? <AdminAppointments /> : userType === 'Doctor' ? <DoctorSchedule /> : userType === 'Patient' ? <PatientAppointments /> : <Navigate to={'/404'} replace />} />
+          <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <Navigate to={'/404'} replace />} />
+          <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />
+          <Route path='Schedule/*' element={userType === 'Admin' ? <AdminSchedule /> : <Navigate to={'/404'} replace />} />
+          <Route path='Inventory/*' element={userType === 'Admin' ? <AdminInventory /> : <Navigate to={'/404'} replace />} />
+          <Route path='Pharmacy/*' element={userType === 'Patient' ? <PatientPharmacy /> : <Navigate to={'/404'} replace />} />
+          <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : <Navigate to={'/404'} replace />} />
+          <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
+          <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
+
+          <Route path='/*' element={<Navigate to={'/404'}/>}/>
+
+        </Routes>
+      </div>
     </div>
   )
 }
