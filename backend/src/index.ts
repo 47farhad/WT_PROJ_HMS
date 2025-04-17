@@ -23,6 +23,7 @@ app.use(
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/message", )
 
 app.listen(PORT, () => {
     console.log("Backend is up on port: " + PORT);
