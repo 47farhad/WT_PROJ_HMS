@@ -24,7 +24,6 @@ function Login() {
             email: email,
             password: password
         });
-        //toast(res.message)
         navigate('/Dashboard');
     };
 

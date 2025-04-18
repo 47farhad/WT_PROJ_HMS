@@ -31,7 +31,7 @@ import Settings from './Settings.tsx'
 function MainPage() {
 
   const { authUser } = useAuthStore();
-  const { setSelectedNavPage } = useNavStore();
+  const { selectedNavPage, setSelectedNavPage } = useNavStore();
   const navigate = useNavigate();
 
   const location = useLocation()
@@ -56,12 +56,14 @@ function MainPage() {
       <Navbar />
 
       <div className='flex flex-col w-full'>
-        <div className='flex flex-row w-full justify-end p-5'>
+        <div className='flex flex-row w-full items-center p-5'>
+          <span className='text-3xl flex-grow font-medium'>
+            {selectedNavPage}
+          </span>
           <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>
             <img src={bellIcon} className="w-7 h-7" />
           </button>
-
-          <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic}/>
+          <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic} />
         </div>
 
 
@@ -80,7 +82,7 @@ function MainPage() {
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
           <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
 
-          <Route path='/*' element={<Navigate to={'/404'}/>}/>
+          <Route path='/*' element={<Navigate to={'/404'} />} />
 
         </Routes>
       </div>
