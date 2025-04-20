@@ -5,11 +5,29 @@ import User from "../models/user.model.js";
 export const getUsersForSidebar = async (req: any, res: any) => {
     try {
         const reqUserID = req.user._id;
-        const filteredUsers = await User.find({ _id: { $ne: reqUserID } }).select("-password"); // To be changed. dont wont ALL the users
 
-        res.status(200).json(filteredUsers);
-    }
-    catch (error: any) {
+        // Get all users except the logged-in user
+        const filteredUsers = await User.find({ _id: { $ne: reqUserID } }).select("-password");
+
+        // Get the last message for each conversation
+        const usersWithLastMessage = await Promise.all(
+            filteredUsers.map(async (user) => {
+                const lastMessage = await Message.findOne({
+                    $or: [
+                        { senderId: reqUserID, receiverId: user._id },
+                        { senderId: user._id, receiverId: reqUserID }
+                    ]
+                }).sort({ createdAt: -1 }).limit(1);
+
+                return {
+                    ...user.toObject(),
+                    lastMessage: lastMessage || null
+                };
+            })
+        );
+
+        res.status(200).json(usersWithLastMessage);
+    } catch (error: any) {
         console.log("Error in getUsersForSidebar controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
@@ -39,7 +57,7 @@ export const getMessages = async (req: any, res: any) => {
 export const sendMessage = async (req: any, res: any) => {
     try {
         const { text, image } = req.body;
-        const { receiverID } = req.params;
+        const { id: receiverID } = req.params;
         const reqUserID = req.user._id;
 
         let imageUrl;
@@ -51,11 +69,13 @@ export const sendMessage = async (req: any, res: any) => {
         const newMessage = new Message({
             senderId: reqUserID,
             receiverId: receiverID,
-            text: text,
-            image: imageUrl
+            text: text || null,
+            image: imageUrl || null
         });
 
         await newMessage.save();
+
+        res.status(200).json(newMessage);
     }
     catch (error: any) {
         console.log("Error in sendMessage controller", error.message);

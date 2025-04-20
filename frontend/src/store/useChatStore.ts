@@ -52,5 +52,7 @@ export const useChatStore = create((set, get) => ({
         catch (error) {
             toast.error(error.response.data.message);
         }
-    }
+    },
+
+    setSelectedUser: (selectedUser) => set({ selectedUser })
 }));

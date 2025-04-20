@@ -3,12 +3,14 @@ interface Props {
     time: string,
     chat: string,
     notif: number,
-    profilePicture: string
+    profilePicture: string,
+    handleClick: () => void
 }
 
 function ChatCard(p: Props) {
     return (
-        <div className="w-full p-2 pr-4 h-18 flex flex-row items-center hover:bg-[#eeeeee] rounded-2xl">
+        <div className="w-full p-2 pr-4 h-18 flex flex-row items-center hover:bg-[#eeeeee] rounded-2xl"
+        onClick={p.handleClick}>
             <img src={p.profilePicture} className="w-14 h-14 mr-3 rounded-full" />
             <div className='flex flex-col w-full h-full'>
                 <div className='w-full h-[50%] flex justify-between items-center'>
@@ -20,7 +22,7 @@ function ChatCard(p: Props) {
                     </span>
                 </div>
                 <div className='w-full h-[50%] flex justify-between items-center'>
-                    <span className='text-[#8f8f8f] truncate max-w-[172px]'>
+                    <span className='text-[#8f8f8f] truncate max-w-[280px]'>
                         {p.chat}
                     </span>
                     {(p.notif != 0) && (
