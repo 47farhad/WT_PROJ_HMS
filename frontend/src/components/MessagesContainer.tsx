@@ -40,7 +40,7 @@ function MessagesContainer() {
                     No messages yet. Start the conversation!
                 </div>
             ) : (
-                messages.map((message) => (
+                messages.messages.map((message) => (
                     <div
                         key={message._id}
                         className={`flex mb-4 mx-[2.5%] ${message.senderId === authUser._id ? "justify-end" : "justify-start"}`}

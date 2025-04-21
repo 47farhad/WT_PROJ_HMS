@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
@@ -6,27 +7,94 @@ export const getUsersForSidebar = async (req: any, res: any) => {
     try {
         const reqUserID = req.user._id;
 
-        // Get all users except the logged-in user
-        const filteredUsers = await User.find({ _id: { $ne: reqUserID } }).select("-password");
+        // Pagination parameters
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
 
-        // Get the last message for each conversation
-        const usersWithLastMessage = await Promise.all(
-            filteredUsers.map(async (user) => {
-                const lastMessage = await Message.findOne({
-                    $or: [
-                        { senderId: reqUserID, receiverId: user._id },
-                        { senderId: user._id, receiverId: reqUserID }
-                    ]
-                }).sort({ createdAt: -1 }).limit(1);
+        // Get paginated users and last messages in a single aggregation
+        const result = await User.aggregate([
+            // Match all users except current user
+            { $match: { _id: { $ne: reqUserID } } },
 
-                return {
-                    ...user.toObject(),
-                    lastMessage: lastMessage || null
-                };
-            })
-        );
+            // Lookup last message first (before sorting)
+            {
+                $lookup: {
+                    from: "messages",
+                    let: { userId: "$_id" },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $or: [
+                                        {
+                                            $and: [
+                                                { $eq: ["$senderId", reqUserID] },
+                                                { $eq: ["$receiverId", "$$userId"] }
+                                            ]
+                                        },
+                                        {
+                                            $and: [
+                                                { $eq: ["$senderId", "$$userId"] },
+                                                { $eq: ["$receiverId", reqUserID] }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        { $sort: { createdAt: -1 } },
+                        { $limit: 1 }
+                    ],
+                    as: "lastMessage"
+                }
+            },
 
-        res.status(200).json(usersWithLastMessage);
+            // Unwind to get single object
+            { $unwind: { path: "$lastMessage", preserveNullAndEmptyArrays: true } },
+
+            // Add a field for sorting (handles null cases)
+            {
+                $addFields: {
+                    lastMessageTime: {
+                        $ifNull: ["$lastMessage.createdAt", new Date(0)] // Unix epoch for nulls
+                    }
+                }
+            },
+
+            // Now sort by the last message time
+            { $sort: { "lastMessageTime": -1 } },
+
+            // Pagination
+            { $skip: skip },
+            { $limit: limit },
+
+            // Project final fields
+            {
+                $project: {
+                    firstName: 1,
+                    lastName: 1,
+                    profilePic: 1,
+                    lastMessage: 1,
+                }
+            }
+        ]);
+
+        // Get total count for pagination metadata
+        const totalUsers = await User.countDocuments({ _id: { $ne: reqUserID } });
+        const totalPages = Math.ceil(totalUsers / limit);
+
+        res.status(200).json({
+            users: result,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalUsers,
+                usersPerPage: limit,
+                hasNextPage: page < totalPages,
+                hasPreviousPage: page > 1
+            }
+        });
     } catch (error: any) {
         console.log("Error in getUsersForSidebar controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
@@ -38,15 +106,44 @@ export const getMessages = async (req: any, res: any) => {
         const { id: chatUserID } = req.params;
         const reqUserID = req.user._id;
 
-        // update this query to get only last 50 or whatever messages, dont want to get all in a single request
+        // Pagination parameters (with defaults)
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 50;
+        const skip = (page - 1) * limit;
+
+        // Get messages with pagination (sorted newest first in DB)
         const messages = await Message.find({
+            $or: [
+                { senderId: reqUserID, receiverId: chatUserID },
+                { senderId: chatUserID, receiverId: reqUserID }
+            ]
+        })
+            .sort({ createdAt: -1 }) // Newest first in DB
+            .skip(skip)
+            .limit(limit);
+
+        // Reverse for frontend (oldest first)
+        const reversedMessages = [...messages].reverse();
+
+        // Get total count
+        const totalMessages = await Message.countDocuments({
             $or: [
                 { senderId: reqUserID, receiverId: chatUserID },
                 { senderId: chatUserID, receiverId: reqUserID }
             ]
         });
 
-        res.status(200).json(messages);
+        res.status(200).json({
+            messages: reversedMessages,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalMessages / limit),
+                totalMessages,
+                messagesPerPage: limit,
+                hasNextPage: page < Math.ceil(totalMessages / limit),
+                hasPreviousPage: page > 1
+            }
+        });
     }
     catch (error: any) {
         console.log("Error in getMessages controller", error.message);

@@ -15,7 +15,7 @@ export const useChatStore = create((set, get) => ({
         set({ isUsersLoading: true });
         try {
             const res = await axiosInstance.get("/messages/users");
-            const usersWithDefaultPFP = res.data.map(user => ({
+            const usersWithDefaultPFP = res.data.users.map(user => ({
                 ...user,
                 profilePic: user.profilePic === '' ? defaultPFP : user.profilePic
             }));
