@@ -89,10 +89,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
             pagination: {
                 currentPage: page,
                 totalPages,
-                totalUsers,
-                usersPerPage: limit,
-                hasNextPage: page < totalPages,
-                hasPreviousPage: page > 1
+                hasMore: page < totalPages,
             }
         });
     } catch (error: any) {
@@ -138,10 +135,7 @@ export const getMessages = async (req: any, res: any) => {
             pagination: {
                 currentPage: page,
                 totalPages: Math.ceil(totalMessages / limit),
-                totalMessages,
-                messagesPerPage: limit,
                 hasNextPage: page < Math.ceil(totalMessages / limit),
-                hasPreviousPage: page > 1
             }
         });
     }
