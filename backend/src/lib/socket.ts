@@ -1,6 +1,7 @@
 import { Server } from "socket.io"
 import http from "http"
 import express from "express"
+import { updateLastOnline } from "../util/user.util.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -14,6 +15,10 @@ const io = new Server(server, {
 // For keeping track of connected sockets (online users). key-value is userID-SocketID
 const userSocketMap: { [key: string]: string } = {};
 
+export const getSocketID = (userID: string) => {
+    return userSocketMap[userID];
+}
+
 io.on("connection", (socket) => {
     console.log("User connected with socket id:", socket.id);
 
@@ -26,7 +31,8 @@ io.on("connection", (socket) => {
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
 
     socket.on("disconnect", () => {
-        console.log("User disconnected with socket id:", socket.id)
+        console.log("User disconnected with socket id:", socket.id);
+        updateLastOnline(userID);
         delete userSocketMap[userID]
         io.emit("getOnlineUsers", Object.keys(userSocketMap));
     })

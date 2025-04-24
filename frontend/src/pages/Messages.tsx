@@ -5,6 +5,7 @@ import { useChatStore } from "../store/useChatStore"
 import { useEffect, useRef, useState } from "react";
 import MessagesContainer from "../components/MessagesContainer";
 import MessageInput from "../components/MessageInput";
+import { formatTimeAgo } from "../util/formatTime";
 
 function Messages() {
 
@@ -76,19 +77,12 @@ function Messages() {
                 {
                     !isUsersLoading ?
                         (users.map((user) => {
-                            const formattedTime = user.lastMessage
-                                ? new Date(user.lastMessage.createdAt).toLocaleTimeString([], {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                    hour12: true
-                                })
-                                : "";
-
                             return (
                                 <ChatCard
                                     key={user._id}
+                                    userID={user._id}
                                     username={`${user.firstName} ${user.lastName}`}
-                                    time={formattedTime}
+                                    time={user.lastMessage ? formatTimeAgo(user.lastMessage.createdAt) : ''}
                                     chat={user.lastMessage?.text || (user.lastMessage?.image ? 'Image' : '')}
                                     notif={0}
                                     profilePicture={user.profilePic}
@@ -111,7 +105,7 @@ function Messages() {
                                 <span className="font-medium text-2xl">
                                     {selectedUser?.firstName + ' ' + selectedUser?.lastName}
                                 </span> <br />
-                                <span className="text-xs text-gray-500">Last online {'To be implemented'}</span>
+                                <span className="text-xs text-gray-500">Last online {formatTimeAgo(selectedUser?.lastOnline)}</span>
                             </div>
                         </div>
 

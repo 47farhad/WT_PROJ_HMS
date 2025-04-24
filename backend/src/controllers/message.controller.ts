@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
+import { getSocketID, io } from "../lib/socket.js";
 
 export const getUsersForSidebar = async (req: any, res: any) => {
     try {
@@ -9,7 +10,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
 
         // Pagination parameters
         const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
+        const limit = parseInt(req.query.limit as string) || 20;
         const skip = (page - 1) * limit;
 
         // Get paginated users and last messages in a single aggregation
@@ -76,6 +77,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
                     lastName: 1,
                     profilePic: 1,
                     lastMessage: 1,
+                    lastOnline: 1
                 }
             }
         ]);
@@ -165,6 +167,12 @@ export const sendMessage = async (req: any, res: any) => {
         });
 
         await newMessage.save();
+
+        const receiverSocketID = getSocketID(receiverID);
+        if(receiverSocketID){
+            io.to(receiverSocketID).emit("newMessage", newMessage);
+            console.log(newMessage)
+        }
 
         res.status(200).json(newMessage);
     }

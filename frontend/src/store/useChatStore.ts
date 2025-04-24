@@ -2,6 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import defaultPFP from '/pictures/avatar.png';
+import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore = create((set, get) => ({
     messages: {
@@ -26,7 +27,7 @@ export const useChatStore = create((set, get) => ({
     selectedUser: null,
     isUsersLoading: false,
 
-    getUsers: async (page = 1, limit = 12) => {
+    getUsers: async (page = 1, limit = 20) => {
         const isInitialLoad = page === 1;
 
         if (isInitialLoad) {
@@ -157,5 +158,29 @@ export const useChatStore = create((set, get) => ({
                 }
             }
         });
+    },
+
+    subscribeToMessages: () => {
+        const { selectedUser, messages } = get();
+        if (!selectedUser) return;
+
+        const socket = useAuthStore.getState().socket;
+
+        socket.on("newMessage", (newMessage) => {
+            if (selectedUser._id != newMessage.senderId) return;
+
+            set((state) => ({
+                messages: {
+                    ...state.messages,
+                    data: [...state.messages.data, newMessage],
+                },
+            }));
+
+        });
+    },
+
+    unsubscribeToMessages: () => {
+        const socket = useAuthStore.getState().socket;
+        socket.off("newMessage");
     }
 }));

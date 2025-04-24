@@ -32,7 +32,12 @@ const userSchema = new mongoose.Schema(
         profilePic: {
             type: String,
             default: ""
-        }
+        },
+
+        lastOnline: {
+            type: Date,
+            default: Date.now
+        },
     },
 
     {

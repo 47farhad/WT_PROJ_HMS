@@ -15,8 +15,11 @@ function MessagesContainer() {
         messages: { data: messages, pagination },
         getMessages,
         isChatLoading,
-        selectedUser
+        selectedUser,
+        subscribeToMessages,
+        unsubscribeToMessages
     } = useChatStore();
+
     const { authUser } = useAuthStore();
     const messageEndRef = useRef(null);
     const messageStartRef = useRef(null);
@@ -25,7 +28,10 @@ function MessagesContainer() {
 
     useEffect(() => {
         getMessages(selectedUser._id);
-    }, [getMessages, selectedUser._id]);
+        subscribeToMessages();
+
+        return () => unsubscribeToMessages();
+    }, [getMessages, selectedUser._id, subscribeToMessages, unsubscribeToMessages]);
 
     useEffect(() => {
         if (pagination.currentPage == 1) messageEndRef.current?.scrollIntoView();

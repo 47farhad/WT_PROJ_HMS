@@ -9,7 +9,6 @@ const BASE_URL = 'http://localhost:5001';
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
-
     isSigningUp: false,
     isLoggingIn: false,
     isLoggingOut: false,
