@@ -77,7 +77,8 @@ export const getUsersForSidebar = async (req: any, res: any) => {
                     lastName: 1,
                     profilePic: 1,
                     lastMessage: 1,
-                    lastOnline: 1
+                    lastOnline: 1,
+                    userType: 1
                 }
             }
         ]);

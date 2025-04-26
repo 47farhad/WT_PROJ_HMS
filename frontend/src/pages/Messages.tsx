@@ -64,7 +64,7 @@ function Messages() {
     return (
         <div className="flex flex-row items-center w-full h-full mb-5 max-h-[calc(100vh-108px)]">
 
-            <div className="border-2 rounded-2xl border-[#f0f0f0] h-full w-150 m-4 flex flex-col items-center p-3 overflow-y-auto overflow-x-hidden" ref={userContainerRef}>
+            <div className="border-2 rounded-2xl text-[#05090C] border-[#f0f0f0] h-full w-150 m-4 flex flex-col items-center p-3 overflow-y-auto overflow-x-hidden" ref={userContainerRef}>
                 <div className="w-full h-14 bg-[#f0f0f0] rounded-xl m-5 flex flex-row items-center">
                     <img src={searchIcon} className="w-8 h-8 m-2" />
                     <input
@@ -86,6 +86,7 @@ function Messages() {
                                     chat={user.lastMessage?.text || (user.lastMessage?.image ? 'Image' : '')}
                                     notif={0}
                                     profilePicture={user.profilePic}
+                                    userType={user.userType}
                                     handleClick={() => { setSelectedUser(user) }}
                                 />
                             );

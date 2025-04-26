@@ -8,6 +8,7 @@ interface Props {
     chat: string,
     notif: number,
     profilePicture: string,
+    userType: string,
     handleClick: () => void
 }
 
@@ -22,10 +23,17 @@ function ChatCard(p: Props) {
             <img src={p.profilePicture} className="w-14 h-14 mr-3 rounded-full" />
             <div className='flex flex-col w-full h-full'>
                 <div className='w-full h-[50%] flex justify-between items-center'>
-                    <span className='text-xl font-medium flex flex-row items-center gap-2'>
-                        {p.username}
-                        {(onlineUsers.includes(p.userID)) && (<div className="w-4 h-4 rounded-full bg-[#66d973]"/>)}
-                    </span>
+                    <div className='flex items-center gap-2'> {/* Group first three spans */}
+                        <span className='text-xl font-medium'>
+                            {p.username}
+                        </span>
+                        <span className={`text-sm ${(p.userType == "Patient") ? "bg-[#DFF9FA]" : (p.userType == "Doctor") ? "bg-[#FFE1E1]" : "bg-[#D6DCFF]"} px-2 rounded-sm`}>
+                            {p.userType}
+                        </span>
+                        <span>
+                            {(onlineUsers.includes(p.userID)) && (<div className="w-4 h-4 rounded-full bg-[#84db8f]" />)}
+                        </span>
+                    </div>
                     <span className='text-[#ff9d9e]'>
                         {p.time}
                     </span>
