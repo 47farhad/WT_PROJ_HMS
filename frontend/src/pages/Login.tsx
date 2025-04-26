@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Logo from '../components/Logo';
 import { useAuthStore } from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -19,7 +20,7 @@ function Login() {
             return;
         }
 
-        login({
+        const res = login({
             email: email,
             password: password
         });
