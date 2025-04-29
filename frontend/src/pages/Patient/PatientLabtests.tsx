@@ -40,6 +40,18 @@ function PatientLabtests() {
         "Bring list of medications",
         "Morning appointment only"
       ]
+    },
+    {
+      _id: "3",
+      name: "Diabetes Screening",
+      description: "Tests blood glucose levels to screen for diabetes",
+      duration: "1 hour",
+      price: 55.50,
+      requirements: [
+        "8-hour fasting required",
+        "Bring list of medications",
+        "Morning appointment only"
+      ]
     }
   ]);
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -53,7 +65,8 @@ function PatientLabtests() {
   };
 
   return (
-    <div className="min-h-screen w-full p-6" style={{ background: "linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)" }}>
+    <div className="h-full w-full p-6 overflow-y-auto" 
+    style={{ background: "linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)" }}>
       <div className="w-full max-w-screen-xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <input

@@ -55,7 +55,7 @@ function MainPage() {
     <div className='flex flex-row w-full'>
       <Navbar />
 
-      <div className='flex flex-col w-full'>
+      <div className='flex flex-col w-full max-h-screen'>
         <div className='flex flex-row w-full justify-end p-5'>
           <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>
             <img src={bellIcon} className="w-7 h-7" />
