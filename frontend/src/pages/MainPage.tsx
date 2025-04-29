@@ -61,7 +61,7 @@ function MainPage() {
             <img src={bellIcon} className="w-7 h-7" />
           </button>
 
-          <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic}/>
+          <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic} />
         </div>
 
 
@@ -80,7 +80,7 @@ function MainPage() {
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
           <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
 
-          <Route path='/*' element={<Navigate to={'/404'}/>}/>
+          <Route path='/*' element={<Navigate to={'/404'} />} />
 
         </Routes>
       </div>

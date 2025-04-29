@@ -65,8 +65,7 @@ function PatientLabtests() {
   };
 
   return (
-    <div className="h-full w-full p-6 overflow-y-auto" 
-    style={{ background: "linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)" }}>
+    <div className="h-full w-full p-6 overflow-y-auto">
       <div className="w-full max-w-screen-xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <input
@@ -89,7 +88,7 @@ function PatientLabtests() {
                 test.name.toLowerCase().includes(searchQuery.toLowerCase())
               )
               .map((test) => (
-                <div key={test._id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                <div key={test._id} className="bg-white border-1 border-gray-300 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
                   <div className="p-6">
                     <h3 className="text-xl font-semibold text-[#243954] mb-2">{test.name}</h3>
                     <p className="text-gray-600 mb-4">{test.description}</p>

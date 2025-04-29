@@ -43,8 +43,7 @@ const PatientPayments: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full p-6" 
-         style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)' }}>
+    <div className="h-full overflow-y-scroll w-full p-6">
       <div className="max-w-screen-xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#243954]">Transaction History</h2>

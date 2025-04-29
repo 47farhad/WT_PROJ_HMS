@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { axiosInstance } from '../lib/axios';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentFormProps {
   onClose: () => void;
@@ -11,6 +12,9 @@ interface PaymentFormProps {
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ onClose, onSubmit, amount, doctor, description,appointmentId }) => {
+
+  const navigate = useNavigate();
+
   const [paymentData, setPaymentData] = useState({
     cardNumber: '',
     nameOnCard: '',
@@ -161,7 +165,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onClose, onSubmit, amount, do
         <div className="flex justify-between mt-6">
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {navigate("/Payments")}}
             disabled={paymentSuccess}
             className="bg-[#243954] hover:bg-[#1a2c42] text-white px-4 py-2 rounded-lg disabled:opacity-50"
           >
