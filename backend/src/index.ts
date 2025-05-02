@@ -7,7 +7,6 @@ import { connectDB } from "./lib/db.js";
 
 import authRoutes from "./routes/auth.route.js";
 import appointmentRoutes from "./routes/appointment.route.js";
-import transactionRoutes from "./routes/transaction.route.js";  
 
 const app = express();
 
