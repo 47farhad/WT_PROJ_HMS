@@ -31,12 +31,20 @@ const medicalInfoSchema = new mongoose.Schema({
         default: []
     },
     primaryPhysician: {
-        name: String,
-        contact: String
+        type: String,
+        default: ''
+    },
+    physicianContact: {
+        type: String,
+        default: ''
     },
     insuranceProvider: {
-        name: String,
-        policyNumber: String
+        type: String,
+        default: ''
+    },
+    policyNumber: {
+        type: String,
+        default: ''
     },
     smokingStatus: {
         type: String,
