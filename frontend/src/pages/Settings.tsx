@@ -3,6 +3,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import toast from "react-hot-toast";
 import TagInput from "../components/TagInput";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { formatDateForInput } from "../util/formateDate";
 
 function Settings() {
     const { authUser, updateProfile } = useAuthStore();
@@ -299,7 +300,7 @@ function Settings() {
                             <label className="text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                             <input
                                 type="date"
-                                value={dateOfBirth}
+                                value={formatDateForInput(dateOfBirth)}
                                 onChange={(e) => setDateOfBirth(e.target.value)}
                                 className="border border-gray-300 rounded-md px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
