@@ -45,7 +45,7 @@ function Settings() {
             contact,
             emergencyContact,
             address,
-            profilePic
+            profilePic: (profilePic === authUser.profilePic ? '' : profilePic)
         };
 
         const medicalData = {
@@ -477,25 +477,25 @@ function Settings() {
                             className="border border-gray-300 rounded-md px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                     </div>
-
-                    <div className="flex flex-row items-center justify-end gap-2">
-                        {/* Discard Button */}
-                        <div className="flex justify-end">
-                            <button className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
-                                onClick={handleDiscard}>
-                                Discard
-                            </button>
-                        </div>
-
-                        {/* Save Button */}
-                        <div className="flex justify-end">
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                                onClick={handleSave}>
-                                Save
-                            </button>
-                        </div>
-                    </div>
                 </div>)}
+
+            <div className="flex flex-row items-center justify-end gap-2 self-end mr-5">
+                {/* Discard Button */}
+                <div className="flex justify-end">
+                    <button className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                        onClick={handleDiscard}>
+                        Discard
+                    </button>
+                </div>
+
+                {/* Save Button */}
+                <div className="flex justify-end">
+                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                        onClick={handleSave}>
+                        Save
+                    </button>
+                </div>
+            </div>
 
             <ConfirmationModal
                 isOpen={showConfirmation}
