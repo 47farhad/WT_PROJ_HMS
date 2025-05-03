@@ -23,7 +23,7 @@ function ChatCard(p: Props) {
             <img src={p.profilePicture} className="w-14 h-14 mr-3 rounded-full" />
             <div className='flex flex-col w-full h-full'>
                 <div className='w-full h-[50%] flex justify-between items-center'>
-                    <div className='flex items-center gap-2'> {/* Group first three spans */}
+                    <div className='flex items-center gap-2'>
                         <span className='text-xl font-medium'>
                             {p.username}
                         </span>

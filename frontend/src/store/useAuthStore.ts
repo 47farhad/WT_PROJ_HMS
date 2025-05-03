@@ -104,6 +104,32 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
+    updateProfile: async (personalData, medicalData) => {
+        set({ isUpdatingProfile: true });
+        try {
+            const res = await axiosInstance.put("/auth/update-profile", {
+                personalData,
+                medicalData
+            });
+
+            // Update both personal and medical info in authUser
+            set((state) => ({
+                authUser: {
+                    ...state.authUser,
+                    ...res.data, // Updated personal info
+                    medicalInfo: res.data.medicalInfo || state.authUser.medicalInfo // Preserve existing if not updated
+                }
+            }));
+        }
+        catch (error) {
+            console.log("error in update profile:", error);
+            toast.error(error.response?.data?.message || "Failed to update profile");
+        }
+        finally {
+            set({ isUpdatingProfile: false });
+        }
+    },
+
     connectSocket: () => {
         const { authUser, socket } = get();
         if (!authUser || socket?.connected) return;

@@ -55,7 +55,7 @@ function MainPage() {
     <div className='flex flex-row w-full'>
       <Navbar />
 
-      <div className='flex flex-col w-full'>
+      <div className='flex flex-col w-full max-h-screen'>
         <div className='flex flex-row w-full items-center p-5'>
           <span className='text-3xl flex-grow font-medium'>
             {selectedNavPage}
