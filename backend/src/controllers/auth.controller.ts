@@ -73,14 +73,10 @@ export const login = async (req: any, res: any) => {
 
         generateToken(user._id, res);
 
-        res.status(200).json({
-            _id: user._id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePic: user.profilePic,
-            userType: user.userType
-        });
+        const userWithoutPassword: any = user.toObject();
+        delete userWithoutPassword.password;
+
+        res.status(200).json(userWithoutPassword);
     }
     catch (error) {
         console.log("Error in controller: login");
