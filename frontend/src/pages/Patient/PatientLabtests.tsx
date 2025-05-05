@@ -67,6 +67,7 @@ function PatientLabtests() {
   return (
     <div className="h-full w-full p-6 overflow-y-auto">
       <div className="w-full max-w-screen-xl mx-auto">
+      <h1 className="text-3xl font-bold text-[#243954] mb-4">Lab tests</h1>
         <div className="flex justify-between items-center mb-6">
           <input
             type="text"

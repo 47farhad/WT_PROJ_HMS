@@ -3,7 +3,8 @@ import {
   createAppointment,
   deleteAppointment,
   getAppointmentDetails,
-  getAllAppointments
+  getAllAppointments,
+  getDoctors
 } from "../controllers/appointment.controller.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import { verifyPatient } from "../middlewares/appointment.middleware.js";
@@ -14,5 +15,6 @@ router.post("/createAppointment", protectRoute, verifyPatient, createAppointment
 router.delete("/deleteAppointment/:id", protectRoute, deleteAppointment);
 router.get("/getAppointment/:id", protectRoute, getAppointmentDetails);
 router.get("/getAllAppointments", protectRoute, getAllAppointments);
+router.get("/getDoctors", getDoctors);
 
 export default router;

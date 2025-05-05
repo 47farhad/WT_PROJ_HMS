@@ -6,9 +6,7 @@ interface Transaction {
   date: string;
   amount: number;
   type: 'Appointment' | 'Medicine' | 'Other';
-  description: string;
-  status: 'Completed' | 'Pending' | 'Failed';
-  doctor?: string;
+  status: 'Paid' | 'Unpaid' | 'Failed';
 }
 
 const PatientPayments: React.FC = () => {
@@ -24,10 +22,82 @@ const PatientPayments: React.FC = () => {
   const fetchTransactions = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get('/transactions');
-      setTransactions(data);
+      // Dummy data for transactions
+      const dummyTransactions: Transaction[] = [
+        {
+          _id: "1",
+          date: "2025-05-01T10:30:00Z",
+          amount: 50.0,
+          type: "Appointment",
+          status: "Paid",
+        },
+        {
+          _id: "2",
+          date: "2025-05-02T14:00:00Z",
+          amount: 20.0,
+          type: "Medicine",
+          status: "Paid",
+        },
+        {
+          _id: "3",
+          date: "2025-05-03T09:15:00Z",
+          amount: 100.0,
+          type: "Appointment",
+          status: "Unpaid",
+        },
+        {
+          _id: "4",
+          date: "2025-05-04T16:45:00Z",
+          amount: 15.0,
+          type: "Medicine",
+          status: "Paid",
+        },
+        {
+          _id: "5",
+          date: "2025-05-05T11:00:00Z",
+          amount: 200.0,
+          type: "Appointment",
+          status: "Failed",
+        },
+        {
+          _id: "6",
+          date: "2025-05-06T13:30:00Z",
+          amount: 30.0,
+          type: "Medicine",
+          status: "Paid",
+        },
+        {
+          _id: "7",
+          date: "2025-05-07T08:00:00Z",
+          amount: 75.0,
+          type: "Appointment",
+          status: "Paid",
+        },
+        {
+          _id: "8",
+          date: "2025-05-08T15:20:00Z",
+          amount: 12.0,
+          type: "Medicine",
+          status: "Unpaid",
+        },
+        {
+          _id: "9",
+          date: "2025-05-09T10:10:00Z",
+          amount: 60.0,
+          type: "Appointment",
+          status: "Paid",
+        },
+        {
+          _id: "10",
+          date: "2025-05-10T17:50:00Z",
+          amount: 25.0,
+          type: "Medicine",
+          status: "Paid",
+        },
+      ];
+      setTransactions(dummyTransactions);
     } catch (err) {
-      setError('Failed to fetch transactions');
+      setError("Failed to fetch transactions");
     } finally {
       setLoading(false);
     }
@@ -36,14 +106,12 @@ const PatientPayments: React.FC = () => {
   const filterTransactions = (transaction: Transaction) => {
     const searchTerm = searchQuery.toLowerCase();
     return (
-      transaction.description.toLowerCase().includes(searchTerm) ||
-      transaction.type.toLowerCase().includes(searchTerm) ||
-      (transaction.doctor?.toLowerCase().includes(searchTerm))
+      transaction.type.toLowerCase().includes(searchTerm)
     );
   };
 
   return (
-    <div className="h-full overflow-y-scroll w-full p-6">
+    <div className="h-full w-full p-6 overflow-y-auto">
       <div className="max-w-screen-xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#243954]">Transaction History</h2>
@@ -56,36 +124,30 @@ const PatientPayments: React.FC = () => {
           />
         </div>
 
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-[#243954]">
+        <div className="overflow-y-auto min-h-60 rounded-xl shadow-lg border border-gray-300">
+          <div className="overflow-y-auto max-h-60">
+            <table className="min-w-full table-auto">
+              <thead className="sticky top-0 bg-[#243954] text-white ">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-4 py-3 ">
                     Date
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-4 py-3 ">
                     Type
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-4 py-3 ">
                     Amount
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  <th className="px-4 py-3">
                     Status
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white divide-y divide-gray-200 text-center">
                 {transactions.filter(filterTransactions).map((transaction) => (
                   <tr key={transaction.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(transaction.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {transaction.description}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium
@@ -100,8 +162,8 @@ const PatientPayments: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium
-                        ${transaction.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                          transaction.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                        ${transaction.status === 'Paid' ? 'bg-green-100 text-green-800' :
+                          transaction.status === 'Unpaid' ? 'bg-yellow-100 text-yellow-800' :
                           'bg-red-100 text-red-800'}`}>
                         {transaction.status}
                       </span>
@@ -131,13 +193,13 @@ const PatientPayments: React.FC = () => {
             <div className="bg-green-50 p-4 rounded-lg">
               <p className="text-sm text-green-600">Completed Payments</p>
               <p className="text-2xl font-bold text-green-800">
-                {transactions.filter(t => t.status === 'Completed').length}
+                {transactions.filter(t => t.status === 'Paid').length}
               </p>
             </div>
             <div className="bg-yellow-50 p-4 rounded-lg">
               <p className="text-sm text-yellow-600">Pending Payments</p>
               <p className="text-2xl font-bold text-yellow-800">
-                {transactions.filter(t => t.status === 'Pending').length}
+                {transactions.filter(t => t.status === 'Unpaid').length}
               </p>
             </div>
           </div>
@@ -146,7 +208,5 @@ const PatientPayments: React.FC = () => {
     </div>
   );
 };
-
-// Remove the addNewTransaction export as it's now handled by the backend
 
 export default PatientPayments;

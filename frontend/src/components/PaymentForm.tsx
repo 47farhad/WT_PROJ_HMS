@@ -6,12 +6,11 @@ interface PaymentFormProps {
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
   amount: number;
-  doctor: string;
   description: string;
   appointmentId: string; 
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ onClose, onSubmit, amount, doctor, description,appointmentId }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ onClose, onSubmit, amount, description,appointmentId }) => {
 
   const navigate = useNavigate();
 
@@ -74,7 +73,6 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ onClose, onSubmit, amount, do
         type: 'Appointment',
         description,
         status: 'Completed',
-        doctor,
         paymentDetails: {
           cardNumber: paymentData.cardNumber,
           nameOnCard: paymentData.nameOnCard,

@@ -23,8 +23,90 @@ const PatientPharmacy: React.FC = () => {
   const fetchMedicines = async () => {
     try {
       setLoading(true);
-      const { data } = await axiosInstance.get("/medicines");
-      setMedicines(data);
+      // Dummy data for medicines
+      const dummyData: Medicine[] = [
+        {
+          _id: "1",
+          name: "Paracetamol",
+          brand: "PharmaCorp",
+          price: 5.99,
+          stock: 50,
+          description: "Used to treat pain and fever.",
+        },
+        {
+          _id: "2",
+          name: "Ibuprofen",
+          brand: "HealthPlus",
+          price: 8.49,
+          stock: 30,
+          description: "Anti-inflammatory medication for pain relief.",
+        },
+        {
+          _id: "3",
+          name: "Amoxicillin",
+          brand: "MediCare",
+          price: 12.99,
+          stock: 20,
+          description: "Antibiotic used to treat bacterial infections.",
+        },
+        {
+          _id: "4",
+          name: "Cetirizine",
+          brand: "AllerEase",
+          price: 4.99,
+          stock: 100,
+          description: "Antihistamine for allergy relief.",
+        },
+        {
+          _id: "5",
+          name: "Metformin",
+          brand: "DiabeCare",
+          price: 15.99,
+          stock: 40,
+          description: "Used to treat type 2 diabetes.",
+        },
+        {
+          _id: "6",
+          name: "Aspirin",
+          brand: "PainAway",
+          price: 6.49,
+          stock: 60,
+          description: "Used to reduce pain, fever, or inflammation.",
+        },
+        {
+          _id: "7",
+          name: "Omeprazole",
+          brand: "GastroFix",
+          price: 9.99,
+          stock: 25,
+          description: "Used to treat acid reflux and ulcers.",
+        },
+        {
+          _id: "8",
+          name: "Losartan",
+          brand: "HeartCare",
+          price: 18.49,
+          stock: 35,
+          description: "Used to treat high blood pressure.",
+        },
+        {
+          _id: "9",
+          name: "Atorvastatin",
+          brand: "CholestrolEase",
+          price: 14.99,
+          stock: 45,
+          description: "Used to lower cholesterol levels.",
+        },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
+      ];
+      setMedicines(dummyData);
     } catch (err) {
       setError("Failed to fetch medicines");
     } finally {
@@ -42,13 +124,13 @@ const PatientPharmacy: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen w-full p-6" style={{ background: "linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)" }}>
+    <div >
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#243954] mb-8">Pharmacy</h1>
+        <h1 className="text-3xl font-bold text-[#243954] mb-4">Pharmacy</h1>
         <input
           type="text"
           placeholder="Search medicines..."
-          className="w-full mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+          className="w-1/5 mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
@@ -57,19 +139,19 @@ const PatientPharmacy: React.FC = () => {
           <div className="text-center py-8">Loading medicines...</div>
         ) : null}
 
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-xl shadow-md">
-            <thead>
-              <tr className="bg-[#243954] text-white">
-                <th className="py-3 px-4 text-left">Name</th>
-                <th className="py-3 px-4 text-left">Brand</th>
-                <th className="py-3 px-4 text-left">Description</th>
-                <th className="py-3 px-4 text-left">Price</th>
-                <th className="py-3 px-4 text-left">Stock</th>
+        <div className="overflow-y-auto max-h-98 rounded-xl shadow-lg border border-gray-300">
+          <table className="min-w-full">
+            <thead className="sticky top-0 bg-[#243954] text-white">
+              <tr className="bg-[#243954] text-white ">
+                <th className="py-3 px-4">Name</th>
+                <th className="py-3 px-4">Brand</th>
+                <th className="py-3 px-4">Description</th>
+                <th className="py-3 px-4">Price</th>
+                <th className="py-3 px-4">Stock</th>
                 <th className="py-3 px-4"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="text-center py-6 text-gray-500">
@@ -90,7 +172,7 @@ const PatientPharmacy: React.FC = () => {
                 </tr>
               ) : (
                 filteredMedicines.map((medicine) => (
-                  <tr key={medicine._id} className="border-b hover:bg-blue-50">
+                  <tr key={medicine._id} className="text-center border-b hover:bg-blue-50 ">
                     <td className="py-3 px-4">{medicine.name}</td>
                     <td className="py-3 px-4">{medicine.brand}</td>
                     <td className="py-3 px-4">{medicine.description}</td>

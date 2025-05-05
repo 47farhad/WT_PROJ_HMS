@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
 import Appointment from '../models/appointment.model.js';
+import User from '../models/user.model.js';
 
 export const createAppointment = async (req: any, res: any) => {
   const { datetime, doctorId, description } = req.body;
@@ -105,19 +105,50 @@ export const getAllAppointments = async (req: any, res: any) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
 
-    const appointmentsList = await Appointment
-      .find({ patientId: reqUser._id }) 
-      .sort({ createdAt: -1 })         
-      .skip(skip)
-      .limit(limit)
-      .select("doctorId appointmentDate status createdAt"); 
+    const appointmentsList = await Appointment.aggregate([
+      // Match appointments for the specific patient
+      { $match: { patientId: reqUser._id } },
+
+      // Sort by createdAt in descending order
+      { $sort: { createdAt: -1 } },
+
+      // Skip and limit for pagination
+      { $skip: skip },
+      { $limit: limit },
+
+      // Lookup to join with Users collection to get doctor details
+      {
+        $lookup: {
+          from: "users", // assuming your User model uses "users" collection
+          localField: "doctorId",
+          foreignField: "_id",
+          as: "doctor"
+        }
+      },
+
+      // Unwind the doctor array (since lookup returns an array)
+      { $unwind: "$doctor" },
+
+      // Project the fields you want
+      {
+        $project: {
+          doctorId: 1,
+          appointmentDate: 1,
+          status: 1,
+          datetime: 1,
+          description: 1,
+          "doctorFirstName": "$doctor.firstName",
+          "doctorLastName": "$doctor.lastName"
+        }
+      }
+    ]);
 
     const total = await Appointment.countDocuments({ patientId: reqUser._id });
     const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({
-      appointments: appointmentsList,
-      
+      appointmentsData: appointmentsList,
+
       pagination: {
         currentPage: page,
         totalPages,
@@ -126,6 +157,16 @@ export const getAllAppointments = async (req: any, res: any) => {
     });
   } catch (error: any) {
     console.error("Error in getPatientAppointments:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+export const getDoctors = async (req: any, res: any) => {
+  try {
+    const doctors = await User.find({ userType: "Doctor" }).select("doctorId firstName lastName");
+    res.status(200).json(doctors)
+  }
+  catch (error: any) {
+    console.error("Error in getDoctors:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -97,6 +97,7 @@ const BookLabTest = ({ test, onClose, onSuccess }) => {
               name="date"
               value={formData.date}
               onChange={handleChange}
+              min={new Date().toISOString().split('T')[0]}
               className="w-1/2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#243954]"
               required
             />
