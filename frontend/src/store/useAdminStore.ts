@@ -12,6 +12,7 @@ export const useAdminStore = create((set, get) => ({
         }
     },
     patient: null,
+    isPatientLoading: false,
     isPatientsLoading: false,
 
     getPatients: async (page = 1, limit = 20) => {
@@ -66,11 +67,14 @@ export const useAdminStore = create((set, get) => ({
 
     getPatientDetails: async (patientId) => {
         try {
+            set({isPatientLoading: true})
             const res = await axiosInstance.get(`/admin/getPatientDetails/${patientId}`);
 
             set({patient: res.data})
+            set({isPatientLoading: false})
         }
         catch (error) {
+            set({isPatientLoading: false})
             toast.error(error.response?.data?.message || "Failed to fetch patient data");
         }
     }

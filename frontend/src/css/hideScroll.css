@@ -1,4 +1,3 @@
-/* In your CSS */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

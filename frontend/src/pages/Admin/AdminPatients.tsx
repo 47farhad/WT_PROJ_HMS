@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 
-import '../../css/AdminPatients.css'
+import '../../css/hideScroll.css'
 import { useAdminStore } from "../../store/useAdminStore";
 import { useNavigate } from "react-router-dom";
 
