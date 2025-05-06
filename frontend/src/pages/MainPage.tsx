@@ -26,6 +26,7 @@ import DoctorStats from './Doctor/DoctorStats.tsx'
 import bellIcon from '/svgs/bell-icon.svg'
 import Dropdown from '../components/Dropdown.tsx'
 import Settings from './Settings.tsx'
+import AdminPatientDetails from './Admin/AdminPatientDetails.tsx'
 
 
 function MainPage() {
@@ -80,6 +81,7 @@ function MainPage() {
           <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : <Navigate to={'/404'} replace />} />
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
           <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
+          <Route path='Patients/:patientId' element={userType === 'Admin' ? <AdminPatientDetails /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
 
           <Route path='/*' element={<Navigate to={'/404'} />} />
 

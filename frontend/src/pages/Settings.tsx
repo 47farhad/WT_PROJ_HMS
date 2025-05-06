@@ -22,6 +22,7 @@ function Settings() {
     const [dateOfBirth, setDateOfBirth] = useState(authUser.medicalInfo?.dateOfBirth || '');
     const [height, setHeight] = useState(authUser.medicalInfo?.height || '');
     const [weight, setWeight] = useState(authUser.medicalInfo?.weight || '');
+    const [gender, setGender] = useState(authUser.medicalInfo?.gender || '');
     const [allergies, setAllergies] = useState(authUser.medicalInfo?.allergies || []);
     const [chronicConditions, setChronicConditions] = useState(authUser.medicalInfo?.chronicConditions || []);
     const [currentMedications, setCurrentMedications] = useState(authUser.medicalInfo?.currentMedications || []);
@@ -53,6 +54,7 @@ function Settings() {
             dateOfBirth,
             height,
             weight,
+            gender,
             allergies,
             chronicConditions,
             currentMedications,
@@ -98,6 +100,7 @@ function Settings() {
         setDateOfBirth(authUser.medicalInfo?.dateOfBirth || '');
         setHeight(authUser.medicalInfo?.height || '');
         setWeight(authUser.medicalInfo?.weight || '');
+        setGender(authUser.medicalInfo?.gender || '');
         setAllergies(authUser.medicalInfo?.allergies || []);
         setChronicConditions(authUser.medicalInfo?.chronicConditions || []);
         setCurrentMedications(authUser.medicalInfo?.currentMedications || []);
@@ -324,6 +327,19 @@ function Settings() {
                                 onChange={(e) => setWeight(e.target.value)}
                                 className="border border-gray-300 rounded-md px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                        </div>
+
+                        <div className="flex flex-col">
+                            <label className="text-sm font-medium text-gray-700 mb-1">Gender</label>
+                            <select
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value)}
+                                className="border border-gray-300 rounded-md px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
                         </div>
                     </div>
 

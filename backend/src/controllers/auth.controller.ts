@@ -142,6 +142,7 @@ export const updateProfile = async (req: any, res: any) => {
                 dateOfBirth,
                 height,
                 weight,
+                gender,
                 allergies,
                 chronicConditions,
                 currentMedications,
@@ -162,6 +163,7 @@ export const updateProfile = async (req: any, res: any) => {
             if (dateOfBirth) updateData.medicalInfo.dateOfBirth = dateOfBirth;
             if (height) updateData.medicalInfo.height = height;
             if (weight) updateData.medicalInfo.weight = weight;
+            if (gender) updateData.medicalInfo.gender = gender;
             if (allergies) updateData.medicalInfo.allergies = allergies;
             if (chronicConditions) updateData.medicalInfo.chronicConditions = chronicConditions;
             if (currentMedications) updateData.medicalInfo.currentMedications = currentMedications;

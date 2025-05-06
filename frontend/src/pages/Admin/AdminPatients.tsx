@@ -3,6 +3,7 @@ import { format } from "date-fns";
 
 import '../../css/AdminPatients.css'
 import { useAdminStore } from "../../store/useAdminStore";
+import { useNavigate } from "react-router-dom";
 
 function AdminPatients() {
 
@@ -17,6 +18,8 @@ function AdminPatients() {
     const [searchQuery, setSearchQuery] = useState('');
 
     const patientsEndRef = useRef(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         getPatients()
@@ -51,6 +54,10 @@ function AdminPatients() {
         if (name === "startDate") setStartDate(value);
         if (name === "endDate") setEndDate(value);
     };
+
+    const handleClick = (patientId) => {
+        navigate(`/Patients/${patientId}`);
+    }
 
     return (
         <div className="flex flex-col flex-1 items-center mx-5 max-h-[calc(100vh-88px)]">
@@ -344,7 +351,8 @@ function AdminPatients() {
                                         }
 
                                         return (
-                                            <tr key={patient._id} className="hover:bg-gray-50 border-b border-[#f0f0f0]">
+                                            <tr key={patient._id} className="hover:bg-gray-50 border-b border-[#f0f0f0]"
+                                            onClick={() => {handleClick(patient._id)}}>
                                                 <td className="text-left pl-5 py-4 font-normal w-[21%] truncate" title={`${patient.firstName} ${patient.lastName}`}>
                                                     <div className="flex items-center gap-2">
                                                         {patient.profilePic && (

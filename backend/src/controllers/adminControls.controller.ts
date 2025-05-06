@@ -48,7 +48,29 @@ export const getPatients = async (req: any, res: any) => {
         });
     }
     catch (error: any) {
-        console.log("Error in getPatients controller", error.message);
+        console.log("Error in getPatients controller", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
+export const getPatientDetails = async (req: any, res: any) => {
+    try {
+        const { id: patientId } = req.params;
+
+        const patient = await User.findById(patientId)
+
+        if(!patient){
+            return res.status(404).json({message: "Patient not found"});
+        }
+
+        if(patient.userType !== 'Patient'){
+            return res.status(404).json({message: "Patient not found"});
+        }
+
+        return res.status(200).json(patient);
+    }
+    catch (error: any) {
+        console.log("Error in getPatientDetails controller", error);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+}
