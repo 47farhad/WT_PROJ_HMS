@@ -19,8 +19,10 @@ export const getPatients = async (req: any, res: any) => {
                         { $limit: limit },
                         {
                             $project: {
+                                "profilePic": 1,
                                 "firstName": 1,
                                 "lastName": 1,
+                                "_id": 1,
                                 "medicalInfo.dateOfBirth": 1
                             }
                         },
@@ -38,10 +40,9 @@ export const getPatients = async (req: any, res: any) => {
         const totalPages = Math.ceil(totalCount / limit);
 
         res.status(200).json({
-            users: patients,
+            patients: patients,
             pagination: {
                 currentPage: page,
-                totalPages,
                 hasMore: page < totalPages,
             }
         });

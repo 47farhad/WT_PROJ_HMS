@@ -58,14 +58,13 @@ function MainPage() {
       <div className='flex flex-col w-full max-h-screen'>
         <div className='flex flex-row w-full items-center p-5'>
           <span className='text-3xl flex-grow font-medium'>
-            {selectedNavPage}
+            {String(selectedNavPage)}
           </span>
           <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>
             <img src={bellIcon} className="w-7 h-7" />
           </button>
           <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic} />
         </div>
-
 
         <Routes>
 
