@@ -18,7 +18,7 @@ function AdminPatientDetails() {
         (patient) &&
         (<div className="flex flex-row mx-5 mb-5 h-full">
             {/* Entire left side, patient info, notes, medical info and health statuses */}
-            <div className="flex flex-col w-[75%] h-full items-center">
+            <div className="flex flex-col w-[80%] h-full items-center">
                 {/* Big card with name and pfp */}
                 <div className="w-full px-6 py-5 bg-[#F5F5F5] rounded-2xl flex flex-row">
                     <div className="flex flex-row h-full border-r-1 pr-8 border-[#C4C4C4]">
@@ -32,7 +32,7 @@ function AdminPatientDetails() {
                                 <span className="text-sm text-[#87888A]">
                                     Patient Id:
                                 </span>
-                                <span className="ml-1 text-sm text-[#4C4D4F]">
+                                <span className="ml-1 text-sm text-[#4C4D4F] truncate">
                                     {patient._id}
                                 </span>
                             </div>
@@ -50,7 +50,7 @@ function AdminPatientDetails() {
                             </span>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center pr-5 ml-2 border-r-1 border-[#C4C4C4]">
+                        <div className="flex flex-col items-center justify-center pr-2 ml-2 border-r-1 border-[#C4C4C4]">
                             <span className="text-sm text-[#88898B] font-sans text-center">
                                 Email
                             </span>
@@ -59,7 +59,7 @@ function AdminPatientDetails() {
                             </span>
                         </div>
 
-                        <div className="flex flex-col items-center justify-center pr-5 ml-2 border-r-1 border-[#C4C4C4]">
+                        <div className="flex flex-col items-center justify-center pr-2 ml-2 border-r-1 border-[#C4C4C4]">
                             <span className="text-sm text-[#88898B] font-sans text-center">
                                 Emergency Contact
                             </span>
@@ -244,7 +244,7 @@ function AdminPatientDetails() {
             </div>
 
             {/* Right side, reports and appointments */}
-            <div className="flex flex-col w-[25%] h-full ml-5 gap-5">
+            <div className="flex flex-col w-[20%] h-full ml-5 gap-5">
                 {/* Lab Reports */}
                 <div className="bg-[#F5F5F5] rounded-2xl h-[35%] p-5">
                     <span className="text-lg font-semibold text-[#04080B] font-sans">
