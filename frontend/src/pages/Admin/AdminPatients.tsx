@@ -93,14 +93,14 @@ function AdminPatients() {
 
                 <div className="flex flex-row gap-3">
                     {/* Age picker */}
-                    <div className="flex justify-end relative focus:outline-none">
+                    <div className="flex justify-end relative focus:outline-none hov">
                         <button
                             onClick={() => setShowAgePicker(!showAgePicker)}
-                            className="h-10 px-4 border-none bg-[#F2F3F5] text-[#434446] text-md rounded-lg focus:ring-2 focus:outline-none outline-none flex items-center gap-2"
+                            className="h-10 px-4 border-none bg-[#F2F3F5] hover:bg-[#243954] hover:text-white transition-colors duration-100 text-[#434446] text-md rounded-lg focus:ring-2 focus:outline-none outline-none flex items-center gap-2"
                         >
                             {/* Age Filter Icon - Birthday Version */}
                             <svg
-                                className="w-5 h-5 text-[#87888A]"
+                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -126,7 +126,7 @@ function AdminPatients() {
 
                             {/* Dropdown Arrow Icon */}
                             <svg
-                                className="w-5 h-5 text-[#87888A]"
+                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -195,11 +195,11 @@ function AdminPatients() {
                     <div className="flex justify-end relative focus:outline-none">
                         <button
                             onClick={() => setShowDatePicker(!showDatePicker)}
-                            className="h-10 px-4 border-none bg-[#F2F3F5] text-[#434446] text-md rounded-lg focus:ring-2 focus:outline-none outline-none flex items-center gap-2"
+                            className="h-10 px-4 border-none bg-[#F2F3F5] hover:bg-[#243954] transition-colors duration-100 hover:text-white text-[#434446] text-md rounded-lg focus:ring-2 focus:outline-none outline-none flex items-center gap-2"
                         >
                             {/* Calendar Icon */}
                             <svg
-                                className="w-5 h-5 text-[#87888A]"
+                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -222,7 +222,7 @@ function AdminPatients() {
 
                             {/* Dropdown Arrow Icon */}
                             <svg
-                                className="w-5 h-5 text-[#87888A]"
+                                className="w-5 h-5"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -286,7 +286,7 @@ function AdminPatients() {
                     {/* Table header (fixed) */}
                     <div className="flex-shrink-0">
                         <table className="w-full table-fixed">
-                            <thead className="bg-[#F5F5F5] text-sm text-[#87888A]">
+                            <thead className="bg-[#243954] text-sm text-white">
                                 <tr>
                                     <th className="text-left pl-5 py-4 font-normal w-[21%]">Name</th>
                                     <th className="text-left pl-2 py-4 font-normal w-[7%]">ID</th>
