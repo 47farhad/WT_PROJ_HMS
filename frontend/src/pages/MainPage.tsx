@@ -26,6 +26,7 @@ import DoctorStats from './Doctor/DoctorStats.tsx'
 import bellIcon from '/svgs/bell-icon.svg'
 import Dropdown from '../components/Dropdown.tsx'
 import Settings from './Settings.tsx'
+import AdminPatientDetails from './Admin/AdminPatientDetails.tsx'
 
 
 function MainPage() {
@@ -58,14 +59,13 @@ function MainPage() {
       <div className='flex flex-col w-full max-h-screen'>
         <div className='flex flex-row w-full items-center p-5'>
           <span className='text-3xl flex-grow font-medium'>
-            {selectedNavPage}
+            {String(selectedNavPage)}
           </span>
           <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>
             <img src={bellIcon} className="w-7 h-7" />
           </button>
           <Dropdown username={authUser.firstName + ' ' + authUser.lastName} profilePic={authUser.profilePic} />
         </div>
-
 
         <Routes>
 
@@ -81,6 +81,7 @@ function MainPage() {
           <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : <Navigate to={'/404'} replace />} />
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
           <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
+          <Route path='Patients/:patientId' element={userType === 'Admin' ? <AdminPatientDetails /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
 
           <Route path='/*' element={<Navigate to={'/404'} />} />
 

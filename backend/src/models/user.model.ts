@@ -18,6 +18,11 @@ const medicalInfoSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    gender: {
+        type: String,
+        enum: ['Male', 'Female', ''],
+        default: ''
+    },
     allergies: {
         type: [String],  // Array of strings
         default: []
@@ -68,8 +73,12 @@ const medicalInfoSchema = new mongoose.Schema({
     additionalNotes: {
         type: String,
         default: ''
+    },
+},
+    {
+        timestamps: true
     }
-});
+);
 
 const userSchema = new mongoose.Schema(
     {
