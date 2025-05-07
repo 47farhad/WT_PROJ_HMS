@@ -7,6 +7,7 @@ import { connectDB } from "./lib/db.js";
 
 import authRoutes from "./routes/auth.route.js";
 import appointmentRoutes from "./routes/appointment.route.js";
+import transactionRoutes from "./routes/transaction.routes.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/transactions",transactionRoutes)
 
 app.listen(PORT, () => {
     console.log("Backend is up on port: " + PORT);

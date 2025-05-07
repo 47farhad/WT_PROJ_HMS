@@ -26,6 +26,7 @@ import DoctorStats from './Doctor/DoctorStats.tsx'
 import bellIcon from '/svgs/bell-icon.svg'
 import Dropdown from '../components/Dropdown.tsx'
 import Settings from './Settings.tsx'
+import PatientAppointmentDetails from './Patient/PatientAppointmentDetails.tsx'
 
 
 function MainPage() {
@@ -71,6 +72,7 @@ function MainPage() {
           <Route path='Messages/*' element={<Messages />} />
           <Route path='Settings/*' element={<Settings />} />
           <Route path='Appointments/*' element={userType === 'Admin' ? <AdminAppointments /> : userType === 'Doctor' ? <DoctorSchedule /> : userType === 'Patient' ? <PatientAppointments /> : <Navigate to={'/404'} replace />} />
+          <Route path='AppointmentDetails/:appointmentId' element={userType === 'Patient' ? <PatientAppointmentDetails /> : <Navigate to={'/404'} replace />} />
           <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <Navigate to={'/404'} replace />} />
           <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />
           <Route path='Schedule/*' element={userType === 'Admin' ? <AdminSchedule /> : <Navigate to={'/404'} replace />} />

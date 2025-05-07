@@ -8,7 +8,7 @@ function PatientLabtests() {
     {
       _id: "1",
       name: "Complete Blood Count (CBC)",
-      description: "Measures different components of blood including red cells, white cells, and platelets",
+      description: "Measures components of blood including RBCs, WBCs, and platelets",
       duration: "30 minutes",
       price: 45.99,
       requirements: [

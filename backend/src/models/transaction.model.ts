@@ -18,6 +18,7 @@ const transactionSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+
     transactionType: {
       type: String,
       enum: ['Appointment', 'Lab Test', 'Medication'],

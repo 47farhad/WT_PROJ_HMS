@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Appointment from '../models/appointment.model.js';
 import User from '../models/user.model.js';
 
@@ -92,7 +93,7 @@ export const getAppointmentDetails = async (req: any, res: any) => {
     return res.status(200).json({ appointment });
   }
   catch (error) {
-    console.log("Error in controller: getAppointmentDetails");
+    console.log("Error in controller: getAppointmentDetails", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 }

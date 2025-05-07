@@ -1,163 +1,134 @@
-import React, { useEffect, useState } from 'react';
-import PaymentForm from './PaymentForm';
-import { useAppointmentStore } from '../store/useAppointmentStore';
+import React, { useState } from "react";
 
-interface BookAppointmentProps {
-  onClose: () => void;
-    formData: {
-    fullName: string;
-    email: string;
-    date: string;
-    time: string;
-    reason: string;
-    doctor: string;
-  };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-  error: string;
-  success: boolean;
-}
+function BookAppointment({ doctorName, onBookAppointment, onCancel }) {
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [description, setDescription] = useState("");
 
-const BookAppointment: React.FC<BookAppointmentProps> = ({
-  onClose,
-  formData,
-  handleChange,
-  error,
-  success,
-}) => {
-  const [showPayment, setShowPayment] = useState(false);
-  const { doctors, getDoctors } = useAppointmentStore();
+  const availableTimeSlots = [
+    "9:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "1:00 PM",
+    "2:00 PM",
+    "3:00 PM",
+    "4:00 PM",
+    "5:00 PM",
+  ];
 
-  const handleBooking = async () => {
-    try {
-      const appointmentResponse = await axiosInstance.post('/appointments', {
-        fullName: formData.fullName,
-        email: formData.email,
-        doctor: formData.doctor,
-        date: formData.date,
-        time: formData.time,
-        reason: formData.reason,
-      });
-  
-      const transactionResponse = await axiosInstance.post('/transactions', {
-        appointmentId: appointmentResponse.data.id,
-        amount: 50, // Example amount
-        status: 'unpaid',
-      });
-  
-      setSuccess(true);
-      setShowPayment(true);
-    } catch (error) {
-      setError('Failed to create appointment or transaction. Please try again.');
-    }
-  };
-  
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if ( !formData.doctor || !formData.date || !formData.time || !formData.reason) {
-      setError('All fields are required.');
+  const handleBookNow = () => {
+    if (!selectedDate || !selectedTime || !description) {
+      alert("Please fill all fields before booking.");
       return;
     }
-    handleBooking();
+
+    const appointmentData = {
+      doctorName,
+      date: selectedDate,
+      time: selectedTime,
+      description,
+      status: "Pending", // Default status
+    };
+    onBookAppointment(appointmentData); // Call the parent function to handle booking
   };
-  useEffect(() => {
-    getDoctors()
-  }, [getDoctors])
+
   return (
-    <div className="fixed inset-0 bg-opacity-40 flex items-center justify-center z-50"
-      style={{ background: 'linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)' }}>
-      {!showPayment ? (
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-lg overflow-hidden">
-          <div className="bg-[#243954] p-6 text-center">
-            <h1 className="text-2xl font-bold text-white">Book an Appointment</h1>
-          </div>
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(135deg, #e0f2fe 0%, #f0fdfa 50%, #f5f3ff 100%)",
+        }}
+      ></div>
 
-          <form onSubmit={onSubmit} className="p-6 space-y-5">
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">{error}</div>}
-            {success && <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm">Appointment successfully booked!</div>}
+      {/* Appointment Form */}
+      <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-lg w-full z-10">
+        <h2 className="text-2xl font-bold text-[#243954] mb-6 text-center">
+          Book Appointment with{" "}
+          <span className=" text-[#243954]">{doctorName}</span>
+        </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Doctor</label>
-                <select
-                  name="doctor"
-                  value={formData.doctor}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
-                >
-                  <option value="">Select Doctor</option>
-                  {doctors.map((doc) => (
-                    <option key={doc._id} value={doc._id}>{doc.firstName + ' ' + doc.lastName}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  className="w-1/2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#243954]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                <input
-                  type="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleChange}
-                  className="w-1/2 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#243954]"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reason for Visit</label>
-              <textarea
-                name="reason"
-                value={formData.reason}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Briefly describe your concern..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none resize-none"
-              />
-            </div>
-
-            <div className="flex justify-between">
-              <button
-                type="button"
-                onClick={onClose}
-                className="bg-gray-400 text-white px-4 py-2 rounded-lg"
-              >
-                Cancel
-              </button>
-
-              <button
-                type="submit"
-                className="bg-[#243954] hover:bg-[#1a2c42] text-white px-5 py-2 rounded-lg font-medium transition"
-              >
-                Proceed to Payment
-              </button>
-            </div>
-          </form>
+        {/* Date Picker */}
+        <div className="mb-6">
+          <label
+            htmlFor="date"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Select Date
+          </label>
+          <input
+            type="date"
+            id="date"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
         </div>
-      ) : (
-        <PaymentForm
-          onClose={() => setShowPayment(false)}
-          onSubmit={handleBooking}
-          amount={50}
-          doctor={formData.doctor}
-          description={formData.reason}
-        />
-      )}
+
+        {/* Time Slots */}
+        <div className="mb-6">
+          <label
+            htmlFor="time"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Select Time Slot
+          </label>
+          <select
+            id="time"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+            value={selectedTime}
+            onChange={(e) => setSelectedTime(e.target.value)}
+          >
+            <option value="">Select a time slot</option>
+            {availableTimeSlots.map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Description */}
+        <div className="mb-6">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Description
+          </label>
+          <textarea
+            id="description"
+            rows="4"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+            placeholder="Enter a brief description of your appointment"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          ></textarea>
+        </div>
+
+        {/* Buttons */}
+        <div className="flex space-x-4">
+          {/* Book Now Button */}
+          <button
+            onClick={handleBookNow}
+            className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#4c6280] transition"
+          >
+            Book Now
+          </button>
+
+          {/* Cancel Button */}
+          <button
+            onClick={onCancel} // Use the correct prop name
+            className="w-full bg-[#e0f2fe] text-[#243954] px-4 py-2 rounded-lg hover:bg-[#cfe8f9] transition"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default BookAppointment;

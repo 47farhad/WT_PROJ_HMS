@@ -1,6 +1,5 @@
 import express from "express";
 import { 
-  createTransaction,
   getTransactionDetails,
   getAllTransactions,
   updateTransaction
@@ -10,7 +9,6 @@ import { protectRoute } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/createTransaction", protectRoute, createTransaction);
 router.get("/getTransaction/:id", protectRoute, getTransactionDetails);
 router.get("/getAllTransactions", protectRoute, getAllTransactions);
 router.put("/updatetransactions/:id",protectRoute, updateTransaction);

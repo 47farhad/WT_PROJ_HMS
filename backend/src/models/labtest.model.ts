@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const labTestSchema = new mongoose.Schema({
+    name:{
+        type: String,
+        
+
+    },
     datetime: {
     type: Date,
     required: true,
