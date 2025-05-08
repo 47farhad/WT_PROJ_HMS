@@ -2,43 +2,14 @@ import OfferedTest from "../models/offeredTest.model.js";
 
 export const createOfferedTest = async (req: any, res: any) => {
     try {
-        const { name, description, price, requirements } = req.body;
+        const defaultTest = new OfferedTest();
 
-        if (!name || !description || price === undefined || !requirements) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
+        const savedTest = await defaultTest.save();
 
-        if (typeof name !== 'string') {
-            return res.status(400).json({ message: "Name must be a string" });
-        }
-
-        if (typeof description !== 'string') {
-            return res.status(400).json({ message: "Description must be a string" });
-        }
-
-        if (typeof price !== 'number' || isNaN(price)) {
-            return res.status(400).json({ message: "Price must be a valid number" });
-        }
-
-        if (!Array.isArray(requirements)) {
-            return res.status(400).json({ message: "Requirements must be an array" });
-        }
-
-        if (requirements.some((req: any) => typeof req !== 'string')) {
-            return res.status(400).json({ message: "All requirements must be strings" });
-        }
-
-        const newOfferedLabTest = new OfferedTest({
-            name: name,
-            description: description,
-            price: price,
-            requirements: requirements
+        res.status(201).json({
+            message: "New test created successfully",
+            test: savedTest
         });
-
-        if (newOfferedLabTest) {
-            await newOfferedLabTest.save();
-            res.status(201).json(newOfferedLabTest);
-        }
 
     } catch (error) {
         console.log("Error in createOfferedTest controller", error);

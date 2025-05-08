@@ -4,18 +4,22 @@ const offeredTestSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: true,
+            default: 'New Test',
+            required: true
         },
         description: {
             type: String,
+            default: 'Description',
             required: true,
         },
         price: {
             type: Number,
+            default: 0,
             required: true
         },
         requirements: {
             type: [String],
+            default: [],
             required: true
         },
         status: {
