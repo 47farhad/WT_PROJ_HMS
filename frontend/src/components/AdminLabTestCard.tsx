@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import TagInput from '../components/TagInput';
 import ConfirmationModal from './ConfirmationModal';
+import { useLabTestStore } from '../store/useLabTestStore';
 
 interface Props {
+    id: string,
     name: string;
     description: string;
     price: number;
@@ -10,7 +12,7 @@ interface Props {
     status: 'available' | 'unavailable';
 }
 
-function AdminLabTestCard({ name, description, price, requirements, status }: Props) {
+function AdminLabTestCard({ id, name, description, price, requirements, status }: Props) {
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         name,
@@ -19,10 +21,13 @@ function AdminLabTestCard({ name, description, price, requirements, status }: Pr
         requirements
     });
 
+    const { deleteLabTest, updateLabTest, isDeletingLabTest, isUpdatingLabTest } = useLabTestStore();
+
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
         title: '',
         message: '',
+        showLoading: false,
         onConfirm: () => { }
     });
     const closeModal = () => {
@@ -44,50 +49,51 @@ function AdminLabTestCard({ name, description, price, requirements, status }: Pr
         }));
     };
 
-    const handleSave = () => {
-        //onSave?.({ ...formData, id });
-        setIsEditing(false);
-    };
-
     const handleCancel = () => {
         setFormData({ name, description, price, requirements });
         setIsEditing(false);
     };
 
-    const showSaveConfirmation = () => {
+    const showSaveConfirmation = async () => {
         setModalConfig({
             isOpen: true,
             title: 'Confirm Changes',
             message: 'Are you sure you want to save these changes?',
-            onConfirm: () => {
-                //onSave?.({ ...formData, id });
+            showLoading: false,
+            onConfirm: async () => {
+                setModalConfig(prev => ({ ...prev, showLoading: true }));
+                await updateLabTest(id, formData);
                 setIsEditing(false);
                 setModalConfig(prev => ({ ...prev, isOpen: false }));
             }
         });
     };
 
-    const showDeleteConfirmation = () => {
+    const showDeleteConfirmation = async () => {
         setModalConfig({
             isOpen: true,
             title: 'Delete Test',
             message: 'Are you sure you want to permanently delete this test?',
-            onConfirm: () => {
-                //onDelete?.();
+            showLoading: false,
+            onConfirm: async () => {
+                setModalConfig(prev => ({ ...prev, showLoading: true }));
+                await deleteLabTest(id)
                 setModalConfig(prev => ({ ...prev, isOpen: false }));
             }
         });
     };
 
-    const showActivationConfirmation = () => {
+    const showActivationConfirmation = async () => {
         setModalConfig({
             isOpen: true,
             title: `${status === 'available' ? 'Hold' : 'Activate'} Test`,
             message: status === 'available'
                 ? 'Are you sure you want to Hold this test? This will make it unavailable to the patients'
                 : 'Are you sure you want to Activate this test? This will make it available to the patients',
-            onConfirm: () => {
-                //onStatusChange?.();
+            showLoading: false,
+            onConfirm: async () => {
+                setModalConfig(prev => ({ ...prev, showLoading: true }));
+                await updateLabTest(id, {status : (status === 'available' ? 'unavailable' : 'available')});
                 setModalConfig(prev => ({ ...prev, isOpen: false }));
             }
         });
@@ -134,7 +140,7 @@ function AdminLabTestCard({ name, description, price, requirements, status }: Pr
                             <h4 className="font-medium text-gray-700 mb-2">Requirements:</h4>
                             <TagInput
                                 tags={formData.requirements}
-                                onChange={handleRequirementsChange}
+                                setTags={handleRequirementsChange}
                                 placeholder="Add requirement..."
                             />
                         </div>
@@ -199,7 +205,7 @@ function AdminLabTestCard({ name, description, price, requirements, status }: Pr
                                 {status === 'available' ? 'Hold' : 'Activate'}
                             </button>
                             <button className="flex-1 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                            onClick={showDeleteConfirmation}>
+                                onClick={showDeleteConfirmation}>
                                 Delete
                             </button>
                         </div>
@@ -213,6 +219,7 @@ function AdminLabTestCard({ name, description, price, requirements, status }: Pr
                 onCancel={closeModal}
                 title={modalConfig.title}
                 message={modalConfig.message}
+                showLoading={modalConfig.showLoading}
             />
         </>
     );

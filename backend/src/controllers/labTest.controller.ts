@@ -6,10 +6,7 @@ export const createOfferedTest = async (req: any, res: any) => {
 
         const savedTest = await defaultTest.save();
 
-        res.status(201).json({
-            message: "New test created successfully",
-            test: savedTest
-        });
+        res.status(201).json(savedTest);
 
     } catch (error) {
         console.log("Error in createOfferedTest controller", error);

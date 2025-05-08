@@ -1,10 +1,10 @@
-import { useAuthStore } from "../store/useAuthStore";
-
-function ConfirmationModal({ isOpen, onConfirm, onCancel, title, message }) {
-
-    const { isUpdatingProfile } = useAuthStore();
+function ConfirmationModal({ isOpen, onConfirm, onCancel, title, message, showLoading }) {
 
     if (!isOpen) return null;
+
+    if(showLoading){
+        console.log('yea')
+    }
 
     return (
         <>
@@ -25,11 +25,11 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, title, message }) {
                         </button>
                         <button
                             onClick={onConfirm}
-                            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center ${isUpdatingProfile ? 'opacity-75 cursor-not-allowed' : ''
+                            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center ${showLoading ? 'opacity-75 cursor-not-allowed' : ''
                                 }`}
-                            disabled={isUpdatingProfile}
+                            disabled={showLoading}
                         >
-                            {isUpdatingProfile ? (
+                            {showLoading ? (
                                 <>
                                     <svg
                                         className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
@@ -51,7 +51,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, title, message }) {
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                                         ></path>
                                     </svg>
-                                    Saving...
+                                    Confirming...
                                 </>
                             ) : (
                                 'Confirm'

@@ -6,7 +6,7 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import { formatDateForInput } from "../util/formateDate";
 
 function Settings() {
-    const { authUser, updateProfile } = useAuthStore();
+    const { authUser, updateProfile, isUpdatingProfile } = useAuthStore();
     const fileInputRef = useRef(null);
 
     // Personl info states
@@ -520,6 +520,7 @@ function Settings() {
                 onCancel={handleCancel}
                 title="Confirm Changes"
                 message="Are you sure you want to save these changes to your profile?"
+                showLoading={isUpdatingProfile}
             />
         </div>
     );

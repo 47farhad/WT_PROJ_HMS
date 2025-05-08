@@ -7,6 +7,7 @@ export const useLabTestStore = create((set, get) => ({
     isOfferedLabTestsLoading: false,
     isCreatingLabTest: false,
     isDeletingLabTest: false,
+    isUpdatingLabTest: false,
 
     getOfferedLabTest: async () => {
         try {
@@ -43,10 +44,10 @@ export const useLabTestStore = create((set, get) => ({
         try {
             set({ isDeletingLabTest: true });
 
-            await axios.delete(`/api/labTests/deleteTest/${testId}`);
+            await axiosInstance.delete(`/labTests/deleteTest/${testId}`);
 
             set((state) => ({
-                offeredLabTests: state.offeredLabTests.filter(test => test.id !== testId),
+                offeredLabTests: state.offeredLabTests.filter(test => test._id !== testId),
                 isDeletingLabTest: false
             }));
 
@@ -55,6 +56,27 @@ export const useLabTestStore = create((set, get) => ({
             console.error('Failed to delete lab test:', error);
             set({ isDeletingLabTest: false });
             toast.error(error.response?.data?.message || 'Failed to delete lab test');
+        }
+    },
+
+    updateLabTest: async (testId, updatedData) => {
+        try {
+            set({ isUpdatingLabTest: true });
+
+            const response = await axiosInstance.put(`/labTests/updateTest/${testId}`, updatedData);
+
+            set((state) => ({
+                offeredLabTests: state.offeredLabTests.map(test =>
+                    test._id === testId ? { ...test, ...response.data } : test
+                ),
+                isUpdatingLabTest: false
+            }));
+
+            toast.success('Lab test updated successfully');
+        } catch (error) {
+            console.error('Failed to update lab test:', error);
+            set({ isUpdatingLabTest: false });
+            toast.error(error.response?.data?.message || 'Failed to update lab test');
         }
     }
 }));

@@ -20,7 +20,7 @@ function AdminPatientDetails() {
             {/* Entire left side, patient info, notes, medical info and health statuses */}
             <div className="flex flex-col w-[80%] h-full items-center">
                 {/* Big card with name and pfp */}
-                <div className="w-full px-6 py-5 bg-[#F5F5F5] rounded-2xl flex flex-row">
+                <div className="w-full px-6 pr-2 py-5 bg-[#F5F5F5] rounded-2xl flex flex-row">
                     <div className="flex flex-row h-full border-r-1 pr-8 border-[#C4C4C4]">
                         <img src={patient.profilePic} className="size-20 rounded-xl" />
 
