@@ -6,10 +6,15 @@ import cors from "cors";
 import { connectDB } from "./lib/db.js";
 
 import authRoutes from "./routes/auth.route.js";
+import appointmentRoutes from "./routes/appointment.route.js";
+import transactionRoutes from "./routes/transaction.routes.js";
+
 import messageRoutes from "./routes/message.route.js";
 import adminRoutes from "./routes/adminControls.route.js"
 import labTestRoutes from "./routes/labTest.route.js"
 import { app, server } from "./lib/socket.js";
+
+const app = express();
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -25,9 +30,12 @@ app.use(
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/transactions",transactionRoutes)
 app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/labTests", labTestRoutes);
+
 
 server.listen(PORT, () => {
     console.log("Backend is up on port: " + PORT);
