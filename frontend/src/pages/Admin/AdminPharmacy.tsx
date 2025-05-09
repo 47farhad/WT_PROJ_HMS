@@ -1,7 +1,7 @@
 function AdminInventory() {
     return (
         <div>
-            Admin inventory
+            Admin Pharmacy
         </div>
     )
 }

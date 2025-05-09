@@ -6,7 +6,7 @@ import ConfirmationModal from "../components/ConfirmationModal";
 import { formatDateForInput } from "../util/formateDate";
 
 function Settings() {
-    const { authUser, updateProfile } = useAuthStore();
+    const { authUser, updateProfile, isUpdatingProfile } = useAuthStore();
     const fileInputRef = useRef(null);
 
     // Personl info states
@@ -305,6 +305,7 @@ function Settings() {
                                 type="date"
                                 value={formatDateForInput(dateOfBirth)}
                                 onChange={(e) => setDateOfBirth(e.target.value)}
+                                max={new Date().toISOString().split('T')[0]}
                                 className="border border-gray-300 rounded-md px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </div>
@@ -519,6 +520,7 @@ function Settings() {
                 onCancel={handleCancel}
                 title="Confirm Changes"
                 message="Are you sure you want to save these changes to your profile?"
+                showLoading={isUpdatingProfile}
             />
         </div>
     );
