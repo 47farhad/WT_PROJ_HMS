@@ -1,6 +1,6 @@
 import express from "express";
 
-import { createOfferedTest, getOfferedLabTests, deleteLabTest, updateOfferedTest } from "../controllers/labTest.controller.js";
+import { createOfferedTest, getOfferedLabTests, deleteLabTest, updateOfferedTest } from "../controllers/labtest.controller.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/admin.middleware.js";
 

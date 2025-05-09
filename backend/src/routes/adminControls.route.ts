@@ -1,6 +1,6 @@
 import express from "express";
 
-import { convertToAdmin, convertToDoctor, getPatientDetails, getPatients } from "../controllers/adminControls.controller.js";
+import { convertToAdmin, convertToDoctor, getPatientDetails, getPatients } from "../controllers/user.controller.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import { isAdmin } from "../middlewares/admin.middleware.js";
 

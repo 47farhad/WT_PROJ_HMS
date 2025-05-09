@@ -14,8 +14,6 @@ import adminRoutes from "./routes/adminControls.route.js"
 import labTestRoutes from "./routes/labTest.route.js"
 import { app, server } from "./lib/socket.js";
 
-const app = express();
-
 dotenv.config();
 const PORT = process.env.PORT;
 
