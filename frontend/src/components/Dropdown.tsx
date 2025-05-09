@@ -5,14 +5,14 @@ import settingsIcon from '/svgs/settings-icon.svg'
 import { useAuthStore } from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
-interface Props{
+interface Props {
     username: string,
     profilePic: string
 }
 
 function Dropdown(p: Props) {
 
-    const {isLoggingOut, logout} = useAuthStore();
+    const { isLoggingOut, logout } = useAuthStore();
     const navigate = useNavigate();
 
     const [isOpen, setIsOpen] = useState(false);
@@ -35,8 +35,10 @@ function Dropdown(p: Props) {
                 className="bg-[#F5F5F5] rounded-xl pl-2 pr-2 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <img src={p.profilePic} className="w-7 h-7 mr-2" />
-                {p.username}
+                <img src={p.profilePic} className="w-10 h-10 mr-2 rounded-xl" />
+                <span className="text-center text-lg font-normal">
+                    {p.username}
+                </span>
                 <img src={arrowIcon} className="w-7 h-7" />
             </button>
 

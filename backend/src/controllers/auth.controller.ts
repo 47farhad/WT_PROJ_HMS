@@ -73,14 +73,10 @@ export const login = async (req: any, res: any) => {
 
         generateToken(user._id, res);
 
-        res.status(200).json({
-            _id: user._id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilePic: user.profilePic,
-            userType: user.userType
-        });
+        const userWithoutPassword: any = user.toObject();
+        delete userWithoutPassword.password;
+
+        res.status(200).json(userWithoutPassword);
     }
     catch (error) {
         console.log("Error in controller: login", error);
@@ -102,7 +98,8 @@ export const logout = async (req: any, res: any) => {
 export const checkAuth = (req: any, res: any) => {
     try {
         res.status(200).json(req.user);
-    } catch (error: any) {
+    }
+    catch (error: any) {
         console.log("Error in checkAuth controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
@@ -110,20 +107,86 @@ export const checkAuth = (req: any, res: any) => {
 
 export const updateProfile = async (req: any, res: any) => {
     try {
-        const { profilePic } = req.body;
+        const { personalData, medicalData } = req.body;
         const userID = req.user._id;
+        const updateData: any = {};
 
-        if (!profilePic) {
-            res.status(400).json({ message: "No Profile Picture Provided" });
+        // Destructure and validate personal info
+        if (personalData) {
+            const {
+                firstName,
+                lastName,
+                contact,
+                emergencyContact,
+                address,
+                profilePic
+            } = personalData;
+
+            if (firstName) updateData.firstName = firstName;
+            if (lastName) updateData.lastName = lastName;
+            if (contact) updateData.contact = contact;
+            if (emergencyContact) updateData.emergencyContact = emergencyContact;
+            if (address) updateData.address = address;
+
+            // Handle profile picture separately
+            if (profilePic) {
+                const uploadResponse = await cloudinary.uploader.upload(profilePic);
+                updateData.profilePic = uploadResponse.secure_url;
+            }
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(profilePic)
-        const updatedUser = User.findByIdAndUpdate(userID, { profilePic: uploadResponse.secure_url }, { new: true })
+        // Process medical data only for Patients
+        if (medicalData && req.user.userType === "Patient") {
+            const {
+                bloodType,
+                dateOfBirth,
+                height,
+                weight,
+                gender,
+                allergies,
+                chronicConditions,
+                currentMedications,
+                primaryPhysician,
+                physicianContact,
+                insuranceProvider,
+                policyNumber,
+                smokingStatus,
+                alcoholConsumption,
+                exerciseFrequency,
+                dietaryRestrictions,
+                additionalNotes
+            } = medicalData;
+
+            updateData.medicalInfo = {};
+
+            if (bloodType) updateData.medicalInfo.bloodType = bloodType;
+            if (dateOfBirth) updateData.medicalInfo.dateOfBirth = dateOfBirth;
+            if (height) updateData.medicalInfo.height = height;
+            if (weight) updateData.medicalInfo.weight = weight;
+            if (gender) updateData.medicalInfo.gender = gender;
+            if (allergies) updateData.medicalInfo.allergies = allergies;
+            if (chronicConditions) updateData.medicalInfo.chronicConditions = chronicConditions;
+            if (currentMedications) updateData.medicalInfo.currentMedications = currentMedications;
+            if (primaryPhysician) updateData.medicalInfo.primaryPhysician = primaryPhysician;
+            if (physicianContact) updateData.medicalInfo.physicianContact = physicianContact;
+            if (insuranceProvider) updateData.medicalInfo.insuranceProvider = insuranceProvider;
+            if (policyNumber) updateData.medicalInfo.policyNumber = policyNumber;
+            if (smokingStatus) updateData.medicalInfo.smokingStatus = smokingStatus;
+            if (alcoholConsumption) updateData.medicalInfo.alcoholConsumption = alcoholConsumption;
+            if (exerciseFrequency) updateData.medicalInfo.exerciseFrequency = exerciseFrequency;
+            if (dietaryRestrictions) updateData.medicalInfo.dietaryRestrictions = dietaryRestrictions;
+            if (additionalNotes) updateData.medicalInfo.additionalNotes = additionalNotes;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userID,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        ).select('-password');
 
         res.status(200).json(updatedUser);
-    }
-    catch (error: any) {
-        console.log("Error in updateProfile controller", error.message);
+    } catch (error: any) {
+        console.log("Error in updateProfile controller", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
