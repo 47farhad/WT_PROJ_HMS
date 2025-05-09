@@ -14,6 +14,7 @@ export const useAdminStore = create((set, get) => ({
     patient: null,
     isPatientLoading: false,
     isPatientsLoading: false,
+    isConvertingPatient: false,
 
     getPatients: async (page = 1, limit = 20) => {
         const isInitialLoad = page === 1;
@@ -76,6 +77,32 @@ export const useAdminStore = create((set, get) => ({
         catch (error) {
             set({isPatientLoading: false})
             toast.error(error.response?.data?.message || "Failed to fetch patient data");
+        }
+    },
+
+    convertToDoctor: async (patientId) => {
+        try {
+            set({isConvertingPatient: true})
+            const res = await axiosInstance.patch(`/admin/convertPatientToDoctor/${patientId}`);
+            toast.success("User converted to doctor successfully!");
+            set({isConvertingPatient: false})
+        }
+        catch (error) {
+            set({isConvertingPatient: false})
+            toast.error(error.response?.data?.message || "Failed to convert account");
+        }
+    },
+
+    convertToAdmin: async (patientId) => {
+        try {
+            set({isConvertingPatient: true})
+            const res = await axiosInstance.patch(`/admin/convertPatientToAdmin/${patientId}`);
+            toast.success("User converted to admin successfully!");
+            set({isConvertingPatient: false})
+        }
+        catch (error) {
+            set({isConvertingPatient: false})
+            toast.error(error.response?.data?.message || "Failed to convert account");
         }
     }
 }));

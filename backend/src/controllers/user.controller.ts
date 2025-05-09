@@ -59,12 +59,12 @@ export const getPatientDetails = async (req: any, res: any) => {
 
         const patient = await User.findById(patientId)
 
-        if(!patient){
-            return res.status(404).json({message: "Patient not found"});
+        if (!patient) {
+            return res.status(404).json({ message: "Patient not found" });
         }
 
-        if(patient.userType !== 'Patient'){
-            return res.status(404).json({message: "Patient not found"});
+        if (patient.userType !== 'Patient') {
+            return res.status(404).json({ message: "Patient not found" });
         }
 
         return res.status(200).json(patient);
@@ -73,4 +73,72 @@ export const getPatientDetails = async (req: any, res: any) => {
         console.log("Error in getPatientDetails controller", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
-}
+};
+
+export const convertToDoctor = async (req: any, res: any) => {
+    try {
+        const { id } = req.params;
+
+        const updatedUser = await User.findOneAndUpdate(
+            {
+                _id: id,
+                userType: 'Patient'
+            },
+            {
+                $set: { userType: 'Doctor' },
+                $unset: { medicalInfo: 1 }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedUser) {
+            return res.status(400).json({
+                message: 'Patient not found'
+            });
+        }
+
+        return res.status(200).json({
+            message: 'User successfully converted to Doctor',
+            data: updatedUser
+        });
+
+    } catch (error: any) {
+        return res.status(500).json({
+            message: 'Error converting user to Doctor',
+            error: error.message
+        });
+    }
+};
+
+export const convertToAdmin = async (req: any, res: any) => {
+    try {
+        const { id } = req.params;
+
+        const updatedUser = await User.findOneAndUpdate(
+            {
+                _id: id,
+                userType: 'Patient'
+            },
+            {
+                $set: { userType: 'Admin' },
+                $unset: { medicalInfo: 1 }
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+
+        if (!updatedUser) {
+            return res.status(400).json({ message: 'Patient not found' });
+        }
+
+        return res.status(200).json({ message: 'User successfully converted to Admin' });
+
+    } catch (error: any) {
+        return res.status(500).json({ message: 'Error converting user to Admin' });
+    }
+};
