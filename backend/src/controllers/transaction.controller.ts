@@ -51,6 +51,7 @@ export const getAllTransactions = async (req: any, res: any) => {
         {
           updatedAt: 1,
           type: 1,
+          referenceId: 1,
           amount: 1,
           status: 1,
         }

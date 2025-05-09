@@ -73,13 +73,10 @@ function PatientAppointments() {
   };
 
   return (
-    <div className="h-full w-full p-6 overflow-y-auto">
-      <div className="w-full max-w-screen-xl mx-auto">
+    <div className="h-full w-full p-5 pt-0 overflow-y-auto">
+      <div className="w-full mx-auto">
         <div>
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl text-[#243954] font-bold">
-              Your Appointments
-            </h3>
 
             <div className="flex items-center space-x-2">
               <span className=" text-[#243954] font-bold">Filter By:</span>
