@@ -105,6 +105,54 @@ const PatientPharmacy: React.FC = () => {
           stock: 15,
           description: "Used to treat asthma and breathing disorders.",
         },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
+        {
+          _id: "10",
+          name: "Salbutamol",
+          brand: "BreathEasy",
+          price: 7.99,
+          stock: 15,
+          description: "Used to treat asthma and breathing disorders.",
+        },
       ];
       setMedicines(dummyData);
     } catch (err) {
@@ -124,75 +172,72 @@ const PatientPharmacy: React.FC = () => {
   );
 
   return (
-    <div >
-      <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-bold text-[#243954] mb-4">Pharmacy</h1>
-        <input
-          type="text"
-          placeholder="Search medicines..."
-          className="w-1/5 mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
+    <div className="p-5 pt-0 flex flex-col flex-1 max-h-[calc(100vh-88px)]">
+      <input
+        type="text"
+        placeholder="Search medicines..."
+        className="w-1/5 mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+      />
 
-        {loading ? (
-          <div className="text-center py-8">Loading medicines...</div>
-        ) : null}
+      {loading ? (
+        <div className="text-center py-8">Loading medicines...</div>
+      ) : null}
 
-        <div className="overflow-y-auto max-h-98 rounded-xl shadow-lg border border-gray-300">
-          <table className="min-w-full">
-            <thead className="sticky top-0 bg-[#243954] text-white">
-              <tr className="bg-[#243954] text-white ">
-                <th className="py-3 px-4">Name</th>
-                <th className="py-3 px-4">Brand</th>
-                <th className="py-3 px-4">Description</th>
-                <th className="py-3 px-4">Price</th>
-                <th className="py-3 px-4">Stock</th>
-                <th className="py-3 px-4"></th>
+      <div className="overflow-y-scroll max-h-full rounded-xl shadow-lg border border-gray-300">
+        <table className="min-w-full">
+          <thead className="sticky top-0 bg-[#243954] text-white">
+            <tr className="bg-[#243954] text-white ">
+              <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">Brand</th>
+              <th className="py-3 px-4">Description</th>
+              <th className="py-3 px-4">Price</th>
+              <th className="py-3 px-4">Stock</th>
+              <th className="py-3 px-4"></th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="text-center py-6 text-gray-500">
+                  Loading medicines...
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-6 text-gray-500">
-                    Loading medicines...
+            ) : error ? (
+              <tr>
+                <td colSpan={6} className="text-center py-6 text-red-600">
+                  {error}
+                </td>
+              </tr>
+            ) : filteredMedicines.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center py-6 text-gray-500">
+                  No medicines found.
+                </td>
+              </tr>
+            ) : (
+              filteredMedicines.map((medicine) => (
+                <tr key={medicine._id} className="text-center border-b hover:bg-blue-50 ">
+                  <td className="py-3 px-4">{medicine.name}</td>
+                  <td className="py-3 px-4">{medicine.brand}</td>
+                  <td className="py-3 px-4">{medicine.description}</td>
+                  <td className="py-3 px-4">${medicine.price.toFixed(2)}</td>
+                  <td className="py-3 px-4">{medicine.stock > 0 ? medicine.stock : "Out of stock"}</td>
+                  <td className="py-3 px-4">
+                    <button
+                      className="bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1a2c42] disabled:opacity-50"
+                      onClick={() => handleOrder(medicine)}
+                      disabled={medicine.stock === 0}
+                    >
+                      Order
+                    </button>
                   </td>
                 </tr>
-              ) : error ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-6 text-red-600">
-                    {error}
-                  </td>
-                </tr>
-              ) : filteredMedicines.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-6 text-gray-500">
-                    No medicines found.
-                  </td>
-                </tr>
-              ) : (
-                filteredMedicines.map((medicine) => (
-                  <tr key={medicine._id} className="text-center border-b hover:bg-blue-50 ">
-                    <td className="py-3 px-4">{medicine.name}</td>
-                    <td className="py-3 px-4">{medicine.brand}</td>
-                    <td className="py-3 px-4">{medicine.description}</td>
-                    <td className="py-3 px-4">${medicine.price.toFixed(2)}</td>
-                    <td className="py-3 px-4">{medicine.stock > 0 ? medicine.stock : "Out of stock"}</td>
-                    <td className="py-3 px-4">
-                      <button
-                        className="bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1a2c42] disabled:opacity-50"
-                        onClick={() => handleOrder(medicine)}
-                        disabled={medicine.stock === 0}
-                      >
-                        Order
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );

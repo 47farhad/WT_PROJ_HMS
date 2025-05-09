@@ -28,7 +28,7 @@ function PatientLabtests() {
       ]
     },
     {
-      _id: "3",
+      _id: "4",
       name: "Diabetes Screening",
       description: "Tests blood glucose levels to screen for diabetes",
       duration: "1 hour",
@@ -40,7 +40,7 @@ function PatientLabtests() {
       ]
     },
     {
-      _id: "3",
+      _id: "5",
       name: "Diabetes Screening",
       description: "Tests blood glucose levels to screen for diabetes",
       duration: "1 hour",
@@ -50,7 +50,67 @@ function PatientLabtests() {
         "Bring list of medications",
         "Morning appointment only"
       ]
-    }
+    },
+    {
+      _id: "6",
+      name: "Diabetes Screening",
+      description: "Tests blood glucose levels to screen for diabetes",
+      duration: "1 hour",
+      price: 55.50,
+      requirements: [
+        "8-hour fasting required",
+        "Bring list of medications",
+        "Morning appointment only"
+      ]
+    },
+    {
+      _id: "7",
+      name: "Diabetes Screening",
+      description: "Tests blood glucose levels to screen for diabetes",
+      duration: "1 hour",
+      price: 55.50,
+      requirements: [
+        "8-hour fasting required",
+        "Bring list of medications",
+        "Morning appointment only"
+      ]
+    },
+    {
+      _id: "8",
+      name: "Diabetes Screening",
+      description: "Tests blood glucose levels to screen for diabetes",
+      duration: "1 hour",
+      price: 55.50,
+      requirements: [
+        "8-hour fasting required",
+        "Bring list of medications",
+        "Morning appointment only"
+      ]
+    },
+    {
+      _id: "9",
+      name: "Diabetes Screening",
+      description: "Tests blood glucose levels to screen for diabetes",
+      duration: "1 hour",
+      price: 55.50,
+      requirements: [
+        "8-hour fasting required",
+        "Bring list of medications",
+        "Morning appointment only"
+      ]
+    },
+    {
+      _id: "10",
+      name: "Diabetes Screening",
+      description: "Tests blood glucose levels to screen for diabetes",
+      duration: "1 hour",
+      price: 55.50,
+      requirements: [
+        "8-hour fasting required",
+        "Bring list of medications",
+        "Morning appointment only"
+      ]
+    },
   ]);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
@@ -63,9 +123,8 @@ function PatientLabtests() {
   };
 
   return (
-    <div className="h-full w-full p-6 overflow-y-auto">
-      <div className="w-full max-w-screen-xl mx-auto">
-      <h1 className="text-3xl font-bold text-[#243954] mb-4">Lab tests</h1>
+    <div className="h-full max-h-[calc(100vh-88px)] w-full p-5 pt-0 overflow-y-scroll">
+      <div>
         <div className="flex justify-between items-center mb-6">
           <input
             type="text"
