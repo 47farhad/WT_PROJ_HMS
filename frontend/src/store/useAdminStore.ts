@@ -91,5 +91,18 @@ export const useAdminStore = create((set, get) => ({
             set({isConvertingPatient: false})
             toast.error(error.response?.data?.message || "Failed to convert account");
         }
+    },
+
+    convertToAdmin: async (patientId) => {
+        try {
+            set({isConvertingPatient: true})
+            const res = await axiosInstance.patch(`/admin/convertPatientToAdmin/${patientId}`);
+            toast.success("User converted to admin successfully!");
+            set({isConvertingPatient: false})
+        }
+        catch (error) {
+            set({isConvertingPatient: false})
+            toast.error(error.response?.data?.message || "Failed to convert account");
+        }
     }
 }));

@@ -9,20 +9,27 @@ import ConfirmationModal from "../../components/ConfirmationModal";
 function AdminPatientDetails() {
 
     const { patientId } = useParams();
-    const { getPatientDetails, patient, convertToDoctor, isConvertingPatient } = useAdminStore();
+    const { getPatientDetails, patient, convertToDoctor, convertToAdmin, isConvertingPatient } = useAdminStore();
 
-    const [showDoctorButton, setShowDoctorButton] = useState(false);
+    const [showConvertButton, setShowConvertButton] = useState(false);
     const [doctorConfirmationShown, setDoctorConfirmationShown] = useState(false);
+    const [adminConfirmationShown, setAdminConfirmationShown] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
         getPatientDetails(patientId);
     }, [getPatientDetails, patientId]);
 
-    const handleConvertToDoctor = async () => {
-        await convertToDoctor(patientId);
+    const handleConvert = async () => {
+        if(doctorConfirmationShown){
+            await convertToDoctor(patientId);
+        }
+        else {
+            await convertToAdmin(patientId);
+        }
+
         navigate('Patients')
-    }
+    };
 
     return (
         (patient) &&
@@ -88,7 +95,7 @@ function AdminPatientDetails() {
 
                         <button
                             className="flex w-13 h-12 bg-white rounded-lg ml-auto hover:bg-[#FCFCFC] hover:cursor-pointer items-center justify-center relative"
-                            onClick={() => setShowDoctorButton(!showDoctorButton)}>
+                            onClick={() => setShowConvertButton(!showConvertButton)}>
                             <svg
                                 width="16"
                                 height="4"
@@ -101,13 +108,19 @@ function AdminPatientDetails() {
                                 <circle cx="14" cy="2" r="2" fill="#243954" />
                             </svg>
 
-                            {showDoctorButton && (
+                            {showConvertButton && (
                                 <div className="absolute right-0 top-full mt-1 w-auto min-w-[120px] bg-white rounded-md shadow-lg z-10 border border-gray-100">
                                     <div
                                         className="py-2 px-4 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 whitespace-nowrap"
-                                        onClick={() => { setShowDoctorButton(false); setDoctorConfirmationShown(true) }}
+                                        onClick={() => { setShowConvertButton(false); setDoctorConfirmationShown(true) }}
                                     >
                                         Convert to Doctor
+                                    </div>
+                                    <div
+                                        className="py-2 px-4 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 whitespace-nowrap"
+                                        onClick={() => { setShowConvertButton(false); setAdminConfirmationShown(true) }}
+                                    >
+                                        Convert to Admin
                                     </div>
                                 </div>
                             )}
@@ -298,11 +311,11 @@ function AdminPatientDetails() {
             </div>
 
             <ConfirmationModal 
-            isOpen={doctorConfirmationShown}
-            onConfirm={() => {setDoctorConfirmationShown(false); handleConvertToDoctor()}}
-            onCancel={() => {setDoctorConfirmationShown(false)}}
-            title={'Convert to Doctor'}
-            message={'Are you sure you want to convert this account to a doctor? This change is irreversible.'}
+            isOpen={doctorConfirmationShown || adminConfirmationShown}
+            onConfirm={() => {handleConvert(); setDoctorConfirmationShown(false); setAdminConfirmationShown(false);}}
+            onCancel={() => {setDoctorConfirmationShown(false); setAdminConfirmationShown(false);}}
+            title={`Convert to ${doctorConfirmationShown ? 'Doctor' : 'Admin'}`}
+            message={`Are you sure you want to convert this account to a ${doctorConfirmationShown ? 'Doctor' : 'Admin'}? This change is irreversible.`}
             />
         </>)
     )
