@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import BookAppointment from "../../components/BookAppointment";
-import { useAppointmentStore } from "../../store/useAppointmentStore"; // Import the store
-import axios from "axios"; // Import axios for API calls
+import { Link, useNavigate } from "react-router-dom";
+import BookAppointment from "../Patient/BookAppointment";
+import { useAppointmentStore } from "../../store/useAppointmentStore"; 
 
 function PatientDashboard() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
-  const [loading, setLoading] = useState(true); // Loading state
+  const [loading, setLoading] = useState(true); 
 
-  const { getDoctors, doctors = [] } = useAppointmentStore(); // Ensure doctors defaults to an empty array
+  const { getDoctors, doctors = [] } = useAppointmentStore(); 
+  const { createAppointment } = useAppointmentStore(); 
+  const navigate = useNavigate();
 
   // Fetch doctors from the backend
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        await getDoctors(); // Call the function to fetch doctors
-        setLoading(false); // Set loading to false after fetching
+        await getDoctors(); 
+        setLoading(false); 
       } catch (error) {
         console.error("Error fetching doctors:", error);
         setLoading(false);
@@ -30,13 +31,9 @@ function PatientDashboard() {
     console.log("Appointment Data:", appointmentData);
   
     try {
-      // Replace with your backend API endpoint
-      const response = await axios.post("http://localhost:5173/api/appointments", appointmentData);
-  
-      // Handle success response
-      console.log("Appointment created successfully:", response.data);
+      await createAppointment(appointmentData);
+
       alert("Appointment booked successfully!");
-  
       setShowBookingForm(false); // Close the form after booking
     } catch (error) {
       // Handle error response
@@ -45,11 +42,15 @@ function PatientDashboard() {
     }
   };
   const handleCancel = () => {
-    setShowBookingForm(false); // Close the form when "Cancel" is clicked
+    setShowBookingForm(false); 
+  };
+
+  const handleBookAppointmentClick = (doctorId) => {
+    navigate(`/BookAppointment/${doctorId}`); // Navigate with doctorId in URL
   };
 
   return (
-    <div className="h-full w-full p-6 bg-gray-100">
+    <div className="overflow-y-auto h-full w-full p-6 bg-gray-100">
       <div className="max-w-screen-xl mx-auto">
         <h1 className="text-3xl font-bold text-[#243954] mb-6">Welcome to Your Dashboard</h1>
 
@@ -136,10 +137,7 @@ function PatientDashboard() {
                           " " +
                           doctor.lastName}</h3>
                   <button
-                    onClick={() => {
-                      setSelectedDoctor(doctor);
-                      setShowBookingForm(true);
-                    }}
+                    onClick={() => handleBookAppointmentClick(doctor._id)}
                     className="mt-4  bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#4c6280]"
                   >
                     Book Appointment

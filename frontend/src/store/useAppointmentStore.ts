@@ -2,7 +2,6 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 
-
 export const useAppointmentStore = create((set, get) => ({
     appointments: {
         data: [],
@@ -14,10 +13,12 @@ export const useAppointmentStore = create((set, get) => ({
         }
     },
     doctors: [],
+    appointmentDoctor: null,
     isAppointmentLoading: false,
     isAppointmentsLoading: false,
+    isAppointmentBeingCreated: false,
     selectedAppointment: null,
-    
+
 
     getAllAppointments: async (page = 1, limit = 20) => {
         const isInitialLoad = page === 1;
@@ -40,8 +41,8 @@ export const useAppointmentStore = create((set, get) => ({
             set(state => ({
                 appointments: {
                     data: isInitialLoad
-                    ? res.data.appointmentsData:
-                    [...state.appointments.data, ...res.data.appointmentsData],
+                        ? res.data.appointmentsData :
+                        [...state.appointments.data, ...res.data.appointmentsData],
                     pagination: {
                         currentPage: page,
                         hasMore: res.data.pagination?.hasMore || false,
@@ -80,59 +81,38 @@ export const useAppointmentStore = create((set, get) => ({
             toast.error(error.response?.data?.message || "Failed to fetch appointment details");
         }
     },
-    createAppointment: async (datetime, doctorId, description, page = 1, limit = 50) => {
-        const isInitialLoad = page === 1;
+   createAppointment: async (appointmentData) => {
+    try {
+        set({ isAppointmentbeingCreated: true });
 
-        if (isInitialLoad) {
-            set({ isAppointmentLoading: true });
-        } else {
-            set(state => ({
-                appointments: {
-                    ...state.appointments,
-                    pagination: {
-                        ...state.appointments.pagination,
-                        isPageLoading: true
-                    }
-                }
-            }));
-        }
-        try {
-            const appointmentData = {
-                datetime,
-                doctorId,
-                description
+        const res = await axiosInstance.post(`/appointments/createAppointment`, appointmentData);
+
+        set({ isAppointmentbeingCreated: false });
+
+        toast.success('Appointment created successfully');
+    }
+    catch (error) {
+        set({ isAppointmentbeingCreated: false });
+
+        // Handle conflict errors (409 status)
+        if (error.response?.status === 409) {
+            const message = error.response.data?.message;
+
+            if (message === "You have already booked this appointment") {
+                toast.error("You have already booked this exact appointment.");
+            } else if (message === "You already have an appointment at this time with another doctor") {
+                toast.error("You already have an appointment at this time with another doctor.");
+            } else if (message === "Appointment already confirmed and paid for by another user") {
+                toast.error("Appointment already confirmed and paid for by another user.");
+            } else {
+                toast.error(message || "Appointment conflict occurred.");
             }
-            const res = await axiosInstance.post(`/appointments/createAppointment}`, appointmentData);
-            set(state => ({
-                appointments: {
-                    data: isInitialLoad
-                        ? res.data.appointments
-                        : [...res.data.appointments, ...state.appointments.data],
-                    pagination: {
-                        currentPage: page,
-                        hasMore: res.data.pagination?.hasNextPage || false,
-                        isPageLoading: false,
-                        totalPages: res.data.pagination?.totalPages || 1
-                    }
-                },
-                isAppointmentLoading: false
-            }));
-
+        } else {
+            // Handle all other errors
+            toast.error(error.response?.data?.message || "Failed to create appointment");
         }
-        catch (error) {
-            set({
-                isAppointmentsLoading: false,
-                appointments: {
-                    ...get().appointments,
-                    pagination: {
-                        ...get().appointments.pagination,
-                        isPageLoading: false
-                    }
-                }
-            });
-            toast.error(error.response?.data?.message || "Failed to load appointments");
-        }
-    },
+    }
+},
     getDoctors: async () => {
         try {
             const resdoctors = await axiosInstance.get('/appointments/getDoctors');
@@ -141,14 +121,23 @@ export const useAppointmentStore = create((set, get) => ({
         catch (error) {
             toast.error(error.response?.data?.message || "Failed to load doctors");
         }
-
     },
-    setSelectedAppointment: (appointment:any) => {
-        set({selectedAppointment: appointment});
-    },
-    deleteAppointment: async (appointmentId) => {
+    getDoctor: async (doctorId) => {
         try {
-            const res = await axiosInstance.delete(`/appointments/deleteAppointment/${appointmentId}`);
+            const doctor = await axiosInstance.get(`/appointments/getDoctor/${doctorId}`);
+            set({ appointmentDoctor: doctor.data })
+        }
+        catch (error) {
+            toast.error(error.response?.data?.message || "Failed to load doctors");
+        }
+    },
+
+    updateAppointment: async (appointmentId) => {
+        try {
+            const res = await axiosInstance.put(`/appointments/updateAppointment/${appointmentId}`, {
+                status: "cancelled"
+            });
+
             set(state => ({
                 appointments: {
                     data: state.appointments.data.filter(appointment => appointment._id !== appointmentId),
@@ -159,8 +148,11 @@ export const useAppointmentStore = create((set, get) => ({
                 },
                 selectedAppointment: null,
             }));
+
+            toast.success(res.data.message || "Appointment cancelled successfully");
         } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to delete appointment");
+            toast.error(error.response?.data?.message || "Failed to cancel appointment");
         }
-    },
+    }
+
 }));

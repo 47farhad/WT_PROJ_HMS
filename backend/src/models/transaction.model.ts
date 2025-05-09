@@ -2,44 +2,29 @@ import mongoose from 'mongoose';
 
 const transactionSchema = new mongoose.Schema(
   {
-    cardNumber: {
-      type: Number,
-      required: true,
+    userId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
     },
-    cardName: {
+    referenceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: 'type', 
+    },
+    type: {
       type: String,
-      required: true,
-    },
-    expiryDate: {
-      type: Date,
-      required: true,
-    },
-    cvv: {
-      type: Number,
-      required: true,
-    },
-
-    transactionType: {
-      type: String,
-      enum: ['Appointment', 'Lab Test', 'Medication'],
+      enum: ['Appointment', 'LabTest', 'Medication'], 
       required: true,
     },
     amount: {
       type: Number,
-      required: true,
+      default: 50
     },
     status: {
       type: String,
       enum: ['unpaid', 'paid', 'failed'],
       default: 'unpaid',
-    },
-    paymentMethod: {
-      type: String,
-      default: 'card',
-    },
-    transactionDate: {
-      type: Date,
-      default: Date.now,
     },
   },
   {

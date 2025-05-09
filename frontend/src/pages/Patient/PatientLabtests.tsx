@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { axiosInstance } from "../../lib/axios";
-import BookLabTest from "../../components/BookLabTest";
 
 function PatientLabtests() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -123,20 +121,6 @@ function PatientLabtests() {
           </p>
         )}
       </div>
-
-      {showBookingModal && selectedTest && (
-        <BookLabTest
-          test={selectedTest}
-          onClose={() => {
-            setShowBookingModal(false);
-            setSelectedTest(null);
-          }}
-          onSuccess={() => {
-            setShowBookingModal(false);
-            setSelectedTest(null);
-          }}
-        />
-      )}
     </div>
   );
 }

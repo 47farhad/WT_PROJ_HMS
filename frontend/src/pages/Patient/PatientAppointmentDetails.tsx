@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
-
+import { format } from "date-fns";
 function PatientAppointmentDetails() {
   const { appointmentId } = useParams();
   const navigate = useNavigate();
@@ -9,8 +9,10 @@ function PatientAppointmentDetails() {
     selectedAppointment,
     getAppointmentDetails,
     isAppointmentLoading,
-    deleteAppointment,
+    updateAppointment,
   } = useAppointmentStore();
+
+  console.log(selectedAppointment, appointmentId);
 
   useEffect(() => {
     if (appointmentId) {
@@ -39,8 +41,8 @@ function PatientAppointmentDetails() {
     );
 
   const handleCancelAppointment = () => {
-    if (window.confirm("Are you sure you want to delete this appointment?")) {
-      deleteAppointment(appointmentId); 
+    if (window.confirm("Are you sure you want to cancel this appointment?")) {
+      updateAppointment(appointmentId);
     }
   };
 
@@ -70,13 +72,12 @@ function PatientAppointmentDetails() {
               Back to Appointments
             </button>
             <span
-              className={`px-3 py-1 rounded-full text-sm font-medium ${
-                selectedAppointment.status === "confirmed"
+              className={`px-3 py-1 rounded-full text-sm font-medium ${selectedAppointment.status === "confirmed"
                   ? "bg-green-100 text-green-800"
                   : selectedAppointment.status === "cancelled"
-                  ? "bg-red-100 text-red-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
             >
               {selectedAppointment.status}
             </span>
@@ -132,7 +133,28 @@ function PatientAppointmentDetails() {
                     <div>
                       <p className="text-sm text-gray-500">Datetime</p>
                       <p className="text-gray-700">
-                        {selectedAppointment.datetime}
+                        {format(new Date(selectedAppointment.datetime), "d-MMM-yyyy")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    <svg
+                      className="w-5 h-5 text-gray-500 mr-2"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <div>
+                      <p className="text-sm text-gray-500">Time</p>
+                      <p className="text-gray-700">
+                        {format(new Date(selectedAppointment.datetime), "h:mm a")}
                       </p>
                     </div>
                   </div>
@@ -171,27 +193,29 @@ function PatientAppointmentDetails() {
                   <div>
                     <p className="text-sm text-gray-500">Created At</p>
                     <p className="text-gray-700">
-                      {selectedAppointment.createdAt}
+                    {format(new Date(selectedAppointment.createdAt), "d-MMM-yyyy h:mm a")}
                     </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Last Updated</p>
                     <p className="text-gray-700">
-                    {selectedAppointment.updatedAt}
+                    {format(new Date(selectedAppointment.updatedAt), "d-MMM-yyyy h:mm a")}
                     </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Delete Appointment Button */}
+            {/* Cancel Appointment Button */}
             <div className="flex justify-end mt-6">
+            {selectedAppointment.status !== "cancelled" && (
               <button
                 onClick={handleCancelAppointment}
                 className="px-6 py-2 bg-[#1a2c42] text-white rounded-lg hover:bg-[#162636]"
               >
-                Delete Appointment
+                Cancel Appointment
               </button>
+            )}
             </div>
           </div>
         </div>
