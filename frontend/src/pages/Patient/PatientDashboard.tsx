@@ -50,13 +50,13 @@ function PatientDashboard() {
   };
 
   return (
-    <div className="overflow-y-auto p-5 pt-0 h-full w-full bg-gray-100">
+    <div className="overflow-y-auto p-5 pt-0 h-full w-full bg-white">
       {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Appointments */}
         <Link
           to="/Appointments"
-          className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+          className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
         >
           <div className="flex items-center space-x-4">
             <div className="bg-blue-100 text-blue-600 p-4 rounded-full">
@@ -72,7 +72,7 @@ function PatientDashboard() {
         {/* Payments */}
         <Link
           to="/Payments"
-          className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+          className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
         >
           <div className="flex items-center space-x-4">
             <div className="bg-green-100 text-green-600 p-4 rounded-full">
@@ -88,7 +88,7 @@ function PatientDashboard() {
         {/* Pharmacy */}
         <Link
           to="/Pharmacy"
-          className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+          className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
         >
           <div className="flex items-center space-x-4">
             <div className="bg-purple-100 text-purple-600 p-4 rounded-full">
@@ -104,7 +104,7 @@ function PatientDashboard() {
         {/* Lab Tests */}
         <Link
           to="/LabTests"
-          className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+          className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
         >
           <div className="flex items-center space-x-4">
             <div className="bg-yellow-100 text-yellow-600 p-4 rounded-full">
@@ -128,7 +128,7 @@ function PatientDashboard() {
             {doctors.map((doctor) => (
               <div
                 key={doctor.id}
-                className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg transition"
+                className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
               >
                 <h3 className="text-lg font-semibold text-gray-800">{doctor.firstName +
                   " " +

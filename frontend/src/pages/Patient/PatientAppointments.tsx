@@ -76,12 +76,12 @@ function PatientAppointments() {
     <div className="h-full w-full p-5 pt-0 overflow-y-auto">
       <div className="w-full mx-auto">
         <div>
-          <div className="flex justify-between items-center mb-4">
+          <div className="p-2 flex justify-between items-center mb-4">
 
             <div className="flex items-center space-x-2">
               <span className=" text-[#243954] font-bold">Filter By:</span>
               <select
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+                className="border border-gray-300 px-3 py-2 rounded-lg "
                 onChange={(e) => setShowSubFilter(e.target.value)}
                 value={showSubFilter}
               >
@@ -93,7 +93,7 @@ function PatientAppointments() {
 
               {showSubFilter === "status" && (
                 <select
-                  className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+                  className="border border-gray-300 px-3 py-2 rounded-lg "
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                 >
@@ -108,7 +108,7 @@ function PatientAppointments() {
                 <input
                   type="text"
                   placeholder="Doctor's name"
-                  className="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#243954] outline-none"
+                  className="px-3 py-2 rounded-lg border border-gray-300 "
                   value={doctorFilter}
                   onChange={(e) => setDoctorFilter(e.target.value)}
                 />
@@ -119,7 +119,7 @@ function PatientAppointments() {
                   <input
                     type="date"
                     name="startDate"
-                    className="px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#243954] outline-none"
+                    className="px-2 py-2 rounded-lg border border-gray-300 "
                     value={startDate}
                     onChange={handleDateChange}
                   />
@@ -127,7 +127,7 @@ function PatientAppointments() {
                   <input
                     type="date"
                     name="endDate"
-                    className="px-2 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#243954] outline-none"
+                    className="px-2 py-2 rounded-lg border border-gray-300 "
                     value={endDate}
                     onChange={handleDateChange}
                   />

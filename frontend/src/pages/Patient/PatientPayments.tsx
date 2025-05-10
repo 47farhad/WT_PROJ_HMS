@@ -60,7 +60,7 @@ const PatientPayments: React.FC = () => {
         <div className="flex space-x-4 items-center">
           <label className="font-bold text-[#243954]">Filter by:</label>
           <select
-            className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+            className="border border-gray-300 px-3 py-2 rounded-lg "
             value={filterType}
             onChange={(e) => {
               setFilterType(e.target.value);
@@ -77,7 +77,7 @@ const PatientPayments: React.FC = () => {
 
           {filterType === 'status' && (
             <select
-              className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+              className="border border-gray-300 px-3 py-2 rounded-lg "
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
             >
@@ -90,7 +90,7 @@ const PatientPayments: React.FC = () => {
 
           {filterType === 'type' && (
             <select
-              className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+              className="border border-gray-300 px-3 py-2 rounded-lg "
               value={filterValue}
               onChange={(e) => setFilterValue(e.target.value)}
             >
@@ -105,14 +105,14 @@ const PatientPayments: React.FC = () => {
             <div className="flex space-x-2">
               <input
                 type="date"
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+                className="border border-gray-300 px-3 py-2 rounded-lg "
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
               />
               <span className="text-gray-600 text-sm">to</span>
               <input
                 type="date"
-                className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+                className="border border-gray-300 px-3 py-2 rounded-lg "
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
               />
