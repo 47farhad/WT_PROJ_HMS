@@ -1,20 +1,20 @@
 import mongoose from "mongoose";
 
 const labTestSchema = new mongoose.Schema({
-    name:{
+    name: {
         type: String,
     },
     result: {
         type: String,
     },
     datetime: {
-    type: Date,
-    required: true,
+        type: Date,
+        required: true,
     }
 },
     {
         timestamps: true
-      }
+    }
 
 );
-    export default mongoose.model('Lab Test', labTestSchema);
+export default mongoose.model('Lab Test', labTestSchema);

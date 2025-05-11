@@ -76,6 +76,7 @@ export const getAllTransactions = async (req: any, res: any) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const updateTransaction = async (req: any, res: any) => {
   const transactionId = req.params.id;
   const { status } = req.body;
@@ -135,6 +136,7 @@ export const updateTransaction = async (req: any, res: any) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
  export const getTransactionDetails = async (req: any, res: any) => {
   const reqUser = req.user;
   try {
