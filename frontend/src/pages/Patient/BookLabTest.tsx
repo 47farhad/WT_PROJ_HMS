@@ -1,60 +1,69 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAppointmentStore } from "../../store/useAppointmentStore";
+import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
 
-
-function BookAppointment() {
-  const { doctorId } = useParams();
+function BookLabTest() {
+  const { labTestId } = useParams();  // Extract labTestId from the URL
   const navigate = useNavigate();
-  const {getDoctor, appointmentDoctor, createAppointment } = useAppointmentStore();
+  const { getLabTestDetails, bookLabTest } = usePatientLabTestStore();
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [description, setDescription] = useState("");
+  const [labTest, setLabTest] = useState(null);
 
   const availableTimeSlots = [
+    "8:00 AM",
+    "8:30 AM",
     "9:00 AM",
+    "9:30 AM",
     "10:00 AM",
+    "10:30 AM",
     "11:00 AM",
+    "11:30 AM",
     "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
   ];
 
   useEffect(() => {
-    getDoctor(doctorId)
-  }, [getDoctor, doctorId]);
+    const fetchLabTest = async () => {
+      // Fetch the test details based on the labTestId
+      await getLabTestDetails(labTestId);  // This should set the selectedLabTest in the store
+
+      const testDetails = usePatientLabTestStore.getState().selectedLabTest;
+      console.log("Fetched Lab Test:", testDetails);
+      if (testDetails) {
+        setLabTest(testDetails);  // Set labTest state to display test name
+      }
+    };
+
+    fetchLabTest();
+  }, [getLabTestDetails, labTestId]);
 
   const handleBookNow = async () => {
-    if (!selectedDate || !selectedTime || !description) {
-      alert("Please fill all fields before booking.");
+    if (!selectedDate || !selectedTime) {
+      alert("Please select both a date and time.");
       return;
     }
 
+    // Combine the selected date and time to create the full datetime string
     const localDateTimeString = `${selectedDate} ${selectedTime}`;
     const localDate = new Date(localDateTimeString);
-
     const combinedDateTime = localDate.toISOString();
 
-    const appointmentData = {
-      doctorId,
+    const labTestData = {
+      offeredTestId: labTestId,
       datetime: combinedDateTime,
-      description,
     };
 
-    await createAppointment(appointmentData);
-    navigate('/Dashboard')
+    // Call the bookLabTest function
+    await bookLabTest(labTestData);
+    navigate('/Labtests');  // Redirect to the Payments page after booking
   };
 
-
-  if (!appointmentDoctor) {
+  if (!labTest) {
     return (
-      <div>
-        Loading
+      <div className="text-center p-10">
+        Loading test details...
       </div>
-    )
+    );
   }
 
   return (
@@ -67,11 +76,10 @@ function BookAppointment() {
         }}
       ></div>
 
-      {/* Appointment Form */}
+      {/* LabTest Form */}
       <div className="relative bg-white p-6 rounded-lg shadow-lg max-w-lg w-full z-10">
         <h2 className="text-2xl font-bold text-[#243954] mb-6 text-center">
-          Book Appointment with Dr.{" "}
-          <span className="text-[#243954]">{(appointmentDoctor.firstName + ' ' + appointmentDoctor.lastName) || "Loading..."}</span>
+          Book Test ({labTest.name})  {/* Display the test name */}
         </h2>
 
         {/* Date Picker */}
@@ -85,7 +93,7 @@ function BookAppointment() {
           <input
             type="date"
             id="date"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             value={selectedDate}
             min={new Date().toISOString().split("T")[0]} 
             onChange={(e) => setSelectedDate(e.target.value)}
@@ -102,7 +110,7 @@ function BookAppointment() {
           </label>
           <select
             id="time"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             value={selectedTime}
             onChange={(e) => setSelectedTime(e.target.value)}
           >
@@ -115,39 +123,16 @@ function BookAppointment() {
           </select>
         </div>
 
-        {/* Description */}
-        <div className="mb-6">
-          <label
-            htmlFor="description"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Description
-          </label>
-          <textarea
-            id="description"
-            rows="4"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
-            placeholder="Enter a brief description of your appointment"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          ></textarea>
-        </div>
-
         {/* Buttons */}
         <div className="flex space-x-4">
-          {/* Book Now Button */}
           <button
             onClick={handleBookNow}
             className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#4c6280] transition"
           >
             Book Now
           </button>
-
-          {/* Cancel Button */}
           <button
-            onClick={() => {
-              navigate("/Dashboard");
-            }}
+            onClick={() => navigate("/ViewLabTests")}
             className="w-full bg-[#e0f2fe] text-[#243954] px-4 py-2 rounded-lg hover:bg-[#cfe8f9] transition"
           >
             Cancel
@@ -158,4 +143,4 @@ function BookAppointment() {
   );
 }
 
-export default BookAppointment;
+export default BookLabTest;

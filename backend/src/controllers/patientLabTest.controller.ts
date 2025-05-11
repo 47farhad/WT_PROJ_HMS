@@ -6,23 +6,23 @@ import OfferedTest from '../models/offeredTest.model.js';
 import { createTransaction } from './transaction.controller.js';
 
 export const bookLabTest = async (req: any, res: any) => {
-    const { name, datetime } = req.body;
+    const { offeredTestId, datetime } = req.body;
     const reqUser = req.user;
     const session = await mongoose.startSession();
 
     try {
         session.startTransaction();
 
-        if (!name || !datetime) {
+        if (!offeredTestId || !datetime) {
             await session.abortTransaction();
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Prevent booking the same test and time
+        // Prevent booking the same test 
         const duplicateBySameUser = await PatientLabTest.findOne({
-            name,
-            datetime: new Date(datetime),
+            offeredTestId,
             patientId: reqUser._id,
+            status: { $ne: 'cancelled' }
         }).session(session);
 
         if (duplicateBySameUser) {
@@ -34,6 +34,7 @@ export const bookLabTest = async (req: any, res: any) => {
         const userConflictAtSameTime = await PatientLabTest.findOne({
             datetime: new Date(datetime),
             patientId: reqUser._id,
+            status: { $ne: 'cancelled' }
         }).session(session);
 
         if (userConflictAtSameTime) {
@@ -43,7 +44,7 @@ export const bookLabTest = async (req: any, res: any) => {
 
         // Check if someone else has already booked and paid
         const existingLabTest = await PatientLabTest.findOne({
-            name,
+            offeredTestId,
             datetime: new Date(datetime),
         }).session(session);
 
@@ -59,18 +60,18 @@ export const bookLabTest = async (req: any, res: any) => {
                 return res.status(409).json({ message: 'PatientLabTest already confirmed and paid for by another user' });
             }
         }
-        const offeredTest = await OfferedTest.findById(name).session(session);
+        const offeredTest = await OfferedTest.findById(offeredTestId).session(session);
         if (!offeredTest || offeredTest.status !== 'available') {
             await session.abortTransaction();
             return res.status(400).json({ message: 'Selected lab test is not available' });
         }
 
 
-        // book new LabTest
         const newPatientLabTest = new PatientLabTest({
-            name,
+            offeredTestId,
             datetime,
             patientId: reqUser._id,
+            name: offeredTest.name, 
         });
 
         await newPatientLabTest.save({ session });
@@ -120,8 +121,8 @@ export const getAllLabTests = async (req: any, res: any) => {
             // Lookup to join with offeredtests collection
             {
                 $lookup: {
-                    from: "offeredTest",
-                    localField: "name",
+                    from: "offeredtests",
+                    localField: "offeredTestId",
                     foreignField: "_id",
                     as: "testDetails"
                 }
@@ -208,25 +209,18 @@ export const cancelLabTest = async (req: any, res: any) => {
     }
 };
 export const getLabTestDetails = async (req: any, res: any) => {
-    const reqUser = req.user;
     try {
-        const patientLabTestId = req.params.id;
+        const labTestId = req.params.id;
 
-        const patientLabTest = await PatientLabTest.findById(patientLabTestId);
+        const offeredlabTest = await OfferedTest.findById(labTestId);
 
-        if (!patientLabTest) {
-            return res.status(404).json({ message: 'PatientLabTest not found' });
-        }
-        if (reqUser.userType === "Patient") {
-            if (patientLabTest.patientId.toString() !== reqUser._id.toString()) {
-                return res.status(403).json({ message: 'Forbidden - Not Authorized' });
-            }
+        if (!offeredlabTest) {
+            return res.status(404).json({ message: 'OfferedLabTest not found' });
         }
 
-        return res.status(200).json({ patientLabTest });
-    }
-    catch (error) {
+        return res.status(200).json({ offeredlabTest });
+    } catch (error) {
         console.log("Error in controller: getLabTestDetails", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
-}
+};

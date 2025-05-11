@@ -14,7 +14,7 @@ export const useLabTestStore = create((set, get) => ({
             set({ isOfferedLabTestsLoading: true })
             const res = await axiosInstance.get('/labTests/getTests/');
 
-            set({ offeredLabTests: res.data })
+            set({ offeredLabTests: res.data.labTests });
             set({ isOfferedLabTestsLoading: false })
         }
         catch (error) {
