@@ -21,7 +21,7 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, title, message, showLo
                         </button>
                         <button
                             onClick={onConfirm}
-                            className={`px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center ${showLoading ? 'opacity-75 cursor-not-allowed' : ''
+                            className={`px-4 py-2 bg-[#243954] text-white rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center ${showLoading ? 'opacity-75 cursor-not-allowed' : ''
                                 }`}
                             disabled={showLoading}
                         >

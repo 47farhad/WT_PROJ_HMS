@@ -19,23 +19,40 @@ export const getOfferedLabTests = async (req: any, res: any) => {
     try {
         const reqUserType = req.user.userType;
 
-        let labTests;
-        if (reqUserType === 'Admin') {
-            labTests = await OfferedTest.find({});
-        } else {
-            labTests = await OfferedTest.find(
-                { status: 'available' },
-                { status: 0 }
-            );
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 20;
+        const skip = (page - 1) * limit;
+
+        let query = {};
+        if (reqUserType !== 'Admin') {
+            query = { status: 'available' };
         }
 
-        res.status(200).json(labTests);
+        const labTests = await OfferedTest.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+
+        const total = await OfferedTest.countDocuments(query);
+        const totalPages = Math.ceil(total / limit);
+
+        res.status(200).json({
+            labTests,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                hasMore: page < totalPages,
+                totalItems: total
+            }
+        });
 
     } catch (error) {
         console.log("Error in getOfferedLabTests controller", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 
 export const deleteLabTest = async (req: any, res: any) => {
     try {

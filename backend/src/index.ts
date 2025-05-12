@@ -8,6 +8,7 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import appointmentRoutes from "./routes/appointment.route.js";
 import transactionRoutes from "./routes/transaction.routes.js";
+import patientLabTestRoutes from "./routes/patientLabTest.route.js";
 import pharmacyRoutes from "./routes/pharmacy.route.js"
 import messageRoutes from "./routes/message.route.js";
 import adminRoutes from "./routes/adminControls.route.js"
@@ -27,7 +28,6 @@ app.use(
     })
 );
 
-
 app.use("/api/auth", authRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/transactions",transactionRoutes)
@@ -36,6 +36,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/labTests", labTestRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
 app.use("/api/order", orderRoutes)
+app.use("/api/patientLabTests",patientLabTestRoutes)
 
 
 server.listen(PORT, () => {

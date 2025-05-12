@@ -1,5 +1,6 @@
 import Transaction from '../models/transaction.model.js';
 import Appointment from '../models/appointment.model.js';
+import PatientLabTest from '../models/patientLabTest.model.js';
 
 
 export const createTransaction = async (transactionData: any, session: any) => {
@@ -79,57 +80,77 @@ export const getAllTransactions = async (req: any, res: any) => {
 export const updateTransaction = async (req: any, res: any) => {
   const transactionId = req.params.id;
   const { status } = req.body;
+
   try {
     const transaction = await Transaction.findById(transactionId);
     if (!transaction) {
       return res.status(404).json({ message: 'Transaction not found' });
     }
 
-    // If the status is 'Paid', check if someone else has already paid for the same appointment or lab test
+    // If the status is 'paid', ensure no duplicate paid transaction exists
     if (status === 'paid') {
       let existingPaidTransaction;
 
-      // Check for conflicting paid transaction for the same Appointment
-      if (transaction.type === 'Appointment') {
+      if (transaction.type === 'Appointment' || transaction.type === 'LabTest') {
         existingPaidTransaction = await Transaction.findOne({
-          type: 'Appointment',
+          type: transaction.type,
           status: 'paid',
-          _id: { $ne: transactionId }, // Exclude the current transaction
-          appointmentId: transaction.referenceId // if this is referencing an appointment
+          _id: { $ne: transactionId }, // exclude current transaction
+          referenceId: transaction.referenceId
         });
       }
 
-
-      if (existingPaidTransaction ) {
-        // Another user has already paid for the same appointment or lab test
+      if (existingPaidTransaction) {
+        // Mark current transaction as failed
         transaction.status = 'failed';
         await transaction.save();
 
-        // Cancel the associated appointment or lab test based on the transaction type
+        // Cancel the associated Appointment or LabTest
         if (transaction.type === 'Appointment') {
           const appointment = await Appointment.findById(transaction.referenceId);
-
           if (appointment) {
             appointment.status = 'cancelled';
             await appointment.save();
           }
         }
 
-        return res.status(400).json({ message: 'Transaction failed. Appointment already confirmed by another user.' });
+        if (transaction.type === 'LabTest') {
+          const labTest = await PatientLabTest.findById(transaction.referenceId);
+          if (labTest) {
+            labTest.status = 'cancelled';
+            await labTest.save();
+          }
+        }
+
+        return res.status(400).json({ message: 'Transaction failed. Already confirmed by another user.' });
       }
     }
 
-    // If no conflicting transaction, update the status to 'Paid' or 'Unpaid' based on user input
+    // No conflict — proceed to update transaction status
     transaction.status = status;
     await transaction.save();
-    if (status === 'paid' && transaction.type === 'Appointment') {
-      const appointment = await Appointment.findById(transaction.referenceId);
-      if (appointment) {
-        appointment.status = 'confirmed';
-        await appointment.save();
+
+    // If paid, confirm appointment/lab test
+    if (status === 'paid') {
+      if (transaction.type === 'Appointment') {
+        const appointment = await Appointment.findById(transaction.referenceId);
+        if (appointment) {
+          appointment.status = 'confirmed';
+          await appointment.save();
+        }
+      }
+
+      if (transaction.type === 'LabTest') {
+        const labTest = await PatientLabTest.findById(transaction.referenceId);
+        if (labTest) {
+          labTest.status = 'confirmed';
+          await labTest.save();
+        }
       }
     }
+
     return res.status(200).json({ message: 'Transaction updated successfully', transaction });
+
   } catch (error: any) {
     console.error("Error in updateTransaction:", error.message);
     return res.status(500).json({ message: "Internal Server Error" });
