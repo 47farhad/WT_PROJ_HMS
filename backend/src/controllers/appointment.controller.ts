@@ -3,7 +3,6 @@ import Appointment from '../models/appointment.model.js';
 import User from '../models/user.model.js';
 import Transaction from '../models/transaction.model.js'
 
-
 import { createTransaction } from './transaction.controller.js';
 
 export const createAppointment = async (req: any, res: any) => {
@@ -177,66 +176,98 @@ export const getAppointmentDetails = async (req: any, res: any) => {
 export const getAllAppointments = async (req: any, res: any) => {
   try {
     const reqUser = req.user;
+    const isPatient = reqUser.userType === 'Patient';
 
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
 
-    const appointmentsList = await Appointment.aggregate([
-      // Match appointments for the specific patient
-      { $match: (reqUser.userType === 'Patient' ? {patientId: reqUser._id} : {doctorId: reqUser._id}) },
-
-      // Sort by createdAt in descending order
-      { $sort: { createdAt: -1 } },
-
-      // Skip and limit for pagination
-      { $skip: skip },
-      { $limit: limit },
-
-      // Lookup to join with Users collection to get doctor details
+    // Start with base pipeline
+    const pipeline: any[] = [
       {
-        $lookup: {
-          from: "users", // assuming your User model uses "users" collection
-          localField: "doctorId",
-          foreignField: "_id",
-          as: "doctor"
-        }
+        $match: isPatient
+          ? { patientId: reqUser._id }
+          : { doctorId: reqUser._id },
       },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    ];
 
-      // Unwind the doctor array (since lookup returns an array)
-      { $unwind: "$doctor" },
-
-      // Project the fields you want
-      {
-        $project: {
-          doctorId: 1,
-          appointmentDate: 1,
-          status: 1,
-          datetime: 1,
-          description: 1,
-          "doctorFirstName": "$doctor.firstName",
-          "doctorLastName": "$doctor.lastName"
+    // Add conditional $lookup and projection
+    if (isPatient) {
+      // Patient view: show doctor details
+      pipeline.push(
+        {
+          $lookup: {
+            from: "users",
+            localField: "doctorId",
+            foreignField: "_id",
+            as: "doctor"
+          }
+        },
+        { $unwind: "$doctor" },
+        {
+          $project: {
+            doctorId: 1,
+            appointmentDate: 1,
+            status: 1,
+            datetime: 1,
+            description: 1,
+            doctorFirstName: "$doctor.firstName",
+            doctorLastName: "$doctor.lastName"
+          }
         }
-      }
-    ]);
+      );
+    } else {
+      // Doctor view: show patient details
+      pipeline.push(
+        {
+          $lookup: {
+            from: "users",
+            localField: "patientId",
+            foreignField: "_id",
+            as: "patient"
+          }
+        },
+        { $unwind: "$patient" },
+        {
+          $project: {
+            patientId: 1,
+            appointmentDate: 1,
+            status: 1,
+            datetime: 1,
+            description: 1,
+            patientFirstName: "$patient.firstName",
+            patientLastName: "$patient.lastName"
+          }
+        }
+      );
+    }
 
-    const total = await Appointment.countDocuments({ patientId: reqUser._id });
+    const appointmentsList = await Appointment.aggregate(pipeline);
+
+    // Count total
+    const total = await Appointment.countDocuments(
+      isPatient ? { patientId: reqUser._id } : { doctorId: reqUser._id }
+    );
     const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({
       appointmentsData: appointmentsList,
-
       pagination: {
         currentPage: page,
         totalPages,
         hasMore: page < totalPages
       }
     });
+
   } catch (error: any) {
-    console.error("Error in getPatientAppointments:", error.message);
+    console.error("Error in getAllAppointments:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getDoctors = async (req: any, res: any) => {
   try {
     const doctors = await User.find({ userType: "Doctor" }).select("doctorId firstName lastName");

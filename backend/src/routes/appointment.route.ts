@@ -19,4 +19,5 @@ router.get("/getAllAppointments", protectRoute, getAllAppointments);
 router.get("/getDoctors", getDoctors);
 router.get("/getDoctor/:id", getDoctor);
 
+
 export default router;

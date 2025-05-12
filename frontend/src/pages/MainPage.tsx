@@ -28,9 +28,11 @@ import bellIcon from '/svgs/bell-icon.svg'
 import Dropdown from '../components/Dropdown.tsx'
 import Settings from './Settings.tsx'
 import PatientAppointmentDetails from './Patient/PatientAppointmentDetails.tsx'
+import DoctorAppointmentDetails from './Doctor/DoctorAppointmentDetails.tsx'
 import BookAppointment from './Patient/BookAppointment.tsx'
 import UpdateTransaction from './Patient/UpdateTransaction.tsx'
 import AdminPatientDetails from './Admin/AdminPatientDetails.tsx'
+import DoctorPatientDetails from './Doctor/DoctorPatientDetails.tsx'
 import AdminLabTests from './Admin/AdminLabTests.tsx'
 import PatientPharmacyCart from './Patient/PatientPharmacyCart.tsx'
 
@@ -79,6 +81,7 @@ function MainPage() {
           <Route path='Settings/*' element={<Settings />} />
           <Route path='Appointments/*' element={userType === 'Admin' ? <AdminAppointments /> : userType === 'Doctor' ? <DoctorSchedule /> : userType === 'Patient' ? <PatientAppointments /> : <Navigate to={'/404'} replace />} />
           <Route path='AppointmentDetails/:appointmentId' element={userType === 'Patient' ? <PatientAppointmentDetails /> : <Navigate to={'/404'} replace />} />
+          <Route path='DoctorAppointmentDetails/:appointmentId' element={userType === 'Doctor' ? <DoctorAppointmentDetails /> : <Navigate to={'/404'} replace />} />
           <Route path="BookAppointment/:doctorId" element={userType === "Patient" ? <BookAppointment /> : <Navigate to={"/404"} replace />} />
           <Route path="BookLabTest/:labTestId" element={userType === "Patient" ? <BookLabTest /> : <Navigate to={"/404"} replace />} />
           <Route path="Cart/" element={userType === "Patient" ? <PatientPharmacyCart /> : <Navigate to={"/404"} replace />} />
@@ -92,6 +95,7 @@ function MainPage() {
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <Navigate to={'/404'} replace />} />
           <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
           <Route path='Patients/:patientId' element={userType === 'Admin' ? <AdminPatientDetails /> : userType === 'Doctor' ? <DoctorPatients /> : <Navigate to={'/404'} replace />} />
+          <Route path='Patients/:patientId' element={userType === 'Doctor' ? <DoctorPatientDetails /> : <Navigate to={'/404'} replace />} />
 
           <Route path='/*' element={<Navigate to={'/404'} />} />
 
