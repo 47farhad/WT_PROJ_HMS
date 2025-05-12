@@ -32,6 +32,8 @@ import BookAppointment from './Patient/BookAppointment.tsx'
 import UpdateTransaction from './Patient/UpdateTransaction.tsx'
 import AdminPatientDetails from './Admin/AdminPatientDetails.tsx'
 import AdminLabTests from './Admin/AdminLabTests.tsx'
+import PatientPharmacyCart from './Patient/PatientPharmacyCart.tsx'
+
 function MainPage() {
 
   const { authUser } = useAuthStore();
@@ -79,6 +81,7 @@ function MainPage() {
           <Route path='AppointmentDetails/:appointmentId' element={userType === 'Patient' ? <PatientAppointmentDetails /> : <Navigate to={'/404'} replace />} />
           <Route path="BookAppointment/:doctorId" element={userType === "Patient" ? <BookAppointment /> : <Navigate to={"/404"} replace />} />
           <Route path="BookLabTest/:labTestId" element={userType === "Patient" ? <BookLabTest /> : <Navigate to={"/404"} replace />} />
+          <Route path="Cart/" element={userType === "Patient" ? <PatientPharmacyCart /> : <Navigate to={"/404"} replace />} />
           <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <Navigate to={'/404'} replace />} />
           <Route path='UpdateTransaction/:transactionId'element={userType === "Patient" ? <UpdateTransaction /> : <Navigate to={"/404"} replace />}/>
           <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />

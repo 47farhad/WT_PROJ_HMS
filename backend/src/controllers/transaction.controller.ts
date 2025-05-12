@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import Transaction from '../models/transaction.model.js';
 import Appointment from '../models/appointment.model.js';
 import PatientLabTest from '../models/patientLabTest.model.js';
@@ -77,6 +76,7 @@ export const getAllTransactions = async (req: any, res: any) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const updateTransaction = async (req: any, res: any) => {
   const transactionId = req.params.id;
   const { status } = req.body;

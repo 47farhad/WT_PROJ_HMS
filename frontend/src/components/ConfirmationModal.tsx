@@ -2,10 +2,6 @@ function ConfirmationModal({ isOpen, onConfirm, onCancel, title, message, showLo
 
     if (!isOpen) return null;
 
-    if(showLoading){
-        console.log('yea')
-    }
-
     return (
         <>
             {/* Blurred background overlay */}
