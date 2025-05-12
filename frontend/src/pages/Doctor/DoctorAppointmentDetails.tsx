@@ -5,7 +5,7 @@ import { format } from "date-fns";
 
 function DoctorAppointmentDetails() {
   const { appointmentId } = useParams();
-  const navigate = useNavigate();
+
   const {
     selectedAppointment,
     getAppointmentDetails,
@@ -18,17 +18,8 @@ function DoctorAppointmentDetails() {
     }
   }, [appointmentId, getAppointmentDetails]);
 
-  useEffect(() => {
-  
-  if (isAppointmentLoading) return;
 
-  if (!selectedAppointment) {
-    navigate("/Appointments");
-  }
-}, [isAppointmentLoading, selectedAppointment, navigate]);
-
-
-  if (isAppointmentLoading) {
+  if (isAppointmentLoading || !selectedAppointment) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 bg-[#1a2c42]"></div>
