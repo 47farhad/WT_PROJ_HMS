@@ -218,7 +218,7 @@ const PatientPayments: React.FC = () => {
                         <span
                           className={`cursor-pointer px-2 py-1 rounded-full text-xs font-medium ${transaction.type === 'Appointment'
                               ? 'bg-blue-100 text-blue-800'
-                              : transaction.type === 'Medication'
+                              : transaction.type === 'Order'
                                 ? 'bg-green-100 text-green-800'
                                 : transaction.type === 'LabTest'
                                   ? 'bg-purple-100 text-purple-800'
@@ -227,14 +227,14 @@ const PatientPayments: React.FC = () => {
                           onClick={() => {
                             if (transaction.type === 'Appointment') {
                               navigate(`/AppointmentDetails/${transaction.referenceId}`);
-                            } else if (transaction.type === 'Medication') {
-                              navigate(`/MedicationDetails/${transaction.referenceId}`);
+                            } else if (transaction.type === 'Order') {
+                              navigate(`/Orders/${transaction.referenceId}`);
                             } else if (transaction.type === 'LabTest') {
                               navigate(`/Labtests/${transaction.referenceId}`);
                             }
                           }}
                         >
-                          {transaction.type}
+                          {transaction.type == "Order" ? 'Medication' : transaction.type}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">

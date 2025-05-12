@@ -6,6 +6,8 @@ import PatientLabTest from '../models/patientLabTest.model.js';
 export const createTransaction = async (transactionData: any, session: any) => {
   const { userId, referenceId, type, amount } = transactionData;
 
+  console.log({ userId, referenceId, type, amount })
+
   if (!referenceId || !type) {
     throw new Error("Missing Fields for transaction");
   }
@@ -157,7 +159,7 @@ export const updateTransaction = async (req: any, res: any) => {
   }
 };
 
- export const getTransactionDetails = async (req: any, res: any) => {
+export const getTransactionDetails = async (req: any, res: any) => {
   const reqUser = req.user;
   try {
     const transactionId = req.params.id;

@@ -78,7 +78,7 @@ function PatientPharmacyCart() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/Pharmacy')}
+                        onClick={() => navigate('/Orders')}
                         className="text-blue-600 hover:underline flex items-center justify-end"
                     >
                         Past Orders

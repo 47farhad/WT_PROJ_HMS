@@ -208,6 +208,7 @@ export const cancelLabTest = async (req: any, res: any) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 export const getLabTestDetails = async (req: any, res: any) => {
     try {
         const labTestId = req.params.id;
