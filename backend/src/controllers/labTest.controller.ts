@@ -28,9 +28,12 @@ export const getOfferedLabTests = async (req: any, res: any) => {
             query = { status: 'available' };
         }
 
-        const labTests = await OfferedTest.find(query);
+        const labTests = await OfferedTest.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
 
-     
+
         const total = await OfferedTest.countDocuments(query);
         const totalPages = Math.ceil(total / limit);
 
