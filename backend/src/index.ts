@@ -35,7 +35,7 @@ app.use("/api/messages", messageRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/labTests", labTestRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
-app.use("/api/order", orderRoutes)
+app.use("/api/order", orderRoutes);
 app.use("/api/patientLabTests",patientLabTestRoutes)
 
 
