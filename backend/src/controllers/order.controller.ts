@@ -2,6 +2,7 @@ import Order from '../models/order.model.js';
 import OfferedMedicine from '../models/offeredMedicine.model.js';
 import Transaction from '../models/transaction.model.js';
 import mongoose from 'mongoose';
+import { createTransaction } from './transaction.controller.js';
 
 export const createOrder = async (req: any, res: any) => {
     const session = await mongoose.startSession();
@@ -76,13 +77,12 @@ export const createOrder = async (req: any, res: any) => {
         }], { session });
 
         // Create transaction
-        const transaction = await Transaction.create([{
+        await createTransaction({
             userId,
-            referenceId: order[0]._id,
+            referenceId: order._id,
             type: 'Medication',
-            amount: totalPrice,
-            status: 'unpaid'
-        }], { session });
+            amount: totalPrice
+        }, session);
 
         // Commit transaction
         await session.commitTransaction();

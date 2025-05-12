@@ -1,4 +1,3 @@
-import { Request, Response } from 'express';
 import Transaction from '../models/transaction.model.js';
 import Appointment from '../models/appointment.model.js';
 
