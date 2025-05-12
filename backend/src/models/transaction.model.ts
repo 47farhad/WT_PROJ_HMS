@@ -14,7 +14,7 @@ const transactionSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['Appointment', 'LabTest', 'Medication'], 
+      enum: ['Appointment', 'LabTest', 'Order'], 
       required: true,
     },
     amount: {

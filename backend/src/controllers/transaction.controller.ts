@@ -21,7 +21,7 @@ export const createTransaction = async (transactionData: any, session: any) => {
   const newTransaction = new Transaction(newTransac);
   if (newTransaction) {
     await newTransaction.save({ session });
-    return;
+    return newTransaction._id;
   }
   throw new Error("Error in creating transaction");
 };
@@ -59,7 +59,7 @@ export const getAllTransactions = async (req: any, res: any) => {
       }
     ]);
 
-    const total = await Transaction.countDocuments({ patientId: reqUser._id });
+    const total = await Transaction.countDocuments({ userId: reqUser._id });
     const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({

@@ -69,7 +69,7 @@ export const createOrder = async (req: any, res: any) => {
         }
 
         // Create order
-        const order = await Order.create([{
+        const order: any = await Order.create([{
             patientId: userId,
             items: orderItems,
             totalPrice,
@@ -77,7 +77,7 @@ export const createOrder = async (req: any, res: any) => {
         }], { session });
 
         // Create transaction
-        await createTransaction({
+        const transactionId = await createTransaction({
             userId,
             referenceId: order._id,
             type: 'Medication',
@@ -89,7 +89,7 @@ export const createOrder = async (req: any, res: any) => {
 
         res.status(201).json({
             order: order[0],
-            transaction: transaction[0]
+            transaction: transactionId
         });
 
     } catch (error) {
