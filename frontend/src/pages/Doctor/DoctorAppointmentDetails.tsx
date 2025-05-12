@@ -23,7 +23,7 @@ function DoctorAppointmentDetails() {
   if (isAppointmentLoading) return;
 
   if (!selectedAppointment) {
-    navigate("/DoctorSchedule");
+    navigate("/Appointments");
   }
 }, [isAppointmentLoading, selectedAppointment, navigate]);
 
