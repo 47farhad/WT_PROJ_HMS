@@ -19,12 +19,15 @@ export const getOfferedLabTests = async (req: any, res: any) => {
     try {
         const reqUserType = req.user.userType;
 
-        let query = {};
-        if (reqUserType !== 'Admin') {
-            query = { status: 'available' };
+        let labTests;
+        if (reqUserType === 'Admin') {
+            labTests = await OfferedTest.find({});
+        } else {
+            labTests = await OfferedTest.find(
+                { status: 'available' },
+                { status: 0 }
+            );
         }
-
-        const labTests = await OfferedTest.find(query);
 
         res.status(200).json(labTests);
 
@@ -42,12 +45,11 @@ export const deleteLabTest = async (req: any, res: any) => {
             return res.status(400).json({ message: "Test ID is required" });
         }
 
-        const existingTest = await OfferedTest.findById(testId);
-        if (!existingTest) {
+        const deletedTest = await OfferedTest.findOneAndDelete({ _id: testId });
+
+        if (!deletedTest) {
             return res.status(404).json({ message: "Lab test not found" });
         }
-
-        await OfferedTest.findByIdAndDelete(testId);
 
         res.status(200).json({
             message: "Lab test deleted successfully",
@@ -130,7 +132,6 @@ export const updateOfferedTest = async (req: any, res: any) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
-
 
 export const createLabTest = async (req: any, res: any) => {
     const { datetime } = req.body;

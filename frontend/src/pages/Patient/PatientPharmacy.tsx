@@ -1,246 +1,106 @@
-import React, { useState, useEffect } from "react";
-import { axiosInstance } from "../../lib/axios";
+import { useEffect, useState } from "react";
+import { usePharmacyStore } from "../../store/usePharmacyStore";
+import PatientMedicineCard from "../../components/PatientMedicineCard";
+import { useNavigate } from "react-router-dom";
 
-interface Medicine {
-  _id: string;
-  name: string;
-  brand: string;
-  price: number;
-  stock: number;
-  description: string;
-}
+function PatientPharmacy() {
 
-const PatientPharmacy: React.FC = () => {
-  const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const { offeredMedicines, getOfferedMedicines, isOfferedMedicinesLoading } = usePharmacyStore();
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchMedicines();
-  }, []);
+    getOfferedMedicines();
+  }, [getOfferedMedicines]);
 
-  const fetchMedicines = async () => {
-    try {
-      setLoading(true);
-      // Dummy data for medicines
-      const dummyData: Medicine[] = [
-        {
-          _id: "1",
-          name: "Paracetamol",
-          brand: "PharmaCorp",
-          price: 5.99,
-          stock: 50,
-          description: "Used to treat pain and fever.",
-        },
-        {
-          _id: "2",
-          name: "Ibuprofen",
-          brand: "HealthPlus",
-          price: 8.49,
-          stock: 30,
-          description: "Anti-inflammatory medication for pain relief.",
-        },
-        {
-          _id: "3",
-          name: "Amoxicillin",
-          brand: "MediCare",
-          price: 12.99,
-          stock: 20,
-          description: "Antibiotic used to treat bacterial infections.",
-        },
-        {
-          _id: "4",
-          name: "Cetirizine",
-          brand: "AllerEase",
-          price: 4.99,
-          stock: 100,
-          description: "Antihistamine for allergy relief.",
-        },
-        {
-          _id: "5",
-          name: "Metformin",
-          brand: "DiabeCare",
-          price: 15.99,
-          stock: 40,
-          description: "Used to treat type 2 diabetes.",
-        },
-        {
-          _id: "6",
-          name: "Aspirin",
-          brand: "PainAway",
-          price: 6.49,
-          stock: 60,
-          description: "Used to reduce pain, fever, or inflammation.",
-        },
-        {
-          _id: "7",
-          name: "Omeprazole",
-          brand: "GastroFix",
-          price: 9.99,
-          stock: 25,
-          description: "Used to treat acid reflux and ulcers.",
-        },
-        {
-          _id: "8",
-          name: "Losartan",
-          brand: "HeartCare",
-          price: 18.49,
-          stock: 35,
-          description: "Used to treat high blood pressure.",
-        },
-        {
-          _id: "9",
-          name: "Atorvastatin",
-          brand: "CholestrolEase",
-          price: 14.99,
-          stock: 45,
-          description: "Used to lower cholesterol levels.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-        {
-          _id: "10",
-          name: "Salbutamol",
-          brand: "BreathEasy",
-          price: 7.99,
-          stock: 15,
-          description: "Used to treat asthma and breathing disorders.",
-        },
-      ];
-      setMedicines(dummyData);
-    } catch (err) {
-      setError("Failed to fetch medicines");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleOrder = (medicine: Medicine) => {
-    // Implement order logic or open order modal here
-    alert(`Order placed for ${medicine.name}`);
-  };
-
-  const filteredMedicines = medicines.filter((med) =>
-    med.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  if (isOfferedMedicinesLoading) {
+    return (
+      <div>
+        Loading
+      </div>
+    )
+  }
 
   return (
-    <div className="p-5 pt-0 flex flex-col flex-1 max-h-[calc(100vh-88px)]">
-      <input
-        type="text"
-        placeholder="Search medicines..."
-        className="w-1/5 mb-6 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] outline-none"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-      />
+    <div className="flex flex-col max-h-[calc(100vh-88px)]">
+      {/* Fixed Search Bar */}
+      <div className="sticky top-0 z-10 bg-white px-5 pb-3 flex flex-row justify-between items-center">
+        <div className="flex flex-row justify-start">
+          <div className="flex items-center justify-start w-70 h-10 rounded-md bg-[#F2F3F5] px-3">
+            {/* Search Icon SVG */}
+            <svg
+              className="w-6 h-6 mr-2 text-[#87888A]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
 
-      {loading ? (
-        <div className="text-center py-8">Loading medicines...</div>
-      ) : null}
+            {/* Search Input */}
+            <input
+              className="w-full bg-transparent text-md border-none focus:outline-none placeholder-[#87888A]"
+              type="text"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value) }}
+              placeholder="Search medicine"
+            />
+          </div>
+        </div>
 
-      <div className="overflow-y-scroll max-h-full rounded-xl shadow-lg border border-gray-300">
-        <table className="min-w-full">
-          <thead className="sticky top-0 bg-[#243954] text-white">
-            <tr className="bg-[#243954] text-white ">
-              <th className="py-3 px-4">Name</th>
-              <th className="py-3 px-4">Brand</th>
-              <th className="py-3 px-4">Description</th>
-              <th className="py-3 px-4">Price</th>
-              <th className="py-3 px-4">Stock</th>
-              <th className="py-3 px-4"></th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
-            {loading ? (
-              <tr>
-                <td colSpan={6} className="text-center py-6 text-gray-500">
-                  Loading medicines...
-                </td>
-              </tr>
-            ) : error ? (
-              <tr>
-                <td colSpan={6} className="text-center py-6 text-red-600">
-                  {error}
-                </td>
-              </tr>
-            ) : filteredMedicines.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-6 text-gray-500">
-                  No medicines found.
-                </td>
-              </tr>
-            ) : (
-              filteredMedicines.map((medicine) => (
-                <tr key={medicine._id} className="text-center border-b hover:bg-blue-50 ">
-                  <td className="py-3 px-4">{medicine.name}</td>
-                  <td className="py-3 px-4">{medicine.brand}</td>
-                  <td className="py-3 px-4">{medicine.description}</td>
-                  <td className="py-3 px-4">${medicine.price.toFixed(2)}</td>
-                  <td className="py-3 px-4">{medicine.stock > 0 ? medicine.stock : "Out of stock"}</td>
-                  <td className="py-3 px-4">
-                    <button
-                      className="bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1a2c42] disabled:opacity-50"
-                      onClick={() => handleOrder(medicine)}
-                      disabled={medicine.stock === 0}
-                    >
-                      Order
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        {/* Cart Button with Badge */}
+        <button
+          className="relative p-2 text-[#87888A] hover:text-[#243954] transition-colors"
+          onClick={() => navigate('/Cart')}
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 px-5 pb-5 overflow-y-auto scrollbar-hide">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {offeredMedicines
+            .filter(medicine =>
+              medicine.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              medicine.description.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+            .map((medicine) => (
+              <PatientMedicineCard
+                id={medicine._id}
+                key={medicine._id}
+                name={medicine.name}
+                description={medicine.description}
+                price={medicine.price}
+                dosage={medicine.dosage}
+                requiresPrescription={medicine.requiresPrescription}
+                picture={medicine.picture}
+              />
+            ))}
+        </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
 export default PatientPharmacy;
