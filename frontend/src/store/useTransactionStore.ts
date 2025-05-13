@@ -13,11 +13,11 @@ export const useTransactionStore = create((set, get) => ({
         }
     },
 
-    isTransactionLoading:false,
+    isTransactionLoading: false,
     isTransactionsLoading: false,
     selectedTransaction: null,
 
- getTransactionDetails: async (transactionId) => {
+    getTransactionDetails: async (transactionId) => {
         try {
             set({ isTransactionLoading: true });
             const res = await axiosInstance.get(`/transactions/getTransactionDetails/${transactionId}`);
@@ -25,7 +25,6 @@ export const useTransactionStore = create((set, get) => ({
                 selectedTransaction: res.data.transaction,
                 isTransactionLoading: false,
             });
-            console.log(get().selectedTransaction);
         } catch (error) {
             set({ isTransactionLoading: false });
             toast.error(error.response?.data?.message || "Failed to fetch transaction details");
@@ -79,36 +78,16 @@ export const useTransactionStore = create((set, get) => ({
     },
 
     // Function to update the transaction
-    updateTransaction: async (transactionId, status) => {
+    updateTransaction: async (transactionId) => {
         try {
-            // Prepare the data to be sent to the backend
-            const transactionData = {
-                status
-            };
-
             // Send PUT request to the backend to update the transaction status
-            const response = await axiosInstance.put(`/transactions/updateTransaction/${transactionId}`, transactionData);
+            const response = await axiosInstance.put(`/transactions/updateTransaction/${transactionId}`);
 
             // If successful, show success toast and update state with the updated transaction
             toast.success('Transaction updated successfully');
-
-            // Optionally, update the transaction list in state if needed
-            set(state => ({
-                transactions: {
-                    data: state.transactions.data.map(transaction => 
-                        transaction._id === transactionId
-                            ? { ...transaction, status: response.data.transaction.status }
-                            : transaction
-                    )
-                }
-            }));
         } catch (error) {
-            // Handle errors and display appropriate messages
-            if (error.response?.status === 400) {
-                toast.error(error.response?.data?.message || "Transaction failed. Please try again.");
-            } else {
-                toast.error("Failed to update transaction. Please try again later.");
-            }
+            toast.error(error.response?.data?.message || "Transaction failed. Please try again.");
+            console.log(error)
         }
     }
 }));

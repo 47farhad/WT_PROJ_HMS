@@ -1,12 +1,12 @@
 import Transaction from '../models/transaction.model.js';
 import Appointment from '../models/appointment.model.js';
 import PatientLabTest from '../models/patientLabTest.model.js';
+import Order from '../models/order.model.js';
+import mongoose from 'mongoose';
 
 
 export const createTransaction = async (transactionData: any, session: any) => {
   const { userId, referenceId, type, amount } = transactionData;
-
-  console.log({ userId, referenceId, type, amount })
 
   if (!referenceId || !type) {
     throw new Error("Missing Fields for transaction");
@@ -81,81 +81,154 @@ export const getAllTransactions = async (req: any, res: any) => {
 
 export const updateTransaction = async (req: any, res: any) => {
   const transactionId = req.params.id;
-  const { status } = req.body;
+  const session = await mongoose.startSession();
 
   try {
-    const transaction = await Transaction.findById(transactionId);
-    if (!transaction) {
-      return res.status(404).json({ message: 'Transaction not found' });
-    }
+    await session.withTransaction(async () => {
+      // 1. Update the transaction status
+      const transaction = await Transaction.findByIdAndUpdate(
+        transactionId,
+        { status: 'paid' },
+        { new: true, session }
+      );
 
-    // If the status is 'paid', ensure no duplicate paid transaction exists
-    if (status === 'paid') {
-      let existingPaidTransaction;
-
-      if (transaction.type === 'Appointment' || transaction.type === 'LabTest') {
-        existingPaidTransaction = await Transaction.findOne({
-          type: transaction.type,
-          status: 'paid',
-          _id: { $ne: transactionId }, // exclude current transaction
-          referenceId: transaction.referenceId
-        });
+      if (!transaction) {
+        throw new Error('Transaction not found');
       }
 
-      if (existingPaidTransaction) {
-        // Mark current transaction as failed
-        transaction.status = 'failed';
-        await transaction.save();
-
-        // Cancel the associated Appointment or LabTest
-        if (transaction.type === 'Appointment') {
-          const appointment = await Appointment.findById(transaction.referenceId);
-          if (appointment) {
-            appointment.status = 'cancelled';
-            await appointment.save();
-          }
-        }
-
-        if (transaction.type === 'LabTest') {
-          const labTest = await PatientLabTest.findById(transaction.referenceId);
-          if (labTest) {
-            labTest.status = 'cancelled';
-            await labTest.save();
-          }
-        }
-
-        return res.status(400).json({ message: 'Transaction failed. Already confirmed by another user.' });
-      }
-    }
-
-    // No conflict — proceed to update transaction status
-    transaction.status = status;
-    await transaction.save();
-
-    // If paid, confirm appointment/lab test
-    if (status === 'paid') {
+      // 2. Handle type-specific operations
       if (transaction.type === 'Appointment') {
-        const appointment = await Appointment.findById(transaction.referenceId);
-        if (appointment) {
-          appointment.status = 'confirmed';
-          await appointment.save();
-        }
+        const [result] = await Appointment.aggregate([
+          { $match: { _id: transaction.referenceId } },
+          {
+            $facet: {
+              current: [{ $project: { datetime: 1, doctorId: 1 } }],
+              conflicts: [
+                {
+                  $lookup: {
+                    from: "appointments",
+                    let: { dt: "$datetime", docId: "$doctorId" },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              { $ne: ["$_id", transaction.referenceId] },
+                              { $eq: ["$datetime", "$$dt"] },
+                              { $eq: ["$doctorId", "$$docId"] },
+                              { $ne: ["$status", "cancelled"] }
+                            ]
+                          }
+                        }
+                      }
+                    ],
+                    as: "conflicts"
+                  }
+                },
+                { $unwind: "$conflicts" },
+                { $project: { _id: "$conflicts._id" } }
+              ]
+            }
+          },
+          { $unwind: "$current" }
+        ]).session(session);
+
+        const conflictIds = result?.conflicts?.map((c: { _id: any }) => c._id) || [];
+
+        await Promise.all([
+          Appointment.updateOne(
+            { _id: transaction.referenceId },
+            { $set: { status: 'confirmed' } },
+            { session }
+          ),
+          conflictIds.length > 0 && Appointment.updateMany(
+            { _id: { $in: conflictIds } },
+            { $set: { status: 'cancelled' } },
+            { session }
+          ),
+          conflictIds.length > 0 && Transaction.updateMany(
+            { referenceId: { $in: conflictIds }, type: 'Appointment' },
+            { $set: { status: 'failed' } },
+            { session }
+          )
+        ]);
+
+      } else if (transaction.type === 'LabTest') {
+        const [result] = await PatientLabTest.aggregate([
+          { $match: { _id: transaction.referenceId } },
+          {
+            $facet: {
+              current: [{ $project: { datetime: 1 } }],
+              conflicts: [
+                {
+                  $lookup: {
+                    from: "patientlabtests",
+                    let: { dt: "$datetime" },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              { $ne: ["$_id", transaction.referenceId] },
+                              { $eq: ["$datetime", "$$dt"] },
+                              { $ne: ["$status", "cancelled"] }
+                            ]
+                          }
+                        }
+                      }
+                    ],
+                    as: "conflicts"
+                  }
+                },
+                { $unwind: "$conflicts" },
+                { $project: { _id: "$conflicts._id" } }
+              ]
+            }
+          },
+          { $unwind: "$current" }
+        ]).session(session);
+
+        const conflictIds = result?.conflicts?.map((c: { _id: any }) => c._id) || [];
+
+        await Promise.all([
+          PatientLabTest.updateOne(
+            { _id: transaction.referenceId },
+            { $set: { status: 'confirmed' } },
+            { session }
+          ),
+          conflictIds.length > 0 && PatientLabTest.updateMany(
+            { _id: { $in: conflictIds } },
+            { $set: { status: 'cancelled' } },
+            { session }
+          ),
+          conflictIds.length > 0 && Transaction.updateMany(
+            { referenceId: { $in: conflictIds }, type: 'LabTest' },
+            { $set: { status: 'failed' } },
+            { session }
+          )
+        ]);
+
+      } else if (transaction.type === 'Order') {
+        await Order.findByIdAndUpdate(
+          transaction.referenceId,
+          { $set: { status: 'confirmed' } },
+          { session }
+        );
       }
 
-      if (transaction.type === 'LabTest') {
-        const labTest = await PatientLabTest.findById(transaction.referenceId);
-        if (labTest) {
-          labTest.status = 'confirmed';
-          await labTest.save();
-        }
-      }
-    }
+      return transaction;
+    });
 
-    return res.status(200).json({ message: 'Transaction updated successfully', transaction });
+    const updatedTransaction = await Transaction.findById(transactionId);
+    return res.status(200).json(updatedTransaction);
 
   } catch (error: any) {
+    await session.abortTransaction();
     console.error("Error in updateTransaction:", error.message);
-    return res.status(500).json({ message: "Internal Server Error" });
+    const status = error.message === 'Transaction not found' ? 404 : 500;
+    return res.status(status).json({ message: error.message || "Internal Server Error" });
+  } finally {
+    session.endSession();
   }
 };
 

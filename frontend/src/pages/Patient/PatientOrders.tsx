@@ -14,12 +14,48 @@ function PatientOrders() {
     const [endDate, setEndDate] = useState("");
     const [showDateFilter, setShowDateFilter] = useState(false);
 
+    const [isAtBottom, setIsAtBottom] = useState(false);
+
+
     const containerRef = useRef(null);
     const bottomRef = useRef(null)
 
     useEffect(() => {
         getOrders();
     }, [getOrders]);
+
+    useEffect(() => {
+        if (isAtBottom && !orders.pagination.isPageLoading && orders.pagination.hasMore && !isOrdersLoading) {
+            getOrders(orders.pagination.currentPage + 1);
+        }
+    }, [
+        isAtBottom,
+        orders.pagination.currentPage,
+        orders.pagination.isPageLoading,
+        orders.pagination.hasMore,
+        isOrdersLoading,
+        getOrders
+    ]);
+
+    useEffect(() => {
+        const container = containerRef.current;
+
+        const handleScroll = () => {
+            if (!container || !bottomRef.current) return;
+
+            const endRefPosition = bottomRef.current.getBoundingClientRect().bottom;
+            const containerPosition = container.getBoundingClientRect().bottom;
+
+            const threshold = 5;
+            const reachedBottom = Math.abs(endRefPosition - containerPosition) <= threshold;
+            setIsAtBottom(reachedBottom);
+        };
+
+        container.addEventListener('scroll', handleScroll);
+        return () => {
+            container.removeEventListener('scroll', handleScroll);
+        };
+    }, []);
 
     const handleDateChange = (e) => {
         const { name, value } = e.target;

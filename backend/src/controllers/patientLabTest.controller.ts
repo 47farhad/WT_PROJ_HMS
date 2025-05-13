@@ -195,6 +195,7 @@ export const cancelLabTest = async (req: any, res: any) => {
         if (patientLabTest.status === 'cancelled') {
             await Transaction.deleteMany({
                 type: 'LabTest',
+                status: 'unpaid',
                 referenceId: patientLabTestId
             });
         }
