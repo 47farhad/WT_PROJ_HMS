@@ -35,7 +35,6 @@ export const usePatientLabTestStore = create((set, get) => ({
 
         try {
             const res = await axiosInstance.get(`/patientLabTests/getAllLabTests?page=${page}&limit=${limit}`);
-            console.log(" Data received:", res.data.labTestsData);
 
             set(state => ({
                 labTests: {

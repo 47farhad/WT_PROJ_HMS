@@ -28,7 +28,6 @@ function BookLabTest() {
       await getLabTestDetails(labTestId);  // This should set the selectedLabTest in the store
 
       const testDetails = usePatientLabTestStore.getState().selectedLabTest;
-      console.log("Fetched Lab Test:", testDetails);
       if (testDetails) {
         setLabTest(testDetails);  // Set labTest state to display test name
       }

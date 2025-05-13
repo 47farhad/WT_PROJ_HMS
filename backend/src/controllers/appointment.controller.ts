@@ -130,6 +130,7 @@ export const updateAppointment = async (req: any, res: any) => {
     if (appointment.status === 'cancelled') {
       await Transaction.deleteMany({
         type: 'Appointment',
+        status: 'unpaid',
         referenceId: appointmentId
       });
     }

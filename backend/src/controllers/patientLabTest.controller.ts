@@ -195,6 +195,7 @@ export const cancelLabTest = async (req: any, res: any) => {
         if (patientLabTest.status === 'cancelled') {
             await Transaction.deleteMany({
                 type: 'LabTest',
+                status: 'unpaid',
                 referenceId: patientLabTestId
             });
         }
@@ -208,6 +209,7 @@ export const cancelLabTest = async (req: any, res: any) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 export const getLabTestDetails = async (req: any, res: any) => {
     try {
         const labTestId = req.params.id;

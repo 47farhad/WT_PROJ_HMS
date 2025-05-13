@@ -75,7 +75,6 @@ export const useAppointmentStore = create((set, get) => ({
                 selectedAppointment: res.data.appointment,
                 isAppointmentLoading: false,
             });
-            console.log(get().selectedAppointment);
         } catch (error) {
             set({ isAppointmentLoading: false });
             toast.error(error.response?.data?.message || "Failed to fetch appointment details");

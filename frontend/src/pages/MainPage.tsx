@@ -33,6 +33,8 @@ import UpdateTransaction from './Patient/UpdateTransaction.tsx'
 import AdminPatientDetails from './Admin/AdminPatientDetails.tsx'
 import AdminLabTests from './Admin/AdminLabTests.tsx'
 import PatientPharmacyCart from './Patient/PatientPharmacyCart.tsx'
+import PatientOrders from './Patient/PatientOrders.tsx'
+import PatientOrderDetails from './Patient/PatientOrderDetails.tsx'
 
 function MainPage() {
 
@@ -80,6 +82,8 @@ function MainPage() {
           <Route path='Appointments/*' element={userType === 'Admin' ? <AdminAppointments /> : userType === 'Doctor' ? <DoctorSchedule /> : userType === 'Patient' ? <PatientAppointments /> : <Navigate to={'/404'} replace />} />
           <Route path='AppointmentDetails/:appointmentId' element={userType === 'Patient' ? <PatientAppointmentDetails /> : <Navigate to={'/404'} replace />} />
           <Route path="BookAppointment/:doctorId" element={userType === "Patient" ? <BookAppointment /> : <Navigate to={"/404"} replace />} />
+          <Route path="Orders" element={userType === "Patient" ? <PatientOrders /> : <Navigate to={"/404"} replace />} />
+          <Route path="Orders/:orderId" element={userType === "Patient" ? <PatientOrderDetails /> : <Navigate to={"/404"} replace />} />
           <Route path="BookLabTest/:labTestId" element={userType === "Patient" ? <BookLabTest /> : <Navigate to={"/404"} replace />} />
           <Route path="Cart/" element={userType === "Patient" ? <PatientPharmacyCart /> : <Navigate to={"/404"} replace />} />
           <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <Navigate to={'/404'} replace />} />

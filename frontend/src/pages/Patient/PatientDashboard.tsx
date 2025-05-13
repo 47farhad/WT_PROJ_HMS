@@ -127,7 +127,7 @@ function PatientDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {doctors.map((doctor) => (
               <div
-                key={doctor.id}
+                key={doctor._id}
                 className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
               >
                 <h3 className="text-lg font-semibold text-gray-800">{doctor.firstName +

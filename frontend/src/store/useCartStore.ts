@@ -14,6 +14,18 @@ const loadCartFromStorage = () => {
 export const useCartStore = create((set, get) => ({
     cartItems: loadCartFromStorage(),
     isCreatingOrder: false,
+    orders: {
+        data: [],
+        pagination: {
+            currentPage: 1,
+            hasMore: false,
+            isPageLoading: false,
+            totalPages: 1
+        }
+    },
+    isOrdersLoading: false,
+    detailedOrder: null,
+    isLoadingDetailedOrder: false,
 
     addToCart: (medicineId) => {
         const items = get().cartItems;
@@ -64,14 +76,81 @@ export const useCartStore = create((set, get) => ({
 
     handleOrder: async (items) => {
         try {
-            set({isCreatingOrder: true});
+            set({ isCreatingOrder: true });
             const res = await axiosInstance.post('/order/createOrder', items)
-            set({isCreatingOrder: false});
+            set({ isCreatingOrder: false });
             toast.success("Order created successfully. Please pay in the payments tab")
+            saveCartToStorage([])
         }
         catch (error) {
-            set({isCreatingOrder: false});
+            set({ isCreatingOrder: false });
             toast.error(error.response?.data?.message || "Failed to create order");
+        }
+    },
+
+    getOrders: async (page = 1, limit = 20) => {
+        const isInitialLoad = page === 1;
+
+        if (isInitialLoad) {
+            set({ isOrdersLoading: true });
+        } else {
+            set(state => ({
+                orders: {
+                    ...state.orders,
+                    pagination: {
+                        ...state.orders.pagination,
+                        isPageLoading: true
+                    }
+                }
+            }));
+        }
+
+        try {
+            const res = await axiosInstance.get(`/order/getOrders?page=${page}&limit=${limit}`);
+
+            set(state => ({
+                orders: {
+                    data: isInitialLoad
+                        ? res.data.ordersData
+                        : [...state.orders.data, ...res.data.ordersData],
+                    pagination: {
+                        currentPage: page,
+                        hasMore: res.data.pagination?.hasMore || false,
+                        isPageLoading: false,
+                        totalPages: res.data.pagination?.totalPages || 1
+                    }
+                },
+                isOrdersLoading: false
+            }));
+        } catch (error) {
+            set({
+                isOrdersLoading: false,
+                orders: {
+                    ...get().orders,
+                    pagination: {
+                        ...get().orders.pagination,
+                        isPageLoading: false
+                    }
+                }
+            });
+            toast.error(error.response?.data?.message || "Failed to fetch orders");
+        }
+    },
+
+    getOrderDetails: async (orderId: string) => {
+        try {
+            set({ isLoadingDetailedOrder: true });
+
+            const res = await axiosInstance.get(`/order/getOrder/${orderId}`);
+            set({ detailedOrder: res.data, isLoadingDetailedOrder: false });
+        }
+        catch (error: any) {
+            console.error("Failed to fetch order details:", error);
+            set({
+                isLoadingDetailedOrder: false,
+                detailedOrder: null,
+            });
+            toast.error(error.response?.data?.message || "Failed to fetch order");
         }
     }
 }));
