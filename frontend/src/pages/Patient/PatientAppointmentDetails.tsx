@@ -27,7 +27,7 @@ function PatientAppointmentDetails() {
   if (isAppointmentLoading) return;
 
   if (!selectedAppointment) {
-    navigate("/Appointments");
+    navigate("/Appointment");
   }
 }, [isAppointmentLoading, selectedAppointment, navigate]);
 

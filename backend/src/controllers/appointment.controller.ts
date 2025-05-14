@@ -23,6 +23,7 @@ export const createAppointment = async (req: any, res: any) => {
       doctorId,
       datetime: new Date(datetime),
       patientId: reqUser._id,
+      status: { $ne: 'cancelled' }
     }).session(session);
 
     if (duplicateBySameUser) {
@@ -34,6 +35,7 @@ export const createAppointment = async (req: any, res: any) => {
     const userConflictAtSameTime = await Appointment.findOne({
       datetime: new Date(datetime),
       patientId: reqUser._id,
+      status: { $ne: 'cancelled' }
     }).session(session);
 
     if (userConflictAtSameTime) {
@@ -70,7 +72,7 @@ export const createAppointment = async (req: any, res: any) => {
 
     await newAppointment.save({ session });
 
-    
+
     await createTransaction({
       userId: reqUser._id,
       referenceId: newAppointment._id,

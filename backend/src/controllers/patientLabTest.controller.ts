@@ -21,6 +21,7 @@ export const bookLabTest = async (req: any, res: any) => {
         // Prevent booking the same test 
         const duplicateBySameUser = await PatientLabTest.findOne({
             offeredTestId,
+            datetime,
             patientId: reqUser._id,
             status: { $ne: 'cancelled' }
         }).session(session);
