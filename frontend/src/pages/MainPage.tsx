@@ -35,6 +35,7 @@ import AdminLabTests from './Admin/AdminLabTests.tsx'
 import PatientPharmacyCart from './Patient/PatientPharmacyCart.tsx'
 import PatientOrders from './Patient/PatientOrders.tsx'
 import PatientOrderDetails from './Patient/PatientOrderDetails.tsx'
+import AdminBookedLabTests from './Admin/AdminBookedLabTests.tsx'
 
 function MainPage() {
 
@@ -89,6 +90,7 @@ function MainPage() {
           <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <Navigate to={'/404'} replace />} />
           <Route path='UpdateTransaction/:transactionId'element={userType === "Patient" ? <UpdateTransaction /> : <Navigate to={"/404"} replace />}/>
           <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />
+          <Route path='BookedTests/*' element={userType === 'Admin' ? <AdminBookedLabTests /> : <Navigate to={'/404'} replace />} />
           <Route path='Schedule/*' element={userType === 'Admin' ? <AdminSchedule /> : <Navigate to={'/404'} replace />} />
           <Route path='Pharmacy/*' element={userType === 'Patient' ? <PatientPharmacy /> : userType == 'Admin' ? <AdminInventory /> : <Navigate to={'/404'}/>} />
           <Route path='ViewLabTests/*' element={userType === 'Patient' ? <ViewLabTests />  : <Navigate to={'/404'}/>} />
