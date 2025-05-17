@@ -56,7 +56,7 @@ function BookAppointment() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-100">
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-100"style={{ zoom: "120%" }}>
       {/* Main Container */}
       <div className="relative bg-white rounded-xl shadow-xl max-w-5xl w-full z-10 mx-6 flex overflow-hidden">
         {/* Left Side - Doctor Details */}

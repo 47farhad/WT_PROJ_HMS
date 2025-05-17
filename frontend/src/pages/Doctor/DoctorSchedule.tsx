@@ -65,7 +65,7 @@ function DoctorSchedule() {
   };
 
   return (
-    <div className="h-full w-full p-5 pt-0 overflow-y-auto">
+    <div className="h-full w-full p-5 pt-0 overflow-y-auto"style={{ zoom: "120%" }}>
       <div className="w-full mx-auto">
         {/* Top Controls */}
         <div className="flex justify-end items-center flex-wrap gap-3 p-2 mb-4">
@@ -175,7 +175,7 @@ function DoctorSchedule() {
                     onClick={() => handleClick(appointment._id)}
                   >
                     <td className="py-3 px-4 truncate max-w-[100px]" >
-                      <div className="flex items-center justify-center gap-3 ">
+                      <div className="flex items-center justify-left gap-3 ">
                         <img
                         className="w-10 h-10 rounded-full"
                         src={appointment.patientprofilePic}         

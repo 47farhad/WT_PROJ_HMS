@@ -44,7 +44,7 @@ function ViewLabTests() {
         )
     }
   return (
-    <div className="h-full max-h-[calc(100vh-88px)] w-full p-4 pt-3 overflow-y-scroll text-sm">
+    <div className="h-full max-h-[calc(100vh-88px)] w-full p-4 pt-3 overflow-y-scroll text-sm"style={{ zoom: "120%" }}>
       <div className="flex justify-between items-center mb-6">
         <input
           type="text"

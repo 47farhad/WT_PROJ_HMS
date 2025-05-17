@@ -18,48 +18,16 @@ export const createAppointment = async (req: any, res: any) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Prevent booking the same doctor and time
-    const duplicateBySameUser = await Appointment.findOne({
-      doctorId,
-      datetime: new Date(datetime),
-      patientId: reqUser._id,
-      status: { $ne: 'cancelled' }
-    }).session(session);
-
-    if (duplicateBySameUser) {
-      await session.abortTransaction();
-      return res.status(409).json({ message: 'You have already booked this appointment' });
-    }
-
-    // Prevent double booking with ANY doctor at the same time
-    const userConflictAtSameTime = await Appointment.findOne({
-      datetime: new Date(datetime),
-      patientId: reqUser._id,
-      status: { $ne: 'cancelled' }
-    }).session(session);
-
-    if (userConflictAtSameTime) {
-      await session.abortTransaction();
-      return res.status(409).json({ message: 'You already have an appointment at this time with another doctor' });
-    }
-
     // Check if someone else has already booked and paid
     const existingAppointment = await Appointment.findOne({
       doctorId,
       datetime: new Date(datetime),
+      status: 'confirmed'
     }).session(session);
 
     if (existingAppointment) {
-      const existingPaidTransaction = await Transaction.findOne({
-        referenceId: existingAppointment._id,
-        type: 'Appointment',
-        status: 'paid',
-      }).session(session);
-
-      if (existingPaidTransaction) {
-        await session.abortTransaction();
-        return res.status(409).json({ message: 'Appointment already confirmed and paid for by another user' });
-      }
+      await session.abortTransaction();
+      return res.status(409).json({ message: 'Appointment already confirmed and paid for by another user' });
     }
 
     // Create new appointment
@@ -94,7 +62,6 @@ export const createAppointment = async (req: any, res: any) => {
     session.endSession();
   }
 };
-
 
 export const updateAppointment = async (req: any, res: any) => {
   const reqUser = req.user;
@@ -272,7 +239,7 @@ export const getAllAppointments = async (req: any, res: any) => {
 
 export const getDoctors = async (req: any, res: any) => {
   try {
-    const doctors = await User.find({ userType: "Doctor" }).select("doctorId firstName lastName");
+    const doctors = await User.find({ userType: "Doctor" }).select("doctorId firstName lastName profilePic");
     res.status(200).json(doctors)
   }
   catch (error: any) {
@@ -280,6 +247,7 @@ export const getDoctors = async (req: any, res: any) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getDoctor = async (req: any, res: any) => {
   try {
     const doctorId = req.params.id;

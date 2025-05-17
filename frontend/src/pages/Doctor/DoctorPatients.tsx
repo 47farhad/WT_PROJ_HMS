@@ -54,7 +54,7 @@ function DoctorPatients() {
     };
 
     return (
-        <div className="h-full w-full p-5 pt-2 overflow-y-auto">
+        <div className="h-full w-full p-5 pt-2 overflow-y-auto"style={{ zoom: "120%" }}>
             <div className="w-full mx-auto ">
                 <div className="flex flex-wrap justify-between items-center gap-4 p-2 mb-3">
                     {/* Search Bar */}

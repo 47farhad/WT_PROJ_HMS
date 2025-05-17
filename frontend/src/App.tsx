@@ -7,6 +7,7 @@ import Login from './pages/Login.tsx'
 import Signup from './pages/Signup.tsx'
 import { useAuthStore } from './store/useAuthStore.ts'
 import { useEffect } from 'react'
+import NotFoundButton from './components/NotFoundButton.tsx'
 
 function App() {
 
@@ -33,7 +34,7 @@ function App() {
         <Route path='Login' element={authUser ? <Navigate to={'/Dashboard'} /> : <Login />} />
         <Route path='Signup' element={authUser ? <Navigate to={'/Dashboard'} /> : <Signup />} />
 
-        <Route path='/404' element={<div>error 404</div>} />
+        <Route path='/404' element={<NotFoundButton />} />
 
         <Route path='/*' element={<MainPage />} />
 

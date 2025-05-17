@@ -1,6 +1,8 @@
 import User from "../models/user.model.js";
 import Appointment from "../models/appointment.model.js"
+import mongoose from "mongoose";
 import { format } from "date-fns";
+import { createLog } from "./logging.controller.js";
 
 
 export const getPatients = async (req: any, res: any) => {
@@ -191,36 +193,44 @@ export const getPatientDetails = async (req: any, res: any) => {
 };
 
 export const convertToDoctor = async (req: any, res: any) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         const { id } = req.params;
+        const adminId = req.user._id;
 
+        // 1. Convert user to doctor
         const updatedUser = await User.findOneAndUpdate(
-            {
-                _id: id,
-                userType: 'Patient'
-            },
-            {
-                $set: { userType: 'Doctor' },
-                $unset: { medicalInfo: 1 }
-            },
-            {
-                new: true,
-                runValidators: true
-            }
+            { _id: id, userType: 'Patient' },
+            { $set: { userType: 'Doctor' }, $unset: { medicalInfo: 1 } },
+            { new: true, runValidators: true, session }
         );
 
         if (!updatedUser) {
-            return res.status(400).json({
-                message: 'Patient not found'
-            });
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: 'Patient not found' });
         }
+
+        // 2. Create log using the updated createLog function
+        const newLog = await createLog(adminId, id, 'Doctor', session);
+
+        // Commit transaction
+        await session.commitTransaction();
+        session.endSession();
 
         return res.status(200).json({
             message: 'User successfully converted to Doctor',
-            data: updatedUser
+            data: {
+                user: updatedUser,
+                log: newLog
+            }
         });
 
     } catch (error: any) {
+        await session.abortTransaction();
+        session.endSession();
         return res.status(500).json({
             message: 'Error converting user to Doctor',
             error: error.message
@@ -229,31 +239,56 @@ export const convertToDoctor = async (req: any, res: any) => {
 };
 
 export const convertToAdmin = async (req: any, res: any) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         const { id } = req.params;
+        const adminId = req.user._id; // Assuming the current admin's ID is in req.user
 
+        // 1. Convert user to admin
         const updatedUser = await User.findOneAndUpdate(
-            {
-                _id: id,
-                userType: 'Patient'
-            },
+            { _id: id, userType: 'Patient' },
             {
                 $set: { userType: 'Admin' },
                 $unset: { medicalInfo: 1 }
             },
             {
                 new: true,
-                runValidators: true
+                runValidators: true,
+                session
             }
         );
 
         if (!updatedUser) {
+            await session.abortTransaction();
+            session.endSession();
             return res.status(400).json({ message: 'Patient not found' });
         }
 
-        return res.status(200).json({ message: 'User successfully converted to Admin' });
+        // 2. Create log entry using the shared createLog function
+        const newLog = await createLog(adminId, id, 'Admin', session);
+
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.status(200).json({
+            message: 'User successfully converted to Admin',
+            data: {
+                user: updatedUser,
+                log: newLog
+            }
+        });
 
     } catch (error: any) {
-        return res.status(500).json({ message: 'Error converting user to Admin' });
+        // Abort transaction on error
+        await session.abortTransaction();
+        session.endSession();
+
+        return res.status(500).json({
+            message: 'Error converting user to Admin',
+            error: error.message
+        });
     }
 };

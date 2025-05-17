@@ -248,7 +248,7 @@ function PatientDashboard() {
               >
                 <div className="flex flex-col items-center text-center">
                   <img
-                    src={getRandomDoctorAvatar(doctor.firstName + " " + doctor.lastName)}
+                    src={doctor.profilePic || (getRandomDoctorAvatar(doctor.firstName + " " + doctor.lastName))}
                     alt={doctor.firstName + " " + doctor.lastName}
                     className="h-20 w-20 rounded-full object-cover mb-4 border-4 border-blue-100"
                   />

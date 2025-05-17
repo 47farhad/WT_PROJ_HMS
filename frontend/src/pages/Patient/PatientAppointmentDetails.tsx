@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
-import { format } from "date-fns";
-import ConfirmationModal from "../../components/ConfirmationModal"; // Adjust path if needed
+import { format, parseISO } from "date-fns";
+import { StarIcon } from "@heroicons/react/24/solid";
+import { toast } from "react-hot-toast";
 
 function PatientAppointmentDetails() {
   const { appointmentId } = useParams();
@@ -11,10 +12,16 @@ function PatientAppointmentDetails() {
     selectedAppointment,
     getAppointmentDetails,
     isAppointmentLoading,
-    updateAppointment,
   } = useAppointmentStore();
 
-  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [patientNotes, setPatientNotes] = useState([]);
+
+  const [review, setReview] = useState({
+    rating: 0,
+    comment: "",
+    hoverRating: 0,
+    isSubmitting: false
+  });
 
   useEffect(() => {
     if (appointmentId) {
@@ -22,145 +29,221 @@ function PatientAppointmentDetails() {
     }
   }, [appointmentId, getAppointmentDetails]);
 
-  useEffect(() => {
-  
-  if (isAppointmentLoading) return;
-
-  if (!selectedAppointment) {
-    navigate("/Appointment");
-  }
-}, [isAppointmentLoading, selectedAppointment, navigate]);
-
-
-  const handleCancelAppointment = () => {
-    setShowCancelModal(true);
+  const handleRatingChange = (rating) => {
+    setReview({ ...review, rating });
   };
 
-  const confirmCancellation = () => {
-    updateAppointment(appointmentId);
-    setShowCancelModal(false);
+  const handleHoverRating = (rating) => {
+    setReview({ ...review, hoverRating: rating });
   };
 
-  if (isAppointmentLoading) {
+  const handleCommentChange = (e) => {
+    setReview({ ...review, comment: e.target.value });
+  };
+
+  const handleSubmitReview = () => {
+    if (review.rating === 0) {
+      toast.warning("Please select a rating");
+      return;
+    }
+
+    setReview({ ...review, isSubmitting: true });
+    
+    // Simulate API call with timeout
+    setTimeout(() => {
+      toast.success("Thank you for your feedback!");
+      setReview({
+        rating: 0,
+        comment: "",
+        hoverRating: 0,
+        isSubmitting: false
+      });
+    }, 1500);
+  };
+
+  if (isAppointmentLoading || !selectedAppointment) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 bg-[#1a2c42]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#243954]"></div>
       </div>
     );
   }
 
-  return selectedAppointment ? (
-    <div className="h-full w-full p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Appointment Details</h1>
-        <span
-          className={`px-3 py-1 rounded-full text-sm font-medium ${
-            selectedAppointment.status === "confirmed"
-              ? "bg-green-100 text-green-800"
-              : selectedAppointment.status === "cancelled"
-              ? "bg-red-100 text-red-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {selectedAppointment.status}
-        </span>
-      </div>
+  return (
+    <div className="flex flex-row mx-5 mb-5 h-full overflow-y-auto" style={{ zoom: "100%" }}>
+      {/* Left side - Appointment details */}
+      <div className="flex flex-col w-[75%] h-full space-y-6 space-x-8">
+        {/* Header card */}
+        <div className="bg-white border border-gray-300 rounded-xl shadow-sm p-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-[#243954]">Appointment Details</h1>
+              <div className="flex items-center text-gray-600">
+                <span>Appointment ID:</span>
+                <span className="ml-2 font-medium text-gray-700">{selectedAppointment._id}</span>
+              </div>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">
-            Appointment Information
-          </h2>
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm text-gray-500">Appointment ID</p>
-              <p className="text-gray-700">{selectedAppointment._id}</p>
+            <div className="flex items-end">
+              <span className={`px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800 ${
+                selectedAppointment.status === "confirmed" ? "bg-green-100" : ""
+              }`}>
+                {selectedAppointment.status}
+              </span>
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Datetime</p>
-              <p className="text-gray-700">
-                {format(new Date(selectedAppointment.datetime), "d-MMM-yyyy")}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Time</p>
-              <p className="text-gray-700">
-                {format(new Date(selectedAppointment.datetime), "h:mm a")}
-              </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div className="space-y-4">
+              <div>
+                <span className="block text-gray-600">Appointment Date</span>
+                <span className="text-lg font-semibold text-gray-700">
+                  {format(parseISO(selectedAppointment.datetime), "EEEE, MMMM d, yyyy")}
+                </span>
+              </div>
+              <div>
+                <span className="block text-gray-600">Time</span>
+                <span className="text-lg font-semibold text-gray-700">
+                  {format(parseISO(selectedAppointment.datetime), "h:mm a")}
+                </span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">
-            Related IDs
-          </h2>
-          <div className="space-y-3">
-            <div>
-              <p className="text-sm text-gray-500">Doctor ID</p>
-              <p className="text-gray-700">{selectedAppointment.doctorId}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Patient ID</p>
-              <p className="text-gray-700">{selectedAppointment.patientId}</p>
-            </div>
-          </div>
-        </div>
-
-        {selectedAppointment.description && (
-          <div className="md:col-span-2">
-            <h2 className="text-lg font-semibold text-gray-800 mb-3">
+        {/* Description and Notes Container */}
+        <div className="flex flex-row w-full h-[48%] gap-6">
+          {/* Description */}
+          <div className="flex flex-col w-[28%] border-2 border-gray-300 rounded-2xl p-5 h-[111%] bg-white">
+            <span className="text-lg font-semibold text-[#243954] text-center border-b border-gray-300 pb-3 mb-4">
               Description
-            </h2>
-            <p className="text-gray-700">{selectedAppointment.description}</p>
-          </div>
-        )}
-
-        <div className="md:col-span-2">
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">
-            System Information
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-gray-500">Created At</p>
-              <p className="text-gray-700">
-                {format(new Date(selectedAppointment.createdAt), "d-MMM-yyyy h:mm a")}
-              </p>
+            </span>
+            <div className="flex-1 overflow-y-auto">
+              {selectedAppointment.description ? (
+                <p className="text-gray-700 whitespace-pre-line">
+                  {selectedAppointment.description}
+                </p>
+              ) : (
+                <p className="text-gray-500 italic">No description provided for this appointment.</p>
+              )}
             </div>
-            <div>
-              <p className="text-sm text-gray-500">Last Updated</p>
-              <p className="text-gray-700">
-                {format(new Date(selectedAppointment.updatedAt), "d-MMM-yyyy h:mm a")}
-              </p>
+          </div>
+
+          {/* Patient Notes */}
+          <div className="flex flex-col w-[67%] border-2 border-gray-300 rounded-2xl p-5 h-[111%] bg-white"> 
+            <div className="flex justify-between items-center mb-5 border-b border-gray-300 pb-3"> 
+              <span className="text-lg font-semibold text-[#243954]">
+                Patient Notes
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-5 overflow-y-auto"> 
+              {patientNotes.map(note => (
+                <div key={note.id} className="border border-gray-300 rounded-lg p-4 h-full flex flex-col"> 
+                  <p className="text-gray-500 text-sm mb-2">{note.date}</p>
+                  <h3 className="text-md font-semibold text-[#243954] mb-3">{note.title}</h3>
+                  <p className="text-gray-700 text-sm flex-grow">{note.description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Cancel Button */}
-      {selectedAppointment.status !== "cancelled" && (
-        <div className="flex justify-end">
+      {/* Right side - Doctor info and Review */}
+      <div className="flex flex-col w-[25%] h-full space-y-6 ">
+        {/* Doctor info */}
+        <div className="bg-gray-50 rounded-2xl p-6 h-[30%] border border-gray-200">
+          <span className="text-lg font-semibold text-[#243954] mb-4">
+            Doctor Information
+          </span>
+          <div className="flex items-center gap-4">
+            <img
+              src={selectedAppointment.DoctorProfilePic || "/default-doctor.png"}
+              className="size-16 rounded-xl"
+              alt="Doctor"
+            />
+            <div>
+              <span className="text-gray-600">ID:</span>
+              <span className="ml-1 text-gray-700 truncate">
+                {selectedAppointment.doctorId}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Review Section */}
+        <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200">
+          <h3 className="text-lg font-semibold text-[#243954] mb-5">Rate Your Experience</h3>
+          
+          {/* Star Rating */}
+          <div className="mb-5">
+            <p className="text-gray-600 mb-3">How would you rate this appointment?</p>
+            <div className="flex justify-center gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => handleRatingChange(star)}
+                  onMouseEnter={() => handleHoverRating(star)}
+                  onMouseLeave={() => handleHoverRating(0)}
+                  className="focus:outline-none transition-transform hover:scale-110"
+                >
+                  <StarIcon
+                    className={`h-9 w-9 ${
+                      star <= (review.hoverRating || review.rating)
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+            <p className="text-center text-sm text-gray-500 mt-2">
+              {review.rating > 0 ? `You rated this ${review.rating} star${review.rating > 1 ? 's' : ''}` : 'Select a rating'}
+            </p>
+          </div>
+
+          {/* Review Comment */}
+          <div className="mb-2">
+            <label htmlFor="comment" className="block text-gray-600 mb-3">
+              Share your feedback (optional):
+            </label>
+            <textarea
+              id="comment"
+              rows="5"
+              value={review.comment}
+              onChange={handleCommentChange}
+              className="w-full p-4 border border-gray-300 rounded-lg outline-neutral-500 text-sm"
+              placeholder="How was your experience with the doctor?"
+            ></textarea>
+          </div>
+
+          {/* Submit Button */}
           <button
-            onClick={handleCancelAppointment}
-            className="px-6 py-2 bg-[#1a2c42] text-white rounded-lg hover:bg-[#162636]"
+            onClick={handleSubmitReview}
+            disabled={review.rating === 0 || review.isSubmitting}
+            className={`w-full py-3 px-5 rounded-lg font-medium transition-colors ${
+              review.rating === 0
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-[#243954] text-white hover:bg-[#1e2e4a]"
+            }`}
           >
-            Cancel Appointment
+            {review.isSubmitting ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </span>
+            ) : (
+              "Submit Review"
+            )}
           </button>
         </div>
-      )}
-
-      {/* Confirmation Modal */}
-      {showCancelModal && (
-        <ConfirmationModal
-          isOpen={showCancelModal}
-          onCancel={() => setShowCancelModal(false)}
-          onConfirm={confirmCancellation}
-          title="Cancel Appointment"
-          message="Are you sure you want to cancel this appointment?"
-        />
-      )}
+      </div>
     </div>
-  ) : null;
+  );
 }
 
 export default PatientAppointmentDetails;

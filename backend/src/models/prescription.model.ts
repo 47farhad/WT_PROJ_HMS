@@ -32,6 +32,8 @@ const prescriptionSchema = new mongoose.Schema(
     }
 );
 
+prescriptionSchema.index({appointmentId:1})
+
 const Prescription = mongoose.model("Prescription", prescriptionSchema);
 
 export default Prescription;

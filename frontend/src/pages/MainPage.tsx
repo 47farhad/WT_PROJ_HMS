@@ -36,6 +36,7 @@ import DoctorPatientDetails from './Doctor/DoctorPatientDetails.tsx'
 import AdminLabTests from './Admin/AdminLabTests.tsx'
 import PatientPharmacyCart from './Patient/PatientPharmacyCart.tsx'
 import PrescriptionForm from './Doctor/PrescriptionForm.tsx'
+import Notes from './Doctor/Notes.tsx'
 import NotFoundButton from '../components/NotFoundButton.tsx'
 function MainPage() {
 
@@ -94,6 +95,7 @@ function MainPage() {
           <Route path='ViewLabTests/*' element={userType === 'Patient' ? <ViewLabTests />  : <Navigate to={'/404'}/>} />
           <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : userType == 'Admin' ? <AdminLabTests /> :<NotFoundButton />} />
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <NotFoundButton />} />
+          <Route path='notes/:appointmentId' element={userType === 'Doctor' ? <Notes /> : <NotFoundButton />} />
           <Route path='prescriptionform/:appointmentId' element={userType === 'Doctor' ? <PrescriptionForm /> : <NotFoundButton />} />
           <Route path='Patients/*' element={userType === 'Admin' ? <AdminPatients /> : userType === 'Doctor' ? <DoctorPatients /> : <NotFoundButton />} />
           <Route path='Patients/:patientId' element={userType === 'Admin' ? <AdminPatientDetails /> : userType === 'Doctor' ? <DoctorPatientDetails /> : <NotFoundButton />} />

@@ -65,7 +65,7 @@ function PatientAppointments() {
   };
 
   return (
-    <div className="h-full w-full p-5 pt-0 overflow-y-auto">
+    <div className="h-full w-full p-5 pt-0 overflow-y-auto"style={{ zoom: "120%" }}>
       <div className="w-full mx-auto">
         {/* Top Controls */}
         <div className="flex justify-between items-center flex-wrap gap-3 p-2 mb-4">

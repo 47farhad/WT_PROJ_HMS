@@ -5,7 +5,7 @@ const NotFoundButton = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gradient-to-br from-sky-400 to-purple-300 p-5 text-white">
+    <div className="fixed inset-0 z-60 flex items-center justify-center bg-gradient-to-br from-sky-400 to-purple-300 p-5 text-white">
       <div className="
         bg-white/20 backdrop-blur-sm
         p-10 rounded-2xl

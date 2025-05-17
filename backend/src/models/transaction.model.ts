@@ -32,4 +32,6 @@ const transactionSchema = new mongoose.Schema(
   }
 );
 
+transactionSchema.index({userId: 1})
+
 export default mongoose.model('Transaction', transactionSchema);

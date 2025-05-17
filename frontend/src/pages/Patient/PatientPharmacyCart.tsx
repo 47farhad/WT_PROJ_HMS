@@ -67,7 +67,7 @@ function PatientPharmacyCart() {
     }
 
     return (
-        <div className="w-full h-full max-h-[calc(100vh-88px)] flex justify-center">
+        <div className="w-full h-full max-h-[calc(100vh-88px)] flex justify-center"style={{ zoom: "120%" }}>
             <div className="w-full max-w-2xl flex flex-col p-4 pt-0">
                 <div className='flex flex-row items-center justify-between bg-white z-10 sticky top-0 px-1'>
                     <button

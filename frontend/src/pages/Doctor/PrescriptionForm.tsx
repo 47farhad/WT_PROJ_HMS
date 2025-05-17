@@ -85,7 +85,7 @@ function PrescriptionForm() {
     }
 };
   return (
-    <div className="flex flex-col mx-5 mb-5 overflow-y-auto">
+    <div className="flex flex-col mx-5 mb-5 overflow-y-auto" style={{zoom:"133%"}}>
       <div className="bg-white rounded-xl shadow-sm p-6 mb-5">
         <h1 className="text-2xl font-bold text-[#243954] mb-6">Create Prescription</h1>
         

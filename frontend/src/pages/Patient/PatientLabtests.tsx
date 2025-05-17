@@ -85,7 +85,7 @@ function PatientLabTest() {
   };
 
   return (
-    <div className="h-full w-full p-5 pt-0 overflow-y-auto text-base">
+    <div className="h-full w-full p-5 pt-0 overflow-y-auto text-base"style={{ zoom: "120%" }}>
       <div className="w-full mx-auto space-y-3">
         {/* Top Bar */}
         <div className="flex items-center justify-between flex-wrap gap-3 p-2 mb-4">
