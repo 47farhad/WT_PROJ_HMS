@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
-import ConfirmationModal from "../../components/ConfirmationModal"; 
+import ConfirmationModal from "../../components/ConfirmationModal";
 
 function PatientLabTest() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ function PatientLabTest() {
   const [endDate, setEndDate] = useState("");
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [testToCancel, setTestToCancel] = useState(null); 
+  const [testToCancel, setTestToCancel] = useState(null);
 
   const {
     getAllLabTests,
@@ -58,6 +58,17 @@ function PatientLabTest() {
     };
   }, []);
 
+
+  const handleDownload = (test) => {
+    const link = document.createElement('a');
+    link.href = test.result;
+    link.download = `test-result-${test._id}.pdf`;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleDateChange = (e) => {
     const { name, value } = e.target;
     if (name === "startDate") setStartDate(value);
@@ -97,8 +108,8 @@ function PatientLabTest() {
                 onClick={() => setStatusFilter(status)}
                 className={`px-2 py-1 rounded-md text-sm font-medium transition
                   ${statusFilter === status
-                  ? "bg-[#243954] text-white"
-                  : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
+                    ? "bg-[#243954] text-white"
+                    : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
                   }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -110,7 +121,7 @@ function PatientLabTest() {
           <div className="flex items-center gap-5">
             {/* Filter by Date */}
             <div className="relative">
-              
+
               <button
                 onClick={() => setShowDateFilter(!showDateFilter)}
                 className="flex items-center gap-2 px-3 py-1 text-sm bg-gray-200 rounded-md text-[#243954]"
@@ -197,16 +208,16 @@ function PatientLabTest() {
                     <span
                       className={`px-2 py-1 rounded-full text-xs 
                       ${test.status === "pending"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : test.status === "confirmed"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"}`}
+                          ? "bg-yellow-100 text-yellow-800"
+                          : test.status === "confirmed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"}`}
                     >
                       {test.status}
                     </span>
                   </td>
                   <td className="py-3 px-4">
-                    {test.status !== "cancelled" && (
+                    {test.status !== "cancelled" && new Date(test.datetime) > new Date() && (
                       <button
                         onClick={() => handleCancelTestClick(test._id)}
                         className="px-2 py-1 text-sm bg-red-500 text-white rounded-md hover:opacity-80"
@@ -214,6 +225,18 @@ function PatientLabTest() {
                         Cancel
                       </button>
                     )}
+
+                    {test.status === "confirmed" &&
+                      new Date(test.datetime) <= new Date() &&
+                      test.result &&
+                      test.result !== "" && (
+                        <button
+                          onClick={() => handleDownload(test)}
+                          className="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-md text-sm font-medium transition-colors"
+                        >
+                          Download
+                        </button>
+                      )}
                   </td>
                 </tr>
               ))}
@@ -233,7 +256,7 @@ function PatientLabTest() {
       {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={isModalOpen}
-        onCancel={() => setIsModalOpen(false) }
+        onCancel={() => setIsModalOpen(false)}
         onConfirm={handleConfirmCancel}
         title="Cancel Test"
         message="Are you sure you want to cancel this test?"

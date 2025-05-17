@@ -243,8 +243,8 @@ function PatientDashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {doctors.map((doctor) => (
               <div
-                key={doctor.id}
-                className="border border-gray-200 rounded-xl p-5 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 hover:border-blue-300"
+                key={doctor._id}
+                className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
               >
                 <div className="flex flex-col items-center text-center">
                   <img

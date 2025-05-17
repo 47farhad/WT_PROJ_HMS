@@ -63,6 +63,53 @@ export const createAppointment = async (req: any, res: any) => {
   }
 };
 
+export const getPatientDetailsAppointments = async (req: any, res: any) => {
+  try {
+    const { patientId } = req.params;
+    const now = new Date();
+
+    // Get next upcoming appointment with only required fields
+    const upcomingAppointment = await Appointment.findOne({
+      patientId,
+      datetime: { $gte: now },
+      status: { $ne: 'cancelled' }
+    })
+      .sort({ datetime: 1 })
+      .populate({
+        path: 'doctorId',
+        select: 'firstName lastName'
+      })
+      .select('datetime description doctorId')
+      .lean()
+      .exec();
+
+    // Get two most recent past appointments with only required fields
+    const pastAppointments = await Appointment.find({
+      patientId,
+      datetime: { $lt: now },
+      status: { $ne: 'cancelled' }
+    })
+      .sort({ datetime: -1 })
+      .populate({
+        path: 'doctorId',
+        select: 'firstName lastName'
+      })
+      .select('datetime description doctorId')
+      .limit(2)
+      .lean()
+      .exec();
+
+    res.status(200).json({
+      upcoming: upcomingAppointment,
+      past: pastAppointments
+    });
+
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 export const updateAppointment = async (req: any, res: any) => {
   const reqUser = req.user;
   const appointmentId = req.params.id;
@@ -98,6 +145,7 @@ export const updateAppointment = async (req: any, res: any) => {
     if (appointment.status === 'cancelled') {
       await Transaction.deleteMany({
         type: 'Appointment',
+        status: 'unpaid',
         referenceId: appointmentId
       });
     }
@@ -140,7 +188,7 @@ export const getAppointmentDetails = async (req: any, res: any) => {
     console.log("Error in controller: getAppointmentDetails", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 export const getAllAppointments = async (req: any, res: any) => {
   try {

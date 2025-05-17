@@ -7,6 +7,7 @@ const labTestSchema = new mongoose.Schema({
   },
   result: {
     type: String,
+    default: ""
   },
   datetime: {
     type: Date,

@@ -15,6 +15,8 @@ export const usePatientLabTestStore = create((set, get) => ({
     isLabTestsLoading: false,
     isLabTestLoading: false,
     isLabTestBeingCreated: false,
+    patientDetailsReports: null,
+    isLoadingPatientDetailsReports: false,
     selectedLabTest: null,
 
     getAllLabTests: async (page = 1, limit = 20) => {
@@ -35,7 +37,6 @@ export const usePatientLabTestStore = create((set, get) => ({
 
         try {
             const res = await axiosInstance.get(`/patientLabTests/getAllLabTests?page=${page}&limit=${limit}`);
-            console.log(" Data received:", res.data.labTestsData);
 
             set(state => ({
                 labTests: {
@@ -67,20 +68,20 @@ export const usePatientLabTestStore = create((set, get) => ({
     },
 
     getLabTestDetails: async (labTestId) => {
-    try {
-        set({ isLabTestLoading: true });
-        const res = await axiosInstance.get(`/patientLabTests/getLabTestDetails/${labTestId}`);
-        
-        set({
-            selectedLabTest: res.data.offeredlabTest,
-            isLabTestLoading: false,
-        });
+        try {
+            set({ isLabTestLoading: true });
+            const res = await axiosInstance.get(`/patientLabTests/getLabTestDetails/${labTestId}`);
 
-    } catch (error) {
-        set({ isLabTestLoading: false });
-        toast.error(error.response?.data?.message || "Failed to fetch lab test details");
-    }
-},
+            set({
+                selectedLabTest: res.data.offeredlabTest,
+                isLabTestLoading: false,
+            });
+
+        } catch (error) {
+            set({ isLabTestLoading: false });
+            toast.error(error.response?.data?.message || "Failed to fetch lab test details");
+        }
+    },
 
     bookLabTest: async (labTestData) => {
         try {
@@ -102,31 +103,68 @@ export const usePatientLabTestStore = create((set, get) => ({
         }
     },
 
- cancelLabTest: async (labTestId, updateData) => {
-    try {
-        // Make the API call to cancel the lab test
-        const res = await axiosInstance.put(`/patientLabTests/cancelLabTest/${labTestId}`, updateData);
+    cancelLabTest: async (labTestId, updateData) => {
+        try {
+            // Make the API call to cancel the lab test
+            const res = await axiosInstance.put(`/patientLabTests/cancelLabTest/${labTestId}`, updateData);
 
-        // Update the lab test state with the new status
-        set(state => ({
-            labTests: {
-                data: state.labTests.data.map(test =>
-                    test._id === labTestId ? { ...test, status: 'cancelled', ...updateData } : test
-                ),
-                pagination: {
-                    ...state.labTests.pagination,
-                    totalPages: res.data.pagination?.totalPages || state.labTests.pagination.totalPages
+            // Update the lab test state with the new status
+            set(state => ({
+                labTests: {
+                    data: state.labTests.data.map(test =>
+                        test._id === labTestId ? { ...test, status: 'cancelled', ...updateData } : test
+                    ),
+                    pagination: {
+                        ...state.labTests.pagination,
+                        totalPages: res.data.pagination?.totalPages || state.labTests.pagination.totalPages
+                    }
+                },
+                selectedLabTest: null,
+            }));
+
+            // Show success message
+            toast.success(res.data.message || "Lab test cancelled successfully");
+        } catch (error) {
+            // Show error message if something goes wrong
+            toast.error(error.response?.data?.message || "Failed to cancel lab test");
+        }
+    },
+
+    uploadLabTest: async (labTestId, file) => {
+        try {
+            const formData = new FormData();
+            formData.append('pdf', file);
+
+            const response = await axiosInstance.post(
+                `/patientLabTests/uploadResult/${labTestId}`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
-            },
-            selectedLabTest: null,
-        }));
+            );
 
-        // Show success message
-        toast.success(res.data.message || "Lab test cancelled successfully");
-    } catch (error) {
-        // Show error message if something goes wrong
-        toast.error(error.response?.data?.message || "Failed to cancel lab test");
+            toast.success('Lab test uploaded successfully');
+        }
+        catch (error) {
+            toast.error(error.response?.data?.message || "Failed to upload result");
+        }
+    },
+
+    getDetailsReport: async (patientId) => {
+        try {
+            set({ isLoadingPatientDetailsReports: true });
+            const res = await axiosInstance.get(`/patientLabTests/patientDetailsReports/${patientId}`);
+            console.log(res.data)
+            set({
+                patientDetailsReports: res.data,
+                isLoadingPatientDetailsReports: false,
+            });
+        } catch (error) {
+            set({ isLoadingPatientDetailsReports: false });
+            toast.error(error.response?.data?.message || "Failed to fetch lab report details");
+        }
     }
-}
 
 }));

@@ -38,6 +38,10 @@ import PatientPharmacyCart from './Patient/PatientPharmacyCart.tsx'
 import PrescriptionForm from './Doctor/PrescriptionForm.tsx'
 import Notes from './Doctor/Notes.tsx'
 import NotFoundButton from '../components/NotFoundButton.tsx'
+import PatientOrders from './Patient/PatientOrders.tsx'
+import PatientOrderDetails from './Patient/PatientOrderDetails.tsx'
+import AdminBookedLabTests from './Admin/AdminBookedLabTests.tsx'
+
 function MainPage() {
 
   const { authUser } = useAuthStore();
@@ -92,6 +96,10 @@ function MainPage() {
           <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <NotFoundButton />} />
           <Route path='Schedule/*' element={userType === 'Admin' ? <AdminSchedule /> : <NotFoundButton />} />
           <Route path='Pharmacy/*' element={userType === 'Patient' ? <PatientPharmacy /> : userType == 'Admin' ? <AdminInventory /> : <NotFoundButton />} />
+          <Route path="Orders" element={userType === "Patient" ? <PatientOrders /> : <Navigate to={"/404"} replace />} />
+          <Route path="Orders/:orderId" element={userType === "Patient" ? <PatientOrderDetails /> : <Navigate to={"/404"} replace />} />
+          <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />
+          <Route path='BookedTests/*' element={userType === 'Admin' ? <AdminBookedLabTests /> : <Navigate to={'/404'} replace />} />
           <Route path='ViewLabTests/*' element={userType === 'Patient' ? <ViewLabTests />  : <Navigate to={'/404'}/>} />
           <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : userType == 'Admin' ? <AdminLabTests /> :<NotFoundButton />} />
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <NotFoundButton />} />

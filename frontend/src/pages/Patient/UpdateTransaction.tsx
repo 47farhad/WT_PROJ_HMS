@@ -51,7 +51,7 @@ if (isTransactionLoading)
     }
 
     // Proceed to update the transaction
-    await updateTransaction(transactionId, 'paid');
+    await updateTransaction(transactionId);
 
     // Redirect or show confirmation
     navigate('/Payments'); // Adjust route as needed
