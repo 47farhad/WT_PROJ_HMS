@@ -162,33 +162,55 @@ export const updateAppointment = async (req: any, res: any) => {
 
 export const getAppointmentDetails = async (req: any, res: any) => {
   const reqUser = req.user;
+
   try {
     const appointmentId = req.params.id;
 
-    const appointment = await Appointment.findById(appointmentId);
-
-    if (!appointment) {
-      return res.status(404).json({ message: 'Appointment not found' });
-    }
+    let appointment;
 
     if (reqUser.userType === "Doctor") {
+      // Doctor is requesting — populate patient name
+      appointment = await Appointment.findById(appointmentId).populate({
+        path: 'patientId',
+        select: 'firstName lastName email',
+      });
+
+      if (!appointment) {
+        return res.status(404).json({ message: 'Appointment not found' });
+      }
+
       if (appointment.doctorId.toString() !== reqUser._id.toString()) {
         return res.status(403).json({ message: 'Forbidden - Not Authorized' });
       }
-    }
-    else if (reqUser.userType === "Patient") {
+
+    } else if (reqUser.userType === "Patient") {
+      // Patient is requesting — populate doctor name
+      appointment = await Appointment.findById(appointmentId).populate({
+        path: 'doctorId',
+        select: 'firstName lastName email specialization',
+      });
+
+      if (!appointment) {
+        return res.status(404).json({ message: 'Appointment not found' });
+      }
+
       if (appointment.patientId.toString() !== reqUser._id.toString()) {
         return res.status(403).json({ message: 'Forbidden - Not Authorized' });
       }
+
+    } else {
+      return res.status(403).json({ message: 'Forbidden - Invalid User Type' });
     }
 
     return res.status(200).json({ appointment });
-  }
-  catch (error) {
+
+  } catch (error) {
     console.log("Error in controller: getAppointmentDetails", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
 
 export const getAllAppointments = async (req: any, res: any) => {
   try {

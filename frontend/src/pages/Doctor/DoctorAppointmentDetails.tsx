@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, isAfter } from "date-fns";
 import ConfirmationModal from "../../components/ConfirmationModal";
 
 function DoctorAppointmentDetails() {
@@ -17,12 +17,21 @@ function DoctorAppointmentDetails() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [doctorNotes, setDoctorNotes] = useState([]);
+  const [showActionButtons, setShowActionButtons] = useState(false);
 
   useEffect(() => {
     if (appointmentId) {
       getAppointmentDetails(appointmentId);
     }
   }, [appointmentId, getAppointmentDetails]);
+
+  useEffect(() => {
+    if (selectedAppointment?.datetime) {
+      const appointmentTime = parseISO(selectedAppointment.datetime);
+      const currentTime = new Date();
+      setShowActionButtons(isAfter(currentTime, appointmentTime));
+    }
+  }, [selectedAppointment]);
 
   if (isAppointmentLoading || !selectedAppointment) {
     return (
@@ -50,7 +59,7 @@ function DoctorAppointmentDetails() {
     navigate(`/prescriptionform/${appointmentId}`);
   };
 
-  return (
+ return (
     <div className="flex flex-row mx-5 mb-5 h-full overflow-y-auto" style={{ zoom: "100%" }}>
       {/* Left side - Appointment details */}
       <div className="flex flex-col w-[75%] h-full space-x-9 space-y-5"> {/* Added space-y-5 for consistent spacing */}
@@ -145,40 +154,45 @@ function DoctorAppointmentDetails() {
               alt="Patient"
             />
             <div>
-              <span className="text-lg text-[#4B4C4E]">ID:</span>
+              <span className="text-lg text-[#4B4C4E]">Name:</span>
               <span className="ml-1 text-lg text-[#4C4D4F] truncate">
-                {selectedAppointment.patientId}
+                {selectedAppointment.patientId.firstName} {selectedAppointment.patientId.lastName}
               </span>
             </div>
           </div>
         </div>
 
         {/* Actions */}
-        <div className="bg-[#F5F5F5] rounded-2xl p-5 flex-1">
-          <span className="text-xl font-semibold text-[#04080B] mb-3">
-            Appointment Actions
-          </span>
-          <div className="space-y-4"> {/* Reduced spacing */}
-            <button
-              onClick={() => navigate(-1)}
-              className="mt-6 w-full bg-white border border-gray-300 text-[#243954] px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
-            >
-              Back to Appointments
-            </button>
-            <button
-              onClick={handleAddNotes}
-              className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
-            >
-              Add Notes
-            </button>
-            <button
-              onClick={() => handleAddPrescription(appointmentId)}
-              className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
-            >
-              Add Prescription
-            </button>
-          </div>
+      <div className="bg-[#F5F5F5] rounded-2xl p-5 flex-1">
+        <span className="text-xl font-semibold text-[#04080B] mb-3">
+          Appointment Actions
+        </span>
+        <div className="space-y-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="mt-6 w-full bg-white border border-gray-300 text-[#243954] px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
+          >
+            Back to Appointments
+          </button>
+          
+          {showActionButtons && (
+            <>
+              <button
+                onClick={handleAddNotes}
+                className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
+              >
+                Add Notes
+              </button>
+              <button
+                onClick={() => handleAddPrescription(appointmentId)}
+                className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
+              >
+                Add Prescription
+              </button>
+            </>
+          )}
         </div>
+      </div>
       </div>
 
       {/* Confirmation Modal */}
