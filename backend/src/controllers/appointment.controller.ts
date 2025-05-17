@@ -71,7 +71,7 @@ export const createAppointment = async (req: any, res: any) => {
 
     await newAppointment.save({ session });
 
-    
+
     await createTransaction({
       userId: reqUser._id,
       referenceId: newAppointment._id,
@@ -94,6 +94,52 @@ export const createAppointment = async (req: any, res: any) => {
   }
 };
 
+export const getPatientDetailsAppointments = async (req: any, res: any) => {
+  try {
+    const { patientId } = req.params;
+    const now = new Date();
+
+    // Get next upcoming appointment with only required fields
+    const upcomingAppointment = await Appointment.findOne({
+      patientId,
+      datetime: { $gte: now },
+      status: { $ne: 'cancelled' }
+    })
+      .sort({ datetime: 1 })
+      .populate({
+        path: 'doctorId',
+        select: 'firstName lastName'
+      })
+      .select('datetime description doctorId')
+      .lean()
+      .exec();
+
+    // Get two most recent past appointments with only required fields
+    const pastAppointments = await Appointment.find({
+      patientId,
+      datetime: { $lt: now },
+      status: { $ne: 'cancelled' }
+    })
+      .sort({ datetime: -1 })
+      .populate({
+        path: 'doctorId',
+        select: 'firstName lastName'
+      })
+      .select('datetime description doctorId')
+      .limit(2)
+      .lean()
+      .exec();
+
+    res.status(200).json({
+      upcoming: upcomingAppointment,
+      past: pastAppointments
+    });
+
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const updateAppointment = async (req: any, res: any) => {
   const reqUser = req.user;
@@ -173,7 +219,7 @@ export const getAppointmentDetails = async (req: any, res: any) => {
     console.log("Error in controller: getAppointmentDetails", error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 export const getAllAppointments = async (req: any, res: any) => {
   try {
@@ -185,7 +231,7 @@ export const getAllAppointments = async (req: any, res: any) => {
 
     const appointmentsList = await Appointment.aggregate([
       // Match appointments for the specific patient
-      { $match: (reqUser.userType === 'Patient' ? {patientId: reqUser._id} : {doctorId: reqUser._id}) },
+      { $match: (reqUser.userType === 'Patient' ? { patientId: reqUser._id } : { doctorId: reqUser._id }) },
 
       // Sort by createdAt in descending order
       { $sort: { createdAt: -1 } },
@@ -238,6 +284,7 @@ export const getAllAppointments = async (req: any, res: any) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getDoctors = async (req: any, res: any) => {
   try {
     const doctors = await User.find({ userType: "Doctor" }).select("doctorId firstName lastName");
@@ -248,6 +295,7 @@ export const getDoctors = async (req: any, res: any) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 export const getDoctor = async (req: any, res: any) => {
   try {
     const doctorId = req.params.id;

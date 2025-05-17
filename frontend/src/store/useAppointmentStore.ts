@@ -17,6 +17,8 @@ export const useAppointmentStore = create((set, get) => ({
     isAppointmentLoading: false,
     isAppointmentsLoading: false,
     isAppointmentBeingCreated: false,
+    patientDetailsAppointments: null,
+    isLoadingPatientDetailsAppointments: false,
     selectedAppointment: null,
 
 
@@ -80,38 +82,51 @@ export const useAppointmentStore = create((set, get) => ({
             toast.error(error.response?.data?.message || "Failed to fetch appointment details");
         }
     },
-   createAppointment: async (appointmentData) => {
-    try {
-        set({ isAppointmentbeingCreated: true });
-
-        const res = await axiosInstance.post(`/appointments/createAppointment`, appointmentData);
-
-        set({ isAppointmentbeingCreated: false });
-
-        toast.success('Appointment created successfully');
-    }
-    catch (error) {
-        set({ isAppointmentbeingCreated: false });
-
-        // Handle conflict errors (409 status)
-        if (error.response?.status === 409) {
-            const message = error.response.data?.message;
-
-            if (message === "You have already booked this appointment") {
-                toast.error("You have already booked this exact appointment.");
-            } else if (message === "You already have an appointment at this time with another doctor") {
-                toast.error("You already have an appointment at this time with another doctor.");
-            } else if (message === "Appointment already confirmed and paid for by another user") {
-                toast.error("Appointment already confirmed and paid for by another user.");
-            } else {
-                toast.error(message || "Appointment conflict occurred.");
-            }
-        } else {
-            // Handle all other errors
-            toast.error(error.response?.data?.message || "Failed to create appointment");
+    getPatientDetailsAppointments: async (patientId) => {
+        try {
+            set({ isLoadingPatientDetailsAppointments: true });
+            const res = await axiosInstance.get(`/appointments/getPatientDetailsAppointment/${patientId}`);
+            set({
+                patientDetailsAppointments: res.data,
+                isLoadingPatientDetailsAppointments: false,
+            });
+        } catch (error) {
+            set({ isLoadingPatientDetailsAppointments: false });
+            toast.error(error.response?.data?.message || "Failed to fetch appointment details");
         }
-    }
-},
+    },
+    createAppointment: async (appointmentData) => {
+        try {
+            set({ isAppointmentbeingCreated: true });
+
+            const res = await axiosInstance.post(`/appointments/createAppointment`, appointmentData);
+
+            set({ isAppointmentbeingCreated: false });
+
+            toast.success('Appointment created successfully');
+        }
+        catch (error) {
+            set({ isAppointmentbeingCreated: false });
+
+            // Handle conflict errors (409 status)
+            if (error.response?.status === 409) {
+                const message = error.response.data?.message;
+
+                if (message === "You have already booked this appointment") {
+                    toast.error("You have already booked this exact appointment.");
+                } else if (message === "You already have an appointment at this time with another doctor") {
+                    toast.error("You already have an appointment at this time with another doctor.");
+                } else if (message === "Appointment already confirmed and paid for by another user") {
+                    toast.error("Appointment already confirmed and paid for by another user.");
+                } else {
+                    toast.error(message || "Appointment conflict occurred.");
+                }
+            } else {
+                // Handle all other errors
+                toast.error(error.response?.data?.message || "Failed to create appointment");
+            }
+        }
+    },
     getDoctors: async () => {
         try {
             const resdoctors = await axiosInstance.get('/appointments/getDoctors');
@@ -130,7 +145,6 @@ export const useAppointmentStore = create((set, get) => ({
             toast.error(error.response?.data?.message || "Failed to load doctors");
         }
     },
-
     updateAppointment: async (appointmentId) => {
         try {
             const res = await axiosInstance.put(`/appointments/updateAppointment/${appointmentId}`, {

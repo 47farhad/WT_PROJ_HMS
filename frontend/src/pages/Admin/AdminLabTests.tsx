@@ -2,11 +2,13 @@ import { useEffect, useState } from "react"
 import AdminLabTestCard from "../../components/AdminLabTestCard"
 import "../../css/hideScroll.css"
 import { useLabTestStore } from "../../store/useLabTestStore";
+import { useNavigate } from "react-router-dom";
 
 function AdminLabTests() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const { createLabTest, offeredLabTests, getOfferedLabTest, isOfferedLabTestsLoading, isCreatingLabTest } = useLabTestStore();
+    const navigate = useNavigate();
 
     useEffect(() => {
         getOfferedLabTest();
@@ -16,7 +18,7 @@ function AdminLabTests() {
         await createLabTest();
     }
 
-    if(isOfferedLabTestsLoading){
+    if (isOfferedLabTestsLoading) {
         return (
             <div>
                 Loading
@@ -56,11 +58,17 @@ function AdminLabTests() {
                         />
                     </div>
                 </div>
-                <button className="flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg hover:bg-[#1a2c42] transition-colors"
-                    onClick={handleCreateTest}
-                    disabled={isCreatingLabTest}>
-                    Create New Test
-                </button>
+                <div className="flex flex-row gap-2">
+                    <button className="flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg hover:bg-[#1a2c42] transition-colors"
+                        onClick={() => navigate('/BookedTests')}>
+                        View Bookings
+                    </button>
+                    <button className="flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg hover:bg-[#1a2c42] transition-colors"
+                        onClick={handleCreateTest}
+                        disabled={isCreatingLabTest}>
+                        Create New Test
+                    </button>
+                </div>
             </div>
 
             {/* Scrollable Content */}
