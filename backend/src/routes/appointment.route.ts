@@ -22,4 +22,5 @@ router.get("/getPatientDetailsAppointment/:patientId", protectRoute, isAdmin, ge
 router.get("/getDoctors", getDoctors);
 router.get("/getDoctor/:id", getDoctor);
 
+
 export default router;

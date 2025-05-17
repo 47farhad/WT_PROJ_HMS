@@ -14,7 +14,9 @@ import messageRoutes from "./routes/message.route.js";
 import adminRoutes from "./routes/adminControls.route.js"
 import labTestRoutes from "./routes/labTest.route.js"
 import orderRoutes from "./routes/order.route.js"
-import { app, server } from "./lib/socket.js";
+import prescriptionRoutes from "./routes/prescription.routes.js";
+
+import { app, server } from "./lib/socket.js";  
 
 dotenv.config();
 const PORT = process.env.PORT;
@@ -36,7 +38,8 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/labTests", labTestRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
 app.use("/api/order", orderRoutes);
-app.use("/api/patientLabTests",patientLabTestRoutes)
+app.use("/api/patientLabTests",patientLabTestRoutes);
+app.use("/api/prescription",prescriptionRoutes);
 
 
 server.listen(PORT, () => {

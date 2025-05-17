@@ -67,24 +67,25 @@ const PatientPayments: React.FC = () => {
   );
 
   return (
-    <div className="h-full max-h-[calc(100vh-88px)] w-full p-5 pt-0 flex flex-col justify-between">
-      {/* Top Controls */}
-      <div className="flex justify-between items-center flex-wrap gap-3 p-2 mb-4">
-        {/* Status */}
-        <div className="flex flex-wrap gap-2 items-center">
-          {["all", "paid", "unpaid", "failed"].map((status) => (
-            <button
-              key={status}
-              onClick={() => setStatusFilter(status)}
-              className={`px-2 py-1 rounded-md text-sm font-medium transition ${statusFilter === status
-                ? "bg-[#243954] text-white"
-                : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
-                }`}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1)}
-            </button>
-          ))}
-        </div>
+    <div className="h-full w-full p-5 pt-0 overflow-y-auto"style={{ zoom: "120%" }}>
+      <div className="w-full mx-auto">
+        {/* Top Controls */}
+        <div className="flex justify-between items-center flex-wrap gap-3 p-2 mb-4">
+          {/* Status */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {["all", "paid", "unpaid", "failed"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-2 py-1 rounded-md text-sm font-medium transition ${statusFilter === status
+                    ? "bg-[#243954] text-white"
+                    : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
+                  }`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </button>
+            ))}
+          </div>
 
         {/* Right Side Filter Controls */}
         <div className="flex items-center gap-3">

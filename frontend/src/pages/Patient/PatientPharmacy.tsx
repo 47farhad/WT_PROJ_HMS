@@ -23,7 +23,7 @@ function PatientPharmacy() {
   }
 
   return (
-    <div className="flex flex-col max-h-[calc(100vh-88px)]">
+    <div className="flex flex-col max-h-[calc(100vh-88px)]"style={{ zoom: "100%" }}>
       {/* Fixed Search Bar */}
       <div className="sticky top-0 z-10 bg-white px-5 pb-3 flex flex-row justify-between items-center">
         <div className="flex flex-row justify-start">

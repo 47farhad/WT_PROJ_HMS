@@ -21,48 +21,19 @@ export const bookLabTest = async (req: any, res: any) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Prevent booking the same test 
-        const duplicateBySameUser = await PatientLabTest.findOne({
-            offeredTestId,
-            patientId: reqUser._id,
-            status: { $ne: 'cancelled' }
-        }).session(session);
-
-        if (duplicateBySameUser) {
-            await session.abortTransaction();
-            return res.status(409).json({ message: 'You have already booked this LabTest' });
-        }
-
-        // Prevent double booking at the same time
-        const userConflictAtSameTime = await PatientLabTest.findOne({
-            datetime: new Date(datetime),
-            patientId: reqUser._id,
-            status: { $ne: 'cancelled' }
-        }).session(session);
-
-        if (userConflictAtSameTime) {
-            await session.abortTransaction();
-            return res.status(409).json({ message: 'You already have booked another Lab Test at this time' });
-        }
-
         // Check if someone else has already booked and paid
         const existingLabTest = await PatientLabTest.findOne({
             offeredTestId,
             datetime: new Date(datetime),
+            status: "confirmed"
         }).session(session);
 
         if (existingLabTest) {
-            const existingPaidTransaction = await Transaction.findOne({
-                referenceId: existingLabTest._id,
-                type: 'LabTest',
-                status: 'paid',
-            }).session(session);
+            await session.abortTransaction();
+            return res.status(409).json({ message: 'PatientLabTest already confirmed and paid for by another user' });
 
-            if (existingPaidTransaction) {
-                await session.abortTransaction();
-                return res.status(409).json({ message: 'PatientLabTest already confirmed and paid for by another user' });
-            }
         }
+        
         const offeredTest = await OfferedTest.findById(offeredTestId).session(session);
         if (!offeredTest || offeredTest.status !== 'available') {
             await session.abortTransaction();

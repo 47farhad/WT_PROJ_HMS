@@ -1,7 +1,7 @@
 export const isAdmin = (req: any, res: any, next: any) => {
     try {
-        if (req.user.userType !== 'Admin') {
-            return res.status(401).json({ message: "Unauthorized - not an admin" })
+        if (req.user.userType !== 'Admin'&& req.user.userType !== 'Doctor') {
+            return res.status(401).json({ message: "Unauthorized " })
         }
 
         next();

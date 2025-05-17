@@ -62,7 +62,7 @@ if (isTransactionLoading)
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center z-50"style={{ zoom: "120%" }}>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-green-50 to-purple-100"></div>
       <div className="relative z-10 w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
         <h2 className="text-2xl font-bold mb-2 text-center text-gray-800">Payment for Transaction</h2>

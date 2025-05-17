@@ -29,4 +29,9 @@ const labTestSchema = new mongoose.Schema({
   }
 
 );
+
+labTestSchema.index({ patientId: 1 });
+labTestSchema.index({ offeredTestId: 1 });
+labTestSchema.index({ datetime: -1 });
+
 export default mongoose.model('PatientLabTest', labTestSchema);
