@@ -320,7 +320,7 @@ function AdminBookedLabTests() {
                                                     Download
                                                 </button>
                                             ) : (
-                                                new Date(test.datetime) > new Date() ? (
+                                                new Date(test.datetime) < new Date() ? (
                                                     <>
                                                         <input
                                                             type="file"
