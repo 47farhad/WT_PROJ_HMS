@@ -5,7 +5,7 @@ const prescriptionSchema = new mongoose.Schema(
         appointmentId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Appointment',
-            required: true
+            required: true,
         },
         items: [
             {
@@ -18,7 +18,6 @@ const prescriptionSchema = new mongoose.Schema(
                     type: Number,
                     required: true,
                     min: 1
-                
                 }
             }
         ],
@@ -32,7 +31,7 @@ const prescriptionSchema = new mongoose.Schema(
     }
 );
 
-prescriptionSchema.index({appointmentId:1})
+prescriptionSchema.index({ appointmentId: 1 });
 
 const Prescription = mongoose.model("Prescription", prescriptionSchema);
 
