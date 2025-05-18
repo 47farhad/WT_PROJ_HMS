@@ -19,6 +19,9 @@ export const getPatients = async (req: any, res: any) => {
             "profilePic": 1,
             "firstName": 1,
             "lastName": 1,
+            "contact": 1,
+            "gender": 1,
+            "age": 1,
             "_id": 1,
             "medicalInfo.dateOfBirth": 1
         };

@@ -167,11 +167,14 @@ function PatientAppointmentDetails() {
           <span className="text-lg font-semibold text-[#243954] mb-4">
             Doctor Information
           </span>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center">
             <img
-              src={selectedAppointment.DoctorProfilePic || "/default-doctor.png"}
-              className="size-16 rounded-xl"
-              alt="Doctor"
+              src={selectedAppointment.doctorId.profilePic}
+              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+              alt={`${selectedAppointment.doctorId.firstName} ${selectedAppointment.doctorId.lastName}`}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
             <div>
               <h3 className="text-lg font-semibold text-[#243954]">

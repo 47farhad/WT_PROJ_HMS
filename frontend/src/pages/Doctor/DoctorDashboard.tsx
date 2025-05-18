@@ -1,132 +1,140 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useAdminStore } from "../../store/useAdminStore";
 
 function DoctorDashboard() {
+  const { patients, getPatients, isPatientsLoading } = useAdminStore();
+  const patientsEndRef = useRef(null);
   const navigate = useNavigate();
-  const { authUser } = useAuthStore(); 
+  const { authUser } = useAuthStore();
+  const {
+    getAllAppointments,
+    isAppointmentsLoading,
+    appointments: { data: appointments, pagination },
+    getAppointmentStats,
+    appointmentStats
+  } = useAppointmentStore();
+
+  const appointmentEndRef = useRef(null);
+  const appointmentContainerRef = useRef(null);
+  const [isAtBottom, setIsAtBottom] = useState(false);
 
   // Generate random patient profile pictures
   const getRandomPatientAvatar = (seed) =>
     `https://api.dicebear.com/7.x/initials/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
 
-  // Hardcoded data
-  const todaysAppointmentsCount = 5;
-  const totalPatientsCount = 42;
-  const prescriptionsCount = 28;
-  const monthlyEarnings = 3250;
+  // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split('T')[0];
+  const todayDateObj = new Date();
+  todayDateObj.setHours(0, 0, 0, 0);
 
-  // Hardcoded appointments data
-  const todaysAppointments = [
-    {
-      _id: "1",
-      patient: {
-        firstName: "John",
-        lastName: "Doe",
-        gender: "Male",
-        age: 35,
-        phone: "555-123-4567"
-      },
-      date: new Date().setHours(10, 0, 0, 0),
-      status: "confirmed",
-      reason: "Annual checkup"
-    },
-    {
-      _id: "2",
-      patient: {
-        firstName: "Jane",
-        lastName: "Smith",
-        gender: "Female",
-        age: 28,
-        phone: "555-987-6543"
-      },
-      date: new Date().setHours(11, 30, 0, 0),
-      status: "confirmed",
-      reason: "Follow-up"
-    },
-    {
-      _id: "3",
-      patient: {
-        firstName: "Robert",
-        lastName: "Johnson",
-        gender: "Male",
-        age: 52,
-        phone: "555-456-7890"
-      },
-      date: new Date().setHours(14, 0, 0, 0),
-      status: "pending",
-      reason: "Blood pressure"
+  useEffect(() => {
+    if (authUser?._id) {
+      getAppointmentStats(authUser._id);
     }
-  ];
+  }, [authUser?._id, getAppointmentStats]);
 
-  const recentPatients = [
-    {
-      _id: "1",
-      patient: {
-        firstName: "Emily",
-        lastName: "Williams",
-        phone: "555-111-2222"
-      },
-      date: new Date().setDate(new Date().getDate() - 2),
-      reason: "Allergy consultation"
+  const confirmedAppointments = appointments.map(appointment => ({
+    ...appointment,
+    _id: appointment._id,
+    datetime: appointment.datetime,
+    description: appointment.description,
+    status: appointment.status,
+    patient: {
+      _id: appointment.patientId,
+      firstName: appointment.patientFirstName,
+      lastName: appointment.patientLastName,
+      profilePic: appointment.patientProfilePic,
     },
-    {
-      _id: "2",
-      patient: {
-        firstName: "Michael",
-        lastName: "Brown",
-        phone: "555-333-4444"
-      },
-      date: new Date().setDate(new Date().getDate() - 5),
-      reason: "Diabetes management"
-    },
-    {
-      _id: "3",
-      patient: {
-        firstName: "Sarah",
-        lastName: "Davis",
-        phone: "555-555-6666"
-      },
-      date: new Date().setDate(new Date().getDate() - 7),
-      reason: "Physical therapy"
+    doctorId: {
+      _id: authUser._id
     }
-  ];
+  }));
 
-  const upcomingAppointments = [
-    {
-      _id: "4",
-      patient: {
-        firstName: "David",
-        lastName: "Wilson",
-        phone: "555-777-8888"
-      },
-      date: new Date().setDate(new Date().getDate() + 1),
-      status: "confirmed",
-      reason: "Post-surgery check"
-    },
-    {
-      _id: "5",
-      patient: {
-        firstName: "Lisa",
-        lastName: "Moore",
-        phone: "555-999-0000"
-      },
-      date: new Date().setDate(new Date().getDate() + 2),
-      status: "confirmed",
-      reason: "Vaccination"
-    },
-    {
-      _id: "6",
-      patient: {
-        firstName: "James",
-        lastName: "Taylor",
-        phone: "555-222-3333"
-      },
-      date: new Date().setDate(new Date().getDate() + 3),
-      status: "pending",
-      reason: "General consultation"
+  // Today's appointments
+  const todaysAppointments = confirmedAppointments.filter(appointment => {
+    const appointmentDate = new Date(appointment.datetime).toISOString().split('T')[0];
+    return appointmentDate === today;
+  });
+
+  // Upcoming appointments (excluding today's)
+  const upcomingAppointments = confirmedAppointments.filter(appointment => {
+    const appointmentDate = new Date(appointment.datetime);
+    return appointmentDate > todayDateObj;
+  }).slice(0, 5);
+
+  // Calculate stats from the store
+  const totalConfirmedAppointmentsCount = appointmentStats.total || 0;
+  const totalPatientsCount = patients.data?.length || 0;
+  const monthlyEarnings = totalConfirmedAppointmentsCount * 50 * 0.02;
+
+  useEffect(() => {
+    getAllAppointments();
+  }, [getAllAppointments]);
+
+  useEffect(() => {
+    if (
+      isAtBottom &&
+      !pagination.isPageLoading &&
+      pagination.hasMore &&
+      !isAppointmentsLoading
+    ) {
+      getAllAppointments(pagination.currentPage + 1);
     }
-  ];
+  }, [isAtBottom, pagination, getAllAppointments, isAppointmentsLoading]);
+
+  useEffect(() => {
+    const container = appointmentContainerRef.current;
+
+    const handleScroll = () => {
+      if (!container || !appointmentEndRef.current) return;
+      const endRefPosition = appointmentEndRef.current.getBoundingClientRect().bottom;
+      const containerPosition = container.getBoundingClientRect().bottom;
+      const threshold = 5;
+      const reachedBottom = Math.abs(endRefPosition - containerPosition) <= threshold;
+      setIsAtBottom(reachedBottom);
+    };
+
+    container?.addEventListener("scroll", handleScroll);
+    return () => container?.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const handleAppointmentClick = (appointmentId) => {
+    navigate(`/DoctorAppointmentDetails/${appointmentId}`);
+  };
+
+  useEffect(() => {
+    getPatients();
+  }, [getPatients]);
+
+  useEffect(() => {
+    const current = patientsEndRef.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (firstEntry.isIntersecting && !patients.pagination.isPageLoading && patients.pagination.hasMore && (patients.data.length != 0)) {
+          getPatients(patients.pagination.currentPage + 1);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (patientsEndRef.current) {
+      observer.observe(patientsEndRef.current);
+    }
+
+    return () => {
+      if (current) {
+        observer.unobserve(current);
+      }
+    };
+  }, [getPatients, patients.pagination, patients.data.length]);
+
+  const handlePatientClick = (patientId) => {
+    navigate(`/Patients/${patientId}`);
+  };
 
   return (
     <div className="overflow-y-auto p-5 h-full w-full bg-white">
@@ -150,7 +158,7 @@ function DoctorDashboard() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-1">Appointments</h3>
-              <p className="text-3xl font-bold text-gray-900">{todaysAppointmentsCount}</p>
+              <p className="text-3xl font-bold text-gray-900">{totalConfirmedAppointmentsCount}</p>
             </div>
           </div>
           <Link to="/Appointments" className="text-sm text-blue-600 hover:underline mt-3 block">View schedule →</Link>
@@ -166,26 +174,10 @@ function DoctorDashboard() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-1">Total Patients</h3>
-              <p className="text-3xl font-bold text-gray-900">{totalPatientsCount}</p>
+              <p className="text-3xl font-bold text-gray-900">{patients.data?.length || 0}</p>
             </div>
           </div>
           <Link to="/Patients" className="text-sm text-green-600 hover:underline mt-3 block">View patients →</Link>
-        </div>
-
-        {/* Prescriptions Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-purple-100 mr-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-1">Prescriptions</h3>
-              <p className="text-3xl font-bold text-gray-900">{prescriptionsCount}</p>
-            </div>
-          </div>
-          <Link to="/Prescriptions" className="text-sm text-purple-600 hover:underline mt-3 block">Manage prescriptions →</Link>
         </div>
 
         {/* Earnings Card */}
@@ -214,53 +206,62 @@ function DoctorDashboard() {
             <Link to="/DoctorAppointments" className="text-blue-600 hover:underline font-medium">View All</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {todaysAppointments.map(appointment => (
-                  <tr key={appointment._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <img 
-                            className="h-10 w-10 rounded-full" 
-                            src={getRandomPatientAvatar(
-                              `${appointment.patient.firstName} ${appointment.patient.lastName}`
-                            )} 
-                            alt={appointment.patient.firstName} 
-                          />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {appointment.patient.firstName} {appointment.patient.lastName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {appointment.patient.gender}, {appointment.patient.age}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(appointment.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {appointment.status}
-                      </span>
-                    </td>
+            {todaysAppointments.length > 0 ? (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {todaysAppointments.map(appointment => (
+                    <tr
+                      key={appointment._id}
+                      className="hover:bg-blue-50 cursor-pointer transition-colors"
+                      onClick={() => handleAppointmentClick(appointment._id)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <img
+                              className="h-10 w-10 rounded-full"
+                              src={getRandomPatientAvatar(
+                                `${appointment.patient.firstName} ${appointment.patient.lastName}`
+                              )}
+                              alt={appointment.patient.firstName}
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {appointment.patient.firstName} {appointment.patient.lastName}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(appointment.datetime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                          'bg-yellow-100 text-yellow-800'
+                          }`}>
+                          {appointment.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <p className="mt-2">No appointments scheduled for today</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -271,48 +272,63 @@ function DoctorDashboard() {
             <Link to="/Patients" className="text-blue-600 hover:underline font-medium">View All</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visit</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {recentPatients.map(patient => (
-                  <tr key={patient._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <img 
-                            className="h-10 w-10 rounded-full" 
-                            src={getRandomPatientAvatar(
-                              `${patient.patient.firstName} ${patient.patient.lastName}`
-                            )} 
-                            alt={patient.patient.firstName} 
-                          />
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {patient.patient.firstName} {patient.patient.lastName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {patient.patient.phone}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(patient.date).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {patient.reason}
-                    </td>
+            {patients.data?.length > 0 ? (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Visit</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {patients.data.slice(0, 5).map(patient => (
+                    <tr
+                      key={patient._id}
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => handlePatientClick(patient._id)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <img
+                              className="h-10 w-10 rounded-full"
+                              src={getRandomPatientAvatar(
+                                `${patient.firstName} ${patient.lastName}`
+                              )}
+                              alt={patient.firstName}
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {patient.firstName} {patient.lastName}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {patient.latestPastAppointment?.datetime
+                          ? new Date(patient.latestPastAppointment.datetime).toLocaleDateString()
+                          : patient.upcomingAppointment?.datetime
+                            ? new Date(patient.upcomingAppointment.datetime).toLocaleDateString()
+                            : 'No appointments'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {patient.contact || 'N/A'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <p className="mt-2">No patients found</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -321,69 +337,80 @@ function DoctorDashboard() {
       <div className="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fade-in border border-gray-300">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-800">Upcoming Appointments</h2>
-          <Link to="/DoctorAppointments" className="text-blue-600 hover:underline font-medium">View All</Link>
+          <Link to="/Appointments" className="text-blue-600 hover:underline font-medium">View All</Link>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {upcomingAppointments.map(appointment => (
-                <tr key={appointment._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <img 
-                          className="h-10 w-10 rounded-full" 
-                          src={getRandomPatientAvatar(
-                            `${appointment.patient.firstName} ${appointment.patient.lastName}`
-                          )} 
-                          alt={appointment.patient.firstName} 
-                        />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {appointment.patient.firstName} {appointment.patient.lastName}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {appointment.patient.phone}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(appointment.date).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {appointment.reason}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                      'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {appointment.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button 
-                      onClick={() => navigate(`/appointment/${appointment._id}`)}
-                      className="text-blue-600 hover:text-blue-900"
-                    >
-                      View
-                    </button>
-                  </td>
+          {upcomingAppointments.length > 0 ? (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {upcomingAppointments.map(appointment => (
+                  <tr key={appointment._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <img
+                            className="h-10 w-10 rounded-full"
+                            src={getRandomPatientAvatar(
+                              `${appointment.patient.firstName} ${appointment.patient.lastName}`
+                            )}
+                            alt={appointment.patient.firstName}
+                          />
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {appointment.patient.firstName} {appointment.patient.lastName}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {appointment.patient.contact}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(appointment.datetime).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                      })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(appointment.datetime).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {appointment.description}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${appointment.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                        'bg-yellow-100 text-yellow-800'
+                        }`}>
+                        {appointment.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="mt-2">No upcoming appointments</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -12,14 +12,23 @@ function BookAppointment() {
 
   const availableTimeSlots = [
     "9:00 AM",
+    "9:30 AM",
     "10:00 AM",
+    "10:30 AM",
     "11:00 AM",
+    "11:30 AM",
     "12:00 PM",
+    "12:30 PM",
     "1:00 PM",
+    "1:30 PM",
     "2:00 PM",
+    "2:30 PM",
     "3:00 PM",
+    "3:30 PM",
     "4:00 PM",
+    "4:30 PM",
     "5:00 PM",
+    "10:00 PM"
   ];
 
   useEffect(() => {
@@ -56,16 +65,16 @@ function BookAppointment() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-100"style={{ zoom: "120%" }}>
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-gray-100" style={{ zoom: "120%" }}>
       {/* Main Container */}
       <div className="relative bg-white rounded-xl shadow-xl max-w-5xl w-full z-10 mx-6 flex overflow-hidden">
         {/* Left Side - Doctor Details */}
         <div className="w-2/5 bg-gray-50 p-6 flex flex-col">
           {/* Doctor Profile */}
           <div className="flex items-center mb-8">
-            <img 
-              src={appointmentDoctor.profilePic || "/default-doctor.png"} 
-              alt="Doctor" 
+            <img
+              src={appointmentDoctor.profilePic || "/default-doctor.png"}
+              alt="Doctor"
               className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
             />
             <div className="ml-4">
@@ -168,10 +177,10 @@ function BookAppointment() {
                 id="date"
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] focus:border-[#243954] outline-none transition"
                 value={selectedDate}
-                min={new Date().toISOString().split("T")[0]} 
+                min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setSelectedDate(e.target.value)}
               />
-              
+
             </div>
           </div>
 

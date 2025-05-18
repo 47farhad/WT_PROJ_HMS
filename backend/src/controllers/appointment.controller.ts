@@ -172,7 +172,7 @@ export const getAppointmentDetails = async (req: any, res: any) => {
       // Doctor is requesting — populate patient name
       appointment = await Appointment.findById(appointmentId).populate({
         path: 'patientId',
-        select: 'firstName lastName email',
+        select: 'firstName lastName profilePic email',
       });
 
       if (!appointment) {
@@ -187,7 +187,7 @@ export const getAppointmentDetails = async (req: any, res: any) => {
       // Patient is requesting — populate doctor name
       appointment = await Appointment.findById(appointmentId).populate({
         path: 'doctorId',
-        select: 'firstName lastName email specialization',
+        select: 'firstName lastName email profilePic specialization',
       });
 
       if (!appointment) {
@@ -210,8 +210,6 @@ export const getAppointmentDetails = async (req: any, res: any) => {
   }
 };
 
-
-
 export const getAllAppointments = async (req: any, res: any) => {
   try {
     const reqUser = req.user;
@@ -221,13 +219,15 @@ export const getAllAppointments = async (req: any, res: any) => {
     const limit = parseInt(req.query.limit as string) || 20;
     const skip = (page - 1) * limit;
 
-    // Start with base pipeline
+    const baseMatch = isPatient
+      ? { patientId: reqUser._id } 
+      : { 
+          doctorId: reqUser._id,
+          status: 'confirmed' 
+        };
+
     const pipeline: any[] = [
-      {
-        $match: isPatient
-          ? { patientId: reqUser._id }
-          : { doctorId: reqUser._id },
-      },
+      { $match: baseMatch },
       { $sort: { createdAt: -1 } },
       { $skip: skip },
       { $limit: limit }
@@ -253,6 +253,7 @@ export const getAllAppointments = async (req: any, res: any) => {
             status: 1,
             datetime: 1,
             description: 1,
+            doctorProfilePic: "$doctor.profilePic",
             doctorFirstName: "$doctor.firstName",
             doctorLastName: "$doctor.lastName"
           }
@@ -277,6 +278,7 @@ export const getAllAppointments = async (req: any, res: any) => {
             status: 1,
             datetime: 1,
             description: 1,
+            patientProfilePic: "$patient.profilePic",
             patientFirstName: "$patient.firstName",
             patientLastName: "$patient.lastName"
           }
@@ -286,10 +288,8 @@ export const getAllAppointments = async (req: any, res: any) => {
 
     const appointmentsList = await Appointment.aggregate(pipeline);
 
-    // Count total
-    const total = await Appointment.countDocuments(
-      isPatient ? { patientId: reqUser._id } : { doctorId: reqUser._id }
-    );
+    // Count total - use the same match conditions
+    const total = await Appointment.countDocuments(baseMatch);
     const totalPages = Math.ceil(total / limit);
 
     res.status(200).json({
@@ -332,5 +332,73 @@ export const getDoctor = async (req: any, res: any) => {
   catch (error: any) {
     console.error("Error in getDoctor:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getDoctorAppointmentStats = async (req: any, res: any) => {
+  try {
+    const doctorId = req.params.doctorId;
+    const currentDate = new Date();
+
+    // Validate doctorId
+    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+      return res.status(400).json({ message: 'Invalid doctor ID' });
+    }
+
+    // Check if doctor exists
+    const doctorExists = await User.exists({ _id: doctorId, userType: 'Doctor' });
+    if (!doctorExists) {
+      return res.status(404).json({ message: 'Doctor not found' });
+    }
+
+    // Get counts using aggregation for better performance
+    const stats = await Appointment.aggregate([
+      {
+        $match: {
+          doctorId: doctorId
+        }
+      },
+      {
+        $facet: {
+          totalAppointments: [
+            { 
+              $match: { 
+                status: 'confirmed' 
+              } 
+            },
+            { $count: "count" }
+          ],
+          upcomingAppointments: [
+            { 
+              $match: { 
+                datetime: { $gt: currentDate },
+                status: 'confirmed' 
+              } 
+            },
+            { $count: "count" }
+          ],
+        }
+      },
+      {
+        $project: {
+          totalAppointments: { $arrayElemAt: ["$totalAppointments.count", 0] },
+          upcomingAppointments: { $arrayElemAt: ["$upcomingAppointments.count", 0] },
+          
+        }
+      }
+    ]);
+
+    // Format response
+    const result = {
+      totalAppointments: stats[0]?.totalAppointments || 0,
+      upcomingAppointments: stats[0]?.upcomingAppointments || 0,
+     
+    };
+
+    return res.status(200).json(result);
+
+  } catch (error) {
+    console.error("Error in getDoctorAppointmentStats:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
