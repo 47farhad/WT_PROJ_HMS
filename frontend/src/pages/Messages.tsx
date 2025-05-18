@@ -25,8 +25,9 @@ function Messages() {
     const [isAtBottom, setIsAtBottom] = useState(false);
 
     useEffect(() => {
+        setSelectedUser(null);
         getUsers();
-    }, [getUsers]);
+    }, [getUsers, setSelectedUser]);
 
     useEffect(() => {
         if (isAtBottom && !pagination.isPageLoading && pagination.hasMore) {

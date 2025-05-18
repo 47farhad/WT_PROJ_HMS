@@ -1,7 +1,7 @@
 import express from "express";
-import { protectRoute } from "../middlewares/auth.middleware";
-import { verifyDoctor } from "../middlewares/prescription.middleware";
-import { createNote, getNoteByAppointmentId, getNotesByPatientId } from "../controllers/notes.controller";
+import { protectRoute } from "../middlewares/auth.middleware.js";
+import { verifyDoctor } from "../middlewares/prescription.middleware.js";
+import { createNote, getNoteByAppointmentId, getNotesByPatientId } from "../controllers/notes.controller.js";
 
 const router = express.Router();
 
