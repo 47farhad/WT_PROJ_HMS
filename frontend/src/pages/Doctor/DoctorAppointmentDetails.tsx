@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { format, parseISO, isAfter } from "date-fns";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { usePrescriptionStore } from "../../store/usePrescriptionStore";
 
 function DoctorAppointmentDetails() {
   const { appointmentId } = useParams();
@@ -14,6 +15,8 @@ function DoctorAppointmentDetails() {
     updateAppointmentStatus,
   } = useAppointmentStore();
 
+  const { givenPrescription, getPrescription, isPrescriptionLoading } = usePrescriptionStore();
+
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [doctorNotes, setDoctorNotes] = useState([]);
@@ -22,8 +25,9 @@ function DoctorAppointmentDetails() {
   useEffect(() => {
     if (appointmentId) {
       getAppointmentDetails(appointmentId);
+      getPrescription(appointmentId)
     }
-  }, [appointmentId, getAppointmentDetails]);
+  }, [appointmentId, getAppointmentDetails, getPrescription]);
 
   useEffect(() => {
     if (selectedAppointment?.datetime) {
