@@ -61,7 +61,6 @@ export const createOrder = async (req: any, res: any) => {
                     }
                 ]).session(session);
 
-                console.log(prescriptions)
 
                 // Calculate available quantities
                 const availableQuantityMap = new Map<string, number>();
@@ -98,10 +97,7 @@ export const createOrder = async (req: any, res: any) => {
             let totalPrice = 0;
             const orderItems = [];
 
-            console.log(medicineMap)
-
             for (const item of items) {
-                console.log(item)
                 const medicine = medicineMap.get(item.medicine);
                 if (!medicine) {
                     throw new Error(`Medicine ${item.medicine} not found`);

@@ -19,10 +19,12 @@ const notesSchema = new mongoose.Schema(
         }
 
     },
- {
+    {
         timestamps: true
     }
 )
+
+notesSchema.index({ appointmentId: 1 })
 
 const Notes = mongoose.model("Notes", notesSchema);
 
