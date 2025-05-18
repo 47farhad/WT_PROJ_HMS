@@ -76,7 +76,7 @@ function PrescriptionForm() {
         })),
         expiryDate
       });
-      navigate(`/appointments/${appointmentId}`);
+      navigate(`/DoctorAppointmentDetails/${appointmentId}`);
     } catch (error) {
       console.error("Error creating prescription:", error);
     }
