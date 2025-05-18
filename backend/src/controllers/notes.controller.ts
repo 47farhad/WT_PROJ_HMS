@@ -1,4 +1,4 @@
-import Notes from "../models/notes.model";
+import Notes from "../models/notes.model.js";
 import Appointment from '../models/appointment.model.js';
 import mongoose from "mongoose";
 
@@ -56,7 +56,6 @@ export const createNote = async (req: any, res: any) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
-
 
 export const getNoteByAppointmentId = async (req: any, res: any) => {
     try {
