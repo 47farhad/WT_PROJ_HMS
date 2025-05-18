@@ -24,7 +24,7 @@ const notesSchema = new mongoose.Schema(
     }
 )
 
-notesSchema.index({ appointmentId: 1 })
+notesSchema.index({ appointmentId: 1 }, { unique: true })
 
 const Notes = mongoose.model("Notes", notesSchema);
 

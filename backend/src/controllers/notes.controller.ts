@@ -32,24 +32,31 @@ export const createNote = async (req: any, res: any) => {
             });
         }
 
-        // Create new note
+        // Check if a note already exists for this appointment
+        const existingNote = await Notes.findOne({ appointmentId });
+        if (existingNote) {
+            return res.status(400).json({
+                message: "A note already exists for this appointment"
+            });
+        }
+
+        // Create and save new note
         const note = new Notes({
             appointmentId,
             header,
             text
         });
 
-        // Save to database
         const savedNote = await note.save();
 
         res.status(201).json(savedNote);
 
-    }
-    catch (error: any) {
+    } catch (error: any) {
         console.error("Error creating note:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 
 export const getNoteByAppointmentId = async (req: any, res: any) => {
     try {

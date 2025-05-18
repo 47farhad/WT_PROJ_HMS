@@ -26,6 +26,8 @@ const reviewsSchema = new mongoose.Schema(
     }
 )
 
+reviewsSchema.index({ appointmentId: 1 }, { unique: true })
+
 const Reviews = mongoose.model("Reviews", reviewsSchema);
 
 export default Reviews;
