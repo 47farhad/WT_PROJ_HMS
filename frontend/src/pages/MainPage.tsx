@@ -41,6 +41,8 @@ import NotFoundButton from '../components/NotFoundButton.tsx'
 import PatientOrders from './Patient/PatientOrders.tsx'
 import PatientOrderDetails from './Patient/PatientOrderDetails.tsx'
 import AdminBookedLabTests from './Admin/AdminBookedLabTests.tsx'
+import PatientPrescriptions from './Patient/PatientPrescriptions.tsx'
+import PrescriptionDetails from './Patient/PrescriptionDetails.tsx'
 
 function MainPage() {
 
@@ -71,7 +73,7 @@ function MainPage() {
 
       <div className='flex flex-col w-full max-h-screen'>
         <div className='flex flex-row w-full items-center p-5'>
-          <span className='text-3xl flex-grow font-medium'>
+          <span className='text-[#2c4668] font-semibold text-3xl flex-grow '>
             {String(selectedNavPage)}
           </span>
           <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>
@@ -86,22 +88,24 @@ function MainPage() {
           <Route path='Messages/*' element={<Messages />} />
           <Route path='Settings/*' element={<Settings />} />
           <Route path='Appointments/*' element={userType === 'Admin' ? <AdminAppointments /> : userType === 'Doctor' ? <DoctorSchedule /> : userType === 'Patient' ? <PatientAppointments /> : <NotFoundButton />} />
-          <Route path='AppointmentDetails/:appointmentId' element={userType === 'Patient' ? <PatientAppointmentDetails /> : <NotFoundButton R/>} />
+          <Route path='AppointmentDetails/:appointmentId' element={userType === 'Patient' ? <PatientAppointmentDetails /> : <NotFoundButton R />} />
           <Route path='DoctorAppointmentDetails/:appointmentId' element={userType === 'Doctor' ? <DoctorAppointmentDetails /> : <NotFoundButton />} />
           <Route path="BookAppointment/:doctorId" element={userType === "Patient" ? <BookAppointment /> : <NotFoundButton />} />
-          <Route path="BookLabTest/:labTestId" element={userType === "Patient" ? <BookLabTest /> :< NotFoundButton />} />
-          <Route path="Cart/" element={userType === "Patient" ? <PatientPharmacyCart /> : <NotFoundButton/>} />
+          <Route path="BookLabTest/:labTestId" element={userType === "Patient" ? <BookLabTest /> : < NotFoundButton />} />
+          <Route path="Cart/" element={userType === "Patient" ? <PatientPharmacyCart /> : <NotFoundButton />} />
           <Route path='Payments/*' element={userType === 'Admin' ? <AdminPayments /> : userType === 'Patient' ? <PatientPayments /> : <NotFoundButton />} />
-          <Route path='UpdateTransaction/:transactionId'element={userType === "Patient" ? <UpdateTransaction /> : <NotFoundButton />}/>
+          <Route path='UpdateTransaction/:transactionId' element={userType === "Patient" ? <UpdateTransaction /> : <NotFoundButton />} />
           <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <NotFoundButton />} />
           <Route path='Schedule/*' element={userType === 'Admin' ? <AdminSchedule /> : <NotFoundButton />} />
           <Route path='Pharmacy/*' element={userType === 'Patient' ? <PatientPharmacy /> : userType == 'Admin' ? <AdminInventory /> : <NotFoundButton />} />
           <Route path="Orders" element={userType === "Patient" ? <PatientOrders /> : <Navigate to={"/404"} replace />} />
+          <Route path="Prescriptions" element={userType === "Patient" ? <PatientPrescriptions /> : <Navigate to={"/404"} replace />} />
+          <Route path="Prescriptions/:prescriptionId" element={userType === "Patient" ? <PrescriptionDetails /> : <Navigate to={"/404"} replace />} />
           <Route path="Orders/:orderId" element={userType === "Patient" ? <PatientOrderDetails /> : <Navigate to={"/404"} replace />} />
           <Route path='Doctors/*' element={userType === 'Admin' ? <AdminDoctors /> : <Navigate to={'/404'} replace />} />
           <Route path='BookedTests/*' element={userType === 'Admin' ? <AdminBookedLabTests /> : <Navigate to={'/404'} replace />} />
-          <Route path='ViewLabTests/*' element={userType === 'Patient' ? <ViewLabTests />  : <Navigate to={'/404'}/>} />
-          <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : userType == 'Admin' ? <AdminLabTests /> :<NotFoundButton />} />
+          <Route path='ViewLabTests/*' element={userType === 'Patient' ? <ViewLabTests /> : <Navigate to={'/404'} />} />
+          <Route path='Labtests/*' element={userType === 'Patient' ? <PatientLabtests /> : userType == 'Admin' ? <AdminLabTests /> : <NotFoundButton />} />
           <Route path='Stats/*' element={userType === 'Doctor' ? <DoctorStats /> : <NotFoundButton />} />
           <Route path='notes/:appointmentId' element={userType === 'Doctor' ? <Notes /> : <NotFoundButton />} />
           <Route path='prescriptionform/:appointmentId' element={userType === 'Doctor' ? <PrescriptionForm /> : <NotFoundButton />} />

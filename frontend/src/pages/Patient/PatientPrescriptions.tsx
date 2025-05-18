@@ -1,39 +1,38 @@
 import { useEffect, useRef, useState } from "react";
-import { useCartStore } from "../../store/useCartStore";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { usePrescriptionStore } from "../../store/usePrescriptionStore";
 import { useNavigate } from "react-router-dom";
 
-function PatientOrders() {
+function PatientPrescriptions() {
 
-    const { orders, isOrdersLoading, getOrders } = useCartStore();
+    const { prescriptions, isPrescriptionsLoading, getPrescriptions } = usePrescriptionStore();
 
-    const navigate = useNavigate();
-    const [statusFilter, setStatusFilter] = useState("all");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [showDateFilter, setShowDateFilter] = useState(false);
 
     const [isAtBottom, setIsAtBottom] = useState(false);
 
-
     const containerRef = useRef(null);
     const bottomRef = useRef(null)
 
-    useEffect(() => {
-        getOrders();
-    }, [getOrders]);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (isAtBottom && !orders.pagination.isPageLoading && orders.pagination.hasMore && !isOrdersLoading) {
-            getOrders(orders.pagination.currentPage + 1);
+        getPrescriptions();
+    }, [getPrescriptions]);
+
+    useEffect(() => {
+        if (isAtBottom && !prescriptions.pagination.isPageLoading && prescriptions.pagination.hasMore && !isPrescriptionsLoading) {
+            getPrescriptions(prescriptions.pagination.currentPage + 1);
         }
     }, [
         isAtBottom,
-        orders.pagination.currentPage,
-        orders.pagination.isPageLoading,
-        orders.pagination.hasMore,
-        isOrdersLoading,
-        getOrders
+        prescriptions.pagination.currentPage,
+        prescriptions.pagination.isPageLoading,
+        prescriptions.pagination.hasMore,
+        isPrescriptionsLoading,
+        getPrescriptions
     ]);
 
     useEffect(() => {
@@ -62,15 +61,14 @@ function PatientOrders() {
         else if (name === "endDate") setEndDate(value);
     };
 
-    const filteredOrders = (orders.data || []).filter(order => {
-        const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
-        const orderDate = new Date(order.createdAt);
+    const filteredPrescriptions = (prescriptions.data || []).filter(prescription => {
+        const orderDate = new Date(prescription.createdAt);
         const matchesStartDate = !startDate || orderDate >= new Date(startDate);
         const matchesEndDate = !endDate || orderDate <= new Date(endDate);
-        return matchesStatus && matchesStartDate && matchesEndDate;
+        return matchesStartDate && matchesEndDate;
     });
 
-    if (isOrdersLoading) {
+    if (!prescriptions) {
         return (
             <div>
                 Loading
@@ -83,23 +81,6 @@ function PatientOrders() {
             <div className="w-full mx-auto space-y-3">
                 {/* Top Bar */}
                 <div className="flex items-center justify-between flex-wrap gap-3 p-2 mb-4">
-                    {/* Status Filters */}
-                    <div className="flex gap-1 flex-wrap">
-                        {["all", "confirmed", "pending", "cancelled"].map((status) => (
-                            <button
-                                key={status}
-                                onClick={() => setStatusFilter(status)}
-                                className={`px-2 py-1 rounded-md text-sm font-medium transition
-                      ${statusFilter === status
-                                        ? "bg-[#243954] text-white"
-                                        : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
-                                    }`}
-                            >
-                                {status.charAt(0).toUpperCase() + status.slice(1)}
-                            </button>
-                        ))}
-                    </div>
-
                     {/* Right Controls */}
                     <div className="flex items-center gap-5">
                         {/* Filter by Date */}
@@ -156,59 +137,62 @@ function PatientOrders() {
                 </div>
 
                 {/* Table */}
-                <div
-                    className="overflow-y-auto max-h-110 rounded-xl shadow border border-gray-300"
-                    ref={containerRef}
-                >
+                <div className="overflow-y-auto max-h-110 rounded-xl shadow border border-gray-300" ref={containerRef}>
                     <table className="min-w-full table-auto bg-white text-sm">
                         <thead className="sticky top-0 bg-[#243954] text-white">
                             <tr>
                                 <th className="py-3 px-4">ID</th>
-                                <th className="py-3 px-4">Date</th>
+                                <th className="py-3 px-4">Given By</th>
+                                <th className="py-3 px-4">Dated</th>
+                                <th className="py-3 px-4">Expiry</th>
                                 <th className="py-3 px-4">No. of Medicine</th>
-                                <th className="py-3 px-4">Total Price</th>
                                 <th className="py-3 px-4">Status</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
-                            {filteredOrders.map((order) => (
-                                <tr
-                                    key={order._id}
-                                    className="hover:bg-sky-100 transition-colors duration-200"
-                                    onClick={() => navigate(`/Orders/${order._id}`)}
-                                >
-                                    <td className="py-3 px-4">{order._id}</td>
-                                    <td className="py-3 px-4">
-                                        {new Date(order.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td className="py-3 px-4">{order.totalMedicines}</td>
-                                    <td className="py-3 px-4">
-                                        {order.totalPrice ? `$${order.totalPrice}` : "-"}
-                                    </td>
-                                    <td className="py-3 px-4">
-                                        <span
-                                            className={`px-2 py-1 rounded-full text-sm ${order.status === "confirmed"
-                                                ? "bg-green-100 text-green-800"
-                                                : order.status === "cancelled"
-                                                    ? "bg-red-100 text-red-800"
-                                                    : "bg-yellow-100 text-yellow-800"
-                                                }`}
-                                        >
-                                            {order.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
+                            {prescriptions.data.map((prescription) => {
+                                const status = prescription.activeData.overallStatus.isExpired
+                                    ? 'expired'
+                                    : prescription.activeData.overallStatus.isFullyUsed
+                                        ? 'used'
+                                        : 'available';
 
+                                return (
+                                    <tr key={prescription._id} className="hover:bg-gray-50"
+                                    onClick={() => navigate(`/Prescriptions/${prescription._id}`)}>
+                                        <td className="py-3 px-4">{prescription._id.slice(-6)}</td>
+                                        <td className="py-3 px-4">
+                                            {prescription.doctorName || 'Unknown'}
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            {new Date(prescription.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            {new Date(prescription.expiryDate).toLocaleDateString()}
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            {prescription.activeData.overallStatus.totalPrescribed}
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs ${status === 'available' ? 'bg-green-100 text-green-800' :
+                                                status === 'used' ? 'bg-blue-100 text-blue-800' :
+                                                    'bg-gray-100 text-gray-800'
+                                                }`}>
+                                                {status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                             <tr ref={bottomRef} />
                         </tbody>
                     </table>
                 </div>
 
                 {/* No Data Message */}
-                {filteredOrders.length === 0 && (
+                {filteredPrescriptions.length === 0 && (
                     <p className="text-center text-base font-medium text-gray-500 mt-2">
-                        No lab tests match your filters
+                        No prescriptions match your filters
                     </p>
                 )}
             </div>
@@ -216,4 +200,4 @@ function PatientOrders() {
     )
 }
 
-export default PatientOrders;
+export default PatientPrescriptions;

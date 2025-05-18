@@ -2,100 +2,148 @@ import Order from '../models/order.model.js';
 import OfferedMedicine from '../models/offeredMedicine.model.js';
 import mongoose from 'mongoose';
 import { createTransaction } from './transaction.controller.js';
+import { calculateActivePrescription } from './prescription.controller.js';
+import Prescription from '../models/prescription.model.js';
 
 export const createOrder = async (req: any, res: any) => {
     const session = await mongoose.startSession();
-    session.startTransaction();
 
     try {
-        const userId = req.user._id;
-        const items = req.body;
+        await session.withTransaction(async () => {
+            const userId = req.user._id;
+            const items = req.body;
 
-        // Input validation
-        if (!items || !Array.isArray(items) || items.length === 0) {
-            await session.abortTransaction();
-            return res.status(400).json({ message: 'Order items are required' });
-        }
+            // Input validation
+            if (!items || !Array.isArray(items) || items.length === 0) {
+                throw new Error('Order items are required');
+            }
 
-        const invalidItems = items.some(item =>
-            !item.medicine || !item.quantity || item.quantity < 1
-        );
+            const invalidItems = items.some(item =>
+                !item.medicine || !item.quantity || item.quantity < 1
+            );
 
-        if (invalidItems) {
-            await session.abortTransaction();
-            return res.status(400).json({
-                message: 'Each item must contain valid medicineId and quantity (minimum 1)'
-            });
-        }
+            if (invalidItems) {
+                throw new Error('Each item must contain valid medicine and quantity (minimum 1)');
+            }
 
-        // Single query to fetch all medicines
-        const medicineIds = items.map(item => item.medicine);
-        const medicines = await OfferedMedicine.find({
-            _id: { $in: medicineIds }
-        }).session(session);
+            // Get all medicines
+            const medicineIds = items.map(item => new mongoose.Types.ObjectId(item.medicine));
+            const medicines = await OfferedMedicine.find({ _id: { $in: medicineIds } }).session(session);
 
-        // Create medicine map for quick lookup
-        const medicineMap = new Map(
-            medicines.map(med => [med._id.toString(), med])
-        );
+            // Create medicine map
+            const medicineMap = new Map(medicines.map(med => [med._id.toString(), med]));
+            const prescriptionRequiredMedicines = medicines
+                .filter(med => med.requiresPrescription)
+                .map(med => med._id.toString());
 
-        // Calculate total price and validate medicines
-        let totalPrice = 0;
-        const orderItems = [];
+            // Check prescription availability if needed
+            if (prescriptionRequiredMedicines.length > 0) {
+                const prescriptions = await Prescription.aggregate([
+                    {
+                        $match: {
+                            expiryDate: { $gte: new Date() },
+                            'items.medicineId': { $in: prescriptionRequiredMedicines.map(id => new mongoose.Types.ObjectId(id)) }
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "appointments",
+                            localField: "appointmentId",
+                            foreignField: "_id",
+                            as: "appointment"
+                        }
+                    },
+                    { $unwind: "$appointment" },
+                    {
+                        $match: {
+                            "appointment.patientId": new mongoose.Types.ObjectId(userId)
+                        }
+                    }
+                ]).session(session);
 
-        for (const item of items) {
-            const medicine = medicineMap.get(item.medicine);
+                console.log(prescriptions)
 
-            if (!medicine) {
-                await session.abortTransaction();
-                return res.status(404).json({
-                    message: `Medicine with ID ${item.medicine} not found`
+                // Calculate available quantities
+                const availableQuantityMap = new Map<string, number>();
+                for (const prescription of prescriptions) {
+                    const activeData = await calculateActivePrescription(
+                        prescription._id.toString(),
+                        userId.toString()
+                    );
+
+                    activeData.medicines.forEach(med => {
+                        if (prescriptionRequiredMedicines.includes(med.medicineId.toString())) {
+                            const current = availableQuantityMap.get(med.medicineId.toString()) || 0;
+                            availableQuantityMap.set(med.medicineId.toString(), current + med.remainingQuantity);
+                        }
+                    });
+                }
+
+                // Validate against order quantities
+                for (const item of items) {
+                    if (prescriptionRequiredMedicines.includes(item.medicine.toString())) {
+                        const available = availableQuantityMap.get(item.medicine) || 0;
+                        if (available < item.quantity) {
+                            const medicine = medicineMap.get(item.medicine);
+                            throw new Error(
+                                `Insufficient prescription for ${medicine?.name || 'medicine'}. ` +
+                                `Available: ${available}, Requested: ${item.quantity}`
+                            );
+                        }
+                    }
+                }
+            }
+
+            // Calculate total price
+            let totalPrice = 0;
+            const orderItems = [];
+
+            console.log(medicineMap)
+
+            for (const item of items) {
+                console.log(item)
+                const medicine = medicineMap.get(item.medicine);
+                if (!medicine) {
+                    throw new Error(`Medicine ${item.medicine} not found`);
+                }
+                if (medicine.status !== 'available') {
+                    throw new Error(`${medicine.name} is not available`);
+                }
+
+                totalPrice += medicine.price * item.quantity;
+                orderItems.push({
+                    medicineId: new mongoose.Types.ObjectId(item.medicine),
+                    quantity: item.quantity
                 });
             }
 
-            if (medicine.status !== 'available') {
-                await session.abortTransaction();
-                return res.status(400).json({
-                    message: `${medicine.name} is not available`
-                });
-            }
-
-            totalPrice += medicine.price * item.quantity;
-            orderItems.push({
-                medicineId: item.medicine,
-                quantity: item.quantity
+            // Create and save order
+            const order = new Order({
+                patientId: userId,
+                items: orderItems,
+                totalPrice,
+                status: 'pending'
             });
-        }
+            await order.save({ session });
 
-        // Create order
-        const order = new Order({
-            patientId: userId,
-            items: orderItems,
-            totalPrice,
-            status: 'pending'
-        })
+            // Create transaction
+            await createTransaction({
+                userId: userId,
+                referenceId: order._id,
+                type: 'Order',
+                amount: totalPrice
+            }, session);
 
-        await order.save({ session })
-
-        const transactionId = await createTransaction({
-            userId: userId,
-            referenceId: order._id,
-            type: 'Order',
-            amount: totalPrice
-        }, session);
-
-        // Commit transaction
-        await session.commitTransaction();
-
-        res.status(201).json({
-            order: order,
-            transaction: transactionId
+            res.status(201).json({
+                order: order,
+                message: 'Order created successfully'
+            });
         });
-
-    } catch (error) {
-        await session.abortTransaction();
+    } catch (error: any) {
         console.error('Error creating order:', error);
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(error.message.includes('Insufficient') ? 403 : 500).json({
+            message: error.message
+        });
     } finally {
         session.endSession();
     }
