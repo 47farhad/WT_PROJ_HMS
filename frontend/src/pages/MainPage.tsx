@@ -71,7 +71,7 @@ function MainPage() {
 
       <div className='flex flex-col w-full max-h-screen'>
         <div className='flex flex-row w-full items-center p-5'>
-          <span className='text-3xl flex-grow font-medium'>
+          <span className='text-[#2c4668] font-semibold text-3xl flex-grow '>
             {String(selectedNavPage)}
           </span>
           <button className='bg-[#F5F5F5] rounded-xl w-12 h-12 flex justify-center items-center hover:bg-[#dfdfdf] transition-colors duration-200 mr-3'>

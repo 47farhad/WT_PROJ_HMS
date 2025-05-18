@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { format ,isAfter} from "date-fns";
+import { format, isAfter } from "date-fns";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -72,13 +72,13 @@ function DoctorSchedule() {
     // Date filtering
     if (start && appointmentDate < start) return false;
     if (end && appointmentDate > end) return false;
-    
+
     // Status filtering
     if (
       statusFilter !== "all" &&
       appointment.status.toLowerCase() !== statusFilter.toLowerCase()
     ) return false;
-    
+
     // Patient name filtering
     if (patientFilter) {
       const fullName = `${appointment.patientFirstName} ${appointment.patientLastName}`.toLowerCase();
@@ -86,7 +86,7 @@ function DoctorSchedule() {
         return false;
       }
     }
-    
+
     return true;
   });
 
@@ -119,7 +119,7 @@ function DoctorSchedule() {
               placeholder="Search by patient name"
             />
             {patientFilter && (
-              <button 
+              <button
                 onClick={() => setPatientFilter("")}
                 className="text-gray-500 ml-2"
               >
@@ -129,7 +129,7 @@ function DoctorSchedule() {
               </button>
             )}
           </div>
-          
+
           {/* Right: Date Filter + Book Button */}
           <div className="flex items-center gap-3">
             {/* Filter by Date */}
@@ -207,12 +207,21 @@ function DoctorSchedule() {
                   onClick={() => handleClick(appointment._id)}
                 >
                   <td className="py-3 px-4 truncate max-w-[100px]">
-                    <div className="flex items-center justify-left gap-3">
-                      <img
-                        className="w-10 h-10 rounded-full"
-                        src={appointment.patientprofilePic}
-                        alt={`${appointment.patientFirstName} ${appointment.patientLastName}`}
-                      />
+                    <div className="flex items-center gap-3">
+                      {appointment.patientProfilePic ? (
+                        <img
+                          src={appointment.patientProfilePic}
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                          alt={`${appointment.patientFirstName} ${appointment.patientLastName}`}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                          {appointment.patientFirstName.charAt(0)}{appointment.patientLastName.charAt(0)}
+                        </div>
+                      )}
                       <div className="text-left">
                         <div className="text-left font-medium text-gray-800 whitespace-nowrap">
                           {appointment.patientFirstName} {appointment.patientLastName}
@@ -229,9 +238,8 @@ function DoctorSchedule() {
                   </td>
                   <td className="py-3 px-4 truncate max-w-[100px]">
                     <span
-                      className={`px-2 py-1 rounded-full text-sm bg-green-100 text-green-800 "${
-                        appointment.status === "confirmed"
-                      }`}
+                      className={`px-2 py-1 rounded-full text-sm bg-green-100 text-green-800 "${appointment.status === "confirmed"
+                        }`}
                     >
                       {appointment.status}
                     </span>

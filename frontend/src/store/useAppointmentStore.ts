@@ -21,6 +21,58 @@ export const useAppointmentStore = create((set, get) => ({
     isLoadingPatientDetailsAppointments: false,
     selectedAppointment: null,
 
+    // NEW: Appointment statistics state
+    appointmentStats: {
+        total: 0,
+        upcoming: 0,
+        loading: false,
+        error: null
+    },
+
+    getAppointmentStats: async (doctorId) => {
+        set(state => ({
+            appointmentStats: {
+                ...state.appointmentStats,
+                loading: true,
+                error: null
+            }
+        }));
+        
+        try {
+            const res = await axiosInstance.get(`/appointments/getDoctorStats/${doctorId}`);
+            set({
+                appointmentStats: {
+                    total: res.data.totalAppointments || 0,
+                    upcoming: res.data.upcomingAppointments || 0,
+                    completed: res.data.completedAppointments || 0,
+                    loading: false,
+                    error: null
+                }
+            });
+        } catch (error) {
+            set(state => ({
+                appointmentStats: {
+                    ...state.appointmentStats,
+                    loading: false,
+                    error: error.response?.data?.message || "Failed to fetch statistics"
+                }
+            }));
+            toast.error(error.response?.data?.message || "Failed to load appointment statistics");
+        }
+    },
+
+    // NEW: Reset appointment statistics
+    resetAppointmentStats: () => {
+        set({
+            appointmentStats: {
+                total: 0,
+                upcoming: 0,
+                completed: 0,
+                loading: false,
+                error: null
+            }
+        });
+    },
 
     getAllAppointments: async (page = 1, limit = 20) => {
         const isInitialLoad = page === 1;
@@ -145,6 +197,7 @@ export const useAppointmentStore = create((set, get) => ({
             toast.error(error.response?.data?.message || "Failed to load doctors");
         }
     },
+
     updateAppointment: async (appointmentId) => {
         try {
             const res = await axiosInstance.put(`/appointments/updateAppointment/${appointmentId}`, {

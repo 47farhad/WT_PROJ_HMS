@@ -59,7 +59,7 @@ function DoctorAppointmentDetails() {
     navigate(`/prescriptionform/${appointmentId}`);
   };
 
- return (
+  return (
     <div className="flex flex-row mx-5 mb-5 h-full overflow-y-auto" style={{ zoom: "100%" }}>
       {/* Left side - Appointment details */}
       <div className="flex flex-col w-[75%] h-full space-x-9 space-y-5"> {/* Added space-y-5 for consistent spacing */}
@@ -76,9 +76,8 @@ function DoctorAppointmentDetails() {
             </div>
 
             <div className="flex items-end">
-              <span className={`px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800 ${
-                selectedAppointment.status === "confirmed" ? "bg-green-100" : ""
-              }`}>
+              <span className={`px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800 ${selectedAppointment.status === "confirmed" ? "bg-green-100" : ""
+                }`}>
                 {selectedAppointment.status}
               </span>
             </div>
@@ -121,15 +120,15 @@ function DoctorAppointmentDetails() {
           </div>
 
           {/* Patient Notes */}
-          <div className="flex flex-col w-[67%] border-2 border-gray-300 rounded-2xl p-4 h-full bg-white"> 
-            <div className="flex justify-between items-center mb-4 border-b border-[#E6E6E8] pb-2"> 
+          <div className="flex flex-col w-[67%] border-2 border-gray-300 rounded-2xl p-4 h-full bg-white">
+            <div className="flex justify-between items-center mb-4 border-b border-[#E6E6E8] pb-2">
               <span className="text-lg font-semibold text-[#04080B]">
                 Patient Notes
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-4 overflow-y-auto"> 
+            <div className="grid grid-cols-3 gap-4 overflow-y-auto">
               {doctorNotes.map(note => (
-                <div key={note.id} className="border border-gray-300 rounded-lg p-3 h-full"> 
+                <div key={note.id} className="border border-gray-300 rounded-lg p-3 h-full">
                   <p className="text-gray-500 text-sm mb-1">{note.date}</p>
                   <h3 className="text-md font-bold text-[#243954] mb-2">{note.title}</h3>
                   <p className="text-gray-700 text-md">{note.description}</p>
@@ -149,9 +148,12 @@ function DoctorAppointmentDetails() {
           </span>
           <div className="flex items-center">
             <img
-              src={selectedAppointment.PatientProfilePic || "/default-patient.png"}
-              className="size-16 rounded-xl mr-3"
-              alt="Patient"
+              src={selectedAppointment.patientId.profilePic}
+              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+              alt={`${selectedAppointment.patientId.firstName} ${selectedAppointment.patientId.lastName}`}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
             />
             <div>
               <span className="text-lg text-[#4B4C4E]">Name:</span>
@@ -163,36 +165,36 @@ function DoctorAppointmentDetails() {
         </div>
 
         {/* Actions */}
-      <div className="bg-[#F5F5F5] rounded-2xl p-5 flex-1">
-        <span className="text-xl font-semibold text-[#04080B] mb-3">
-          Appointment Actions
-        </span>
-        <div className="space-y-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="mt-6 w-full bg-white border border-gray-300 text-[#243954] px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
-          >
-            Back to Appointments
-          </button>
-          
-          {showActionButtons && (
-            <>
-              <button
-                onClick={handleAddNotes}
-                className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
-              >
-                Add Notes
-              </button>
-              <button
-                onClick={() => handleAddPrescription(appointmentId)}
-                className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
-              >
-                Add Prescription
-              </button>
-            </>
-          )}
+        <div className="bg-[#F5F5F5] rounded-2xl p-5 flex-1">
+          <span className="text-xl font-semibold text-[#04080B] mb-3">
+            Appointment Actions
+          </span>
+          <div className="space-y-4">
+            <button
+              onClick={() => navigate(-1)}
+              className="mt-6 w-full bg-white border border-gray-300 text-[#243954] px-4 py-2 rounded-lg hover:bg-gray-50 transition font-medium"
+            >
+              Back to Appointments
+            </button>
+
+            {showActionButtons && (
+              <>
+                <button
+                  onClick={handleAddNotes}
+                  className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
+                >
+                  Add Notes
+                </button>
+                <button
+                  onClick={() => handleAddPrescription(appointmentId)}
+                  className="w-full bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#1e2e4a] transition font-medium"
+                >
+                  Add Prescription
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
       </div>
 
       {/* Confirmation Modal */}
