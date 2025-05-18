@@ -1,18 +1,40 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { format } from "date-fns";
 import ConfirmationModal from "../../components/ConfirmationModal"; // Adjust path if needed
+import { useAppointmentStore } from "../../store/useAppointmentStore"; // Adjust path if needed
+
+// Define interfaces for our types
+interface Appointment {
+  _id: string;
+  datetime: string; // ISO 8601 string from backend
+  status: string;
+  description?: string;
+  doctorId: string;
+  patientId: string;
+  createdAt: string;
+  updatedAt: string;
+  date: string; // Add date to the interface
+  startTime: string; // Add startTime
+  endTime: string; // Add endTime
+}
+
+interface AppointmentStore {
+  selectedAppointment: Appointment | null;
+  getAppointmentDetails: (id: string) => void;
+  isAppointmentLoading: boolean;
+  updateAppointment: (id: string) => void;
+}
 
 function PatientAppointmentDetails() {
-  const { appointmentId } = useParams();
+  const { appointmentId } = useParams<{ appointmentId: string }>();
   const navigate = useNavigate();
   const {
     selectedAppointment,
     getAppointmentDetails,
     isAppointmentLoading,
     updateAppointment,
-  } = useAppointmentStore();
+  } = useAppointmentStore() as AppointmentStore;
 
   const [showCancelModal, setShowCancelModal] = useState(false);
 
@@ -23,22 +45,22 @@ function PatientAppointmentDetails() {
   }, [appointmentId, getAppointmentDetails]);
 
   useEffect(() => {
-  
-  if (isAppointmentLoading) return;
+    if (isAppointmentLoading) return;
 
-  if (!selectedAppointment) {
-    navigate("/Appointments");
-  }
-}, [isAppointmentLoading, selectedAppointment, navigate]);
-
+    if (!selectedAppointment) {
+      navigate("/Appointments");
+    }
+  }, [isAppointmentLoading, selectedAppointment, navigate]);
 
   const handleCancelAppointment = () => {
     setShowCancelModal(true);
   };
 
   const confirmCancellation = () => {
-    updateAppointment(appointmentId);
-    setShowCancelModal(false);
+    if (appointmentId) {
+      updateAppointment(appointmentId);
+      setShowCancelModal(false);
+    }
   };
 
   if (isAppointmentLoading) {
@@ -49,6 +71,7 @@ function PatientAppointmentDetails() {
     );
   }
 
+  // Render the appointment details, handling potential null
   return selectedAppointment ? (
     <div className="h-full w-full p-6">
       <div className="flex justify-between items-center mb-6">
@@ -77,15 +100,31 @@ function PatientAppointmentDetails() {
               <p className="text-gray-700">{selectedAppointment._id}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Datetime</p>
+              <p className="text-sm text-gray-500">Date</p>
               <p className="text-gray-700">
-                {format(new Date(selectedAppointment.datetime), "d-MMM-yyyy")}
+                {selectedAppointment.date
+                  ? format(new Date(selectedAppointment.date), "d-MMM-yyyy")
+                  : "N/A"}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Time</p>
+              <p className="text-sm text-gray-500">Start Time</p>
               <p className="text-gray-700">
-                {format(new Date(selectedAppointment.datetime), "h:mm a")}
+                {selectedAppointment.startTime || "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">End Time</p>
+              <p className="text-gray-700">
+                {selectedAppointment.endTime || "N/A"}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Datetime</p>
+              <p className="text-gray-700">
+                {selectedAppointment.datetime
+                  ? format(new Date(selectedAppointment.datetime), "d-MMM-yyyy h:mm a")
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -124,13 +163,17 @@ function PatientAppointmentDetails() {
             <div>
               <p className="text-sm text-gray-500">Created At</p>
               <p className="text-gray-700">
-                {format(new Date(selectedAppointment.createdAt), "d-MMM-yyyy h:mm a")}
+                {selectedAppointment.createdAt
+                  ? format(new Date(selectedAppointment.createdAt), "d-MMM-yyyy h:mm a")
+                  : "N/A"}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-500">Last Updated</p>
               <p className="text-gray-700">
-                {format(new Date(selectedAppointment.updatedAt), "d-MMM-yyyy h:mm a")}
+                {selectedAppointment.updatedAt
+                  ? format(new Date(selectedAppointment.updatedAt), "d-MMM-yyyy h:mm a")
+                  : "N/A"}
               </p>
             </div>
           </div>
@@ -150,17 +193,21 @@ function PatientAppointmentDetails() {
       )}
 
       {/* Confirmation Modal */}
-      {showCancelModal && (
-        <ConfirmationModal
-          isOpen={showCancelModal}
-          onCancel={() => setShowCancelModal(false)}
-          onConfirm={confirmCancellation}
-          title="Cancel Appointment"
-          message="Are you sure you want to cancel this appointment?"
-        />
-      )}
+      <ConfirmationModal
+        isOpen={showCancelModal}
+        onCancel={() => setShowCancelModal(false)}
+        onConfirm={confirmCancellation}
+        title="Cancel Appointment"
+        message="Are you sure you want to cancel this appointment?"
+        showLoading={false}
+      />
     </div>
-  ) : null;
+  ) : (
+    <div>
+      <p>Appointment not found or is undefined.</p>
+    </div>
+  );
 }
 
 export default PatientAppointmentDetails;
+

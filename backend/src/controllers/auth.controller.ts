@@ -1,5 +1,4 @@
 import bcrypt from "bcryptjs"
-
 import User from "../models/user.model.js";
 import { generateToken } from "../lib/utils.js";
 import cloudinary from "../lib/cloudinary.js";
@@ -50,7 +49,7 @@ export const signup = async (req: any, res: any) => {
         }
     }
     catch (error) {
-        console.log("Error in controller: signup");
+        console.log("Error in controller: signup", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
@@ -73,10 +72,20 @@ export const login = async (req: any, res: any) => {
 
         generateToken(user._id, res);
 
+        // Return user data with specific fields (from first version)
+        // and remove password field completely (from second version)
         const userWithoutPassword: any = user.toObject();
         delete userWithoutPassword.password;
 
-        res.status(200).json(userWithoutPassword);
+        res.status(200).json({
+            _id: user._id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePic: user.profilePic,
+            userType: user.userType,
+            ...userWithoutPassword
+        });
     }
     catch (error) {
         console.log("Error in controller: login", error);
@@ -98,8 +107,7 @@ export const logout = async (req: any, res: any) => {
 export const checkAuth = (req: any, res: any) => {
     try {
         res.status(200).json(req.user);
-    }
-    catch (error: any) {
+    } catch (error: any) {
         console.log("Error in checkAuth controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
@@ -107,11 +115,17 @@ export const checkAuth = (req: any, res: any) => {
 
 export const updateProfile = async (req: any, res: any) => {
     try {
-        const { personalData, medicalData } = req.body;
+        const { personalData, medicalData, profilePic } = req.body;
         const userID = req.user._id;
         const updateData: any = {};
 
-        // Destructure and validate personal info
+        // Handle direct profilePic update (from first version)
+        if (profilePic) {
+            const uploadResponse = await cloudinary.uploader.upload(profilePic);
+            updateData.profilePic = uploadResponse.secure_url;
+        }
+
+        // Destructure and validate personal info (from second version)
         if (personalData) {
             const {
                 firstName,
@@ -119,7 +133,7 @@ export const updateProfile = async (req: any, res: any) => {
                 contact,
                 emergencyContact,
                 address,
-                profilePic
+                profilePic: personalProfilePic
             } = personalData;
 
             if (firstName) updateData.firstName = firstName;
@@ -128,14 +142,14 @@ export const updateProfile = async (req: any, res: any) => {
             if (emergencyContact) updateData.emergencyContact = emergencyContact;
             if (address) updateData.address = address;
 
-            // Handle profile picture separately
-            if (profilePic) {
-                const uploadResponse = await cloudinary.uploader.upload(profilePic);
+            // Handle profile picture from personalData
+            if (personalProfilePic) {
+                const uploadResponse = await cloudinary.uploader.upload(personalProfilePic);
                 updateData.profilePic = uploadResponse.secure_url;
             }
         }
 
-        // Process medical data only for Patients
+        // Process medical data only for Patients (from second version)
         if (medicalData && req.user.userType === "Patient") {
             const {
                 bloodType,
@@ -178,6 +192,7 @@ export const updateProfile = async (req: any, res: any) => {
             if (additionalNotes) updateData.medicalInfo.additionalNotes = additionalNotes;
         }
 
+        // Use proper update with await, $set, and options from second version
         const updatedUser = await User.findByIdAndUpdate(
             userID,
             { $set: updateData },

@@ -3,10 +3,27 @@ import { usePharmacyStore } from "../../store/usePharmacyStore";
 import PatientMedicineCard from "../../components/PatientMedicineCard";
 import { useNavigate } from "react-router-dom";
 
+// Define interfaces for our types
+interface Medicine {
+  _id: string;
+  name: string;
+  description: string;
+  price: number;
+  dosage: number;
+  requiresPrescription: boolean;
+  picture?: string;
+  status?: string;
+  [key: string]: any;
+}
+
+interface PharmacyStore {
+  offeredMedicines: Medicine[];
+  getOfferedMedicines: () => Promise<void>;
+  isOfferedMedicinesLoading: boolean;
+}
+
 function PatientPharmacy() {
-
-  const { offeredMedicines, getOfferedMedicines, isOfferedMedicinesLoading } = usePharmacyStore();
-
+  const { offeredMedicines, getOfferedMedicines, isOfferedMedicinesLoading } = usePharmacyStore() as PharmacyStore;
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
@@ -16,10 +33,10 @@ function PatientPharmacy() {
 
   if (isOfferedMedicinesLoading) {
     return (
-      <div>
-        Loading
+      <div className="flex justify-center items-center h-full">
+        <div className="text-lg text-gray-600">Loading medicines...</div>
       </div>
-    )
+    );
   }
 
   return (
@@ -81,11 +98,11 @@ function PatientPharmacy() {
       <div className="flex-1 px-5 pb-5 overflow-y-auto scrollbar-hide">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {offeredMedicines
-            .filter(medicine =>
+            .filter((medicine: Medicine) =>
               medicine.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               medicine.description.toLowerCase().includes(searchQuery.toLowerCase())
             )
-            .map((medicine) => (
+            .map((medicine: Medicine) => (
               <PatientMedicineCard
                 id={medicine._id}
                 key={medicine._id}
@@ -94,13 +111,13 @@ function PatientPharmacy() {
                 price={medicine.price}
                 dosage={medicine.dosage}
                 requiresPrescription={medicine.requiresPrescription}
-                picture={medicine.picture}
+                picture={medicine.picture || ""}
               />
             ))}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default PatientPharmacy;

@@ -1,8 +1,8 @@
 import express from "express";
 
 import { createOfferedTest, getOfferedLabTests, deleteLabTest, updateOfferedTest } from "../controllers/labTest.controller.js";
-import { protectRoute } from "../middlewares/auth.middleware.js";
-import { isAdmin } from "../middlewares/admin.middleware.js";
+import { isAdmin, protectRoute } from "../middlewares/auth.middleware.js";
+
 
 const router = express.Router();
 

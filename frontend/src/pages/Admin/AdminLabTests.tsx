@@ -1,12 +1,35 @@
-import { useEffect, useState } from "react"
-import AdminLabTestCard from "../../components/AdminLabTestCard"
-import "../../css/hideScroll.css"
+import { useEffect, useState } from "react" 
+import AdminLabTestCard from "../../components/AdminLabTestCard" 
+import "../../css/hideScroll.css" 
 import { useLabTestStore } from "../../store/useLabTestStore";
 
-function AdminLabTests() {
+// Define interfaces for our types
+interface LabTest {
+    _id: string;
+    name: string;
+    description: string;
+    price: number;
+    requirements: string[];
+    status: 'available' | 'unavailable';
+}
 
+interface LabTestStore {
+    createLabTest: () => Promise<void>;
+    offeredLabTests: LabTest[];
+    getOfferedLabTest: () => Promise<void>;
+    isOfferedLabTestsLoading: boolean;
+    isCreatingLabTest: boolean;
+}
+
+function AdminLabTests() {
     const [searchQuery, setSearchQuery] = useState('');
-    const { createLabTest, offeredLabTests, getOfferedLabTest, isOfferedLabTestsLoading, isCreatingLabTest } = useLabTestStore();
+    const { 
+        createLabTest, 
+        offeredLabTests, 
+        getOfferedLabTest, 
+        isOfferedLabTestsLoading, 
+        isCreatingLabTest 
+    } = useLabTestStore() as LabTestStore;
 
     useEffect(() => {
         getOfferedLabTest();
@@ -18,8 +41,8 @@ function AdminLabTests() {
 
     if(isOfferedLabTestsLoading){
         return (
-            <div>
-                Loading
+            <div className="flex justify-center items-center h-full">
+                <div className="text-lg text-gray-600">Loading lab tests...</div>
             </div>
         )
     }
@@ -56,10 +79,12 @@ function AdminLabTests() {
                         />
                     </div>
                 </div>
-                <button className="flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg hover:bg-[#1a2c42] transition-colors"
+                <button 
+                    className={`flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg transition-colors ${isCreatingLabTest ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#1a2c42]'}`}
                     onClick={handleCreateTest}
-                    disabled={isCreatingLabTest}>
-                    Create New Test
+                    disabled={isCreatingLabTest}
+                >
+                    {isCreatingLabTest ? 'Creating...' : 'Create New Test'}
                 </button>
             </div>
 
@@ -67,11 +92,11 @@ function AdminLabTests() {
             <div className="flex-1 px-5 pb-5 overflow-y-auto scrollbar-hide">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     {offeredLabTests
-                        .filter(test =>
+                        .filter((test: LabTest) =>
                             test.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             test.description.toLowerCase().includes(searchQuery.toLowerCase())
                         )
-                        .map((test) => (
+                        .map((test: LabTest) => (
                             <AdminLabTestCard
                                 id={test._id}
                                 key={test._id}
@@ -79,7 +104,7 @@ function AdminLabTests() {
                                 description={test.description}
                                 price={test.price}
                                 requirements={test.requirements}
-                                status={test.status as 'available' | 'unavailable'}
+                                status={test.status}
                             />
                         ))}
                 </div>

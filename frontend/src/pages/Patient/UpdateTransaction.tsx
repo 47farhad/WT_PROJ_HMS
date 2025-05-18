@@ -1,18 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTransactionStore } from '../../store/useTransactionStore.ts';
 import toast from 'react-hot-toast';
 
 const UpdateTransaction = () => {
- 
   const { transactionId } = useParams();
   const navigate = useNavigate();
-   const {
-      getTransactionDetails,
-      isTransactionLoading,
-      updateTransaction,
-      selectedTransaction,
-    } = useTransactionStore();
+
+  // FIXED: Use separate calls to avoid object destructuring which creates a new reference each time
+  const getTransactionDetails = useTransactionStore(state => state.getTransactionDetails);
+  const isTransactionLoading = useTransactionStore(state => state.isTransactionLoading);
+  const updateTransaction = useTransactionStore(state => state.updateTransaction);
+  const selectedTransaction = useTransactionStore(state => state.selectedTransaction);
 
   // Payment form states
   const [cardNumber, setCardNumber] = useState('');
@@ -20,26 +19,28 @@ const UpdateTransaction = () => {
   const [cvv, setCvv] = useState('');
   const [expiry, setExpiry] = useState('');
 
+  // FIXED: Only run once when component mounts or transactionId changes
   useEffect(() => {
-      if (transactionId) {
-        getTransactionDetails(transactionId);
-      }
-    }, [transactionId, getTransactionDetails]);
-if (isTransactionLoading)
+    if (transactionId) {
+      getTransactionDetails(transactionId);
+    }
+  }, [transactionId]); // Removed getTransactionDetails from dependencies
+
+  if (isTransactionLoading)
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 bg-[#1a2c42]"></div>
       </div>
     );
 
-  const handlePayment = async (e) => {
+  const handlePayment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Basic validation
-    if (cardNumber.length !== 16 || isNaN(cardNumber)) {
+    if (cardNumber.length !== 16 || isNaN(Number(cardNumber))) {
       return toast.error("Card number must be 16 digits");
     }
-    if (cvv.length !== 3 || isNaN(cvv)) {
+    if (cvv.length !== 3 || isNaN(Number(cvv))) {
       return toast.error("CVV must be 3 digits");
     }
     if (!expiry.match(/^\d{4}-\d{2}$/)) {
@@ -50,11 +51,16 @@ if (isTransactionLoading)
       return toast.error("Cardholder name is required");
     }
 
-    // Proceed to update the transaction
-    await updateTransaction(transactionId, 'paid');
-
-    // Redirect or show confirmation
-    navigate('/Payments'); // Adjust route as needed
+    try {
+      // Proceed to update the transaction
+      await updateTransaction(transactionId!, 'paid');
+      toast.success("Payment successful!");
+      // Redirect or show confirmation
+      navigate('/Payments');
+    } catch (error) {
+      toast.error("Payment failed. Please try again.");
+      console.error("Payment error:", error);
+    }
   };
 
   if (!selectedTransaction) {
@@ -114,11 +120,10 @@ if (isTransactionLoading)
                 type="month"
                 value={expiry}
                 onChange={(e) => setExpiry(e.target.value)}
-                min={new Date().toISOString().slice(0, 7)} // ensures only current or future months
+                min={new Date().toISOString().slice(0, 7)}
                 className="mt-1 w-full border border-gray-300 px-4 py-2 rounded-lg focus:ring focus:ring-blue-200"
                 required
               />
-
             </div>
           </div>
 
@@ -139,7 +144,6 @@ if (isTransactionLoading)
         </form>
       </div>
     </div>
-
   );
 };
 

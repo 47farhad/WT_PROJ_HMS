@@ -1,8 +1,34 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
+
+// Define interfaces for the types
+interface Appointment {
+  _id: string;
+  datetime: string;
+  status: string;
+  description?: string;
+  doctorFirstName?: string;
+  doctorLastName?: string;
+  [key: string]: any;
+}
+
+interface Pagination {
+  currentPage: number;
+  hasMore: boolean;
+  isPageLoading: boolean;
+}
+
+interface AppointmentStore {
+  getAllAppointments: (page?: number) => void;
+  isAppointmentsLoading: boolean;
+  appointments: {
+    data: Appointment[];
+    pagination: Pagination;
+  };
+}
 
 function PatientAppointments() {
   const [startDate, setStartDate] = useState("");
@@ -15,10 +41,10 @@ function PatientAppointments() {
     getAllAppointments,
     isAppointmentsLoading,
     appointments: { data: appointments, pagination }
-  } = useAppointmentStore();
+  } = useAppointmentStore() as AppointmentStore;
 
-  const appointmentEndRef = useRef(null);
-  const appointmentContainerRef = useRef(null);
+  const appointmentEndRef = useRef<HTMLTableRowElement>(null);
+  const appointmentContainerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
   const navigate = useNavigate();
@@ -40,9 +66,12 @@ function PatientAppointments() {
 
   useEffect(() => {
     const container = appointmentContainerRef.current;
+    
+    if (!container) return;
 
     const handleScroll = () => {
       if (!container || !appointmentEndRef.current) return;
+      
       const endRefPosition = appointmentEndRef.current.getBoundingClientRect().bottom;
       const containerPosition = container.getBoundingClientRect().bottom;
       const threshold = 5;
@@ -54,11 +83,11 @@ function PatientAppointments() {
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleClick = (appointmentId) => {
+  const handleClick = (appointmentId: string) => {
     navigate(`/AppointmentDetails/${appointmentId}`);
   };
 
-  const handleDateChange = (e) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "startDate") setStartDate(value);
     if (name === "endDate") setEndDate(value);
@@ -167,7 +196,7 @@ function PatientAppointments() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
               {(appointments || [])
-                .filter((appointment) => {
+                .filter((appointment: Appointment) => {
                   const appointmentDate = new Date(appointment.datetime);
                   const start = startDate ? new Date(startDate) : null;
                   const end = endDate ? new Date(endDate) : null;
@@ -176,33 +205,27 @@ function PatientAppointments() {
                   if (end && appointmentDate > end) return false;
                   if (
                     statusFilter !== "all" &&
-                    appointment.status.toLowerCase() !== statusFilter
+                    appointment.status?.toLowerCase() !== statusFilter
                   )
                     return false;
                   if (
                     doctorFilter &&
                     !(
-                      appointment.doctorFirstName
-                        .toLowerCase()
-                        .includes(doctorFilter.toLowerCase()) ||
-                      appointment.doctorLastName
-                        .toLowerCase()
-                        .includes(doctorFilter.toLowerCase())
+                      appointment.doctorFirstName?.toLowerCase().includes(doctorFilter.toLowerCase()) ||
+                      appointment.doctorLastName?.toLowerCase().includes(doctorFilter.toLowerCase())
                     )
                   )
                     return false;
                   return true;
                 })
-                .map((appointment) => (
+                .map((appointment: Appointment) => (
                   <tr
                     key={appointment._id}
                     className="text-center border-t hover:bg-blue-50 cursor-pointer"
                     onClick={() => handleClick(appointment._id)}
                   >
                     <td className="py-3 px-4 truncate max-w-[100px]">
-                      {appointment.doctorFirstName +
-                        " " +
-                        appointment.doctorLastName}
+                      {`${appointment.doctorFirstName || ""} ${appointment.doctorLastName || ""}`.trim()}
                     </td>
                     <td>
                       {format(new Date(appointment.datetime), "d-MMM-yyyy")}
@@ -211,7 +234,7 @@ function PatientAppointments() {
                       {format(new Date(appointment.datetime), "h:mm a")}
                     </td>
                     <td className="py-3 px-4 truncate max-w-[100px]">
-                      {appointment.description}
+                      {appointment.description || ""}
                     </td>
                     <td className="py-3 px-4 truncate max-w-[100px]">
                       <span
@@ -233,7 +256,7 @@ function PatientAppointments() {
         </div>
 
         {/* No Appointments Message */}
-        {appointments.length === 0 && (
+        {appointments?.length === 0 && (
           <p className="text-center text-lg font-medium text-gray-500 mt-4">
             No appointments scheduled
           </p>

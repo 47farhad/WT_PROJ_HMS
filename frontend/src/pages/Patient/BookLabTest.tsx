@@ -1,14 +1,37 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
 
+// Define interfaces for our types
+interface LabTest {
+  _id: string;
+  name: string;
+  description?: string;
+  price?: number;
+  requirements?: string[];
+  status?: string;
+  [key: string]: any;
+}
+
+interface LabTestBookingData {
+  offeredTestId: string;
+  datetime: string;
+}
+
+interface PatientLabTestStore {
+  getLabTestDetails: (id: string) => Promise<void>;
+  bookLabTest: (data: LabTestBookingData) => Promise<void>;
+  selectedLabTest: LabTest | null;
+  // Add other properties as needed
+}
+
 function BookLabTest() {
-  const { labTestId } = useParams();  // Extract labTestId from the URL
+  const { labTestId } = useParams<{ labTestId: string }>();
   const navigate = useNavigate();
-  const { getLabTestDetails, bookLabTest } = usePatientLabTestStore();
+  const { getLabTestDetails, bookLabTest } = usePatientLabTestStore() as PatientLabTestStore;
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [labTest, setLabTest] = useState(null);
+  const [labTest, setLabTest] = useState<LabTest | null>(null);
 
   const availableTimeSlots = [
     "8:00 AM",
@@ -24,10 +47,15 @@ function BookLabTest() {
 
   useEffect(() => {
     const fetchLabTest = async () => {
+      if (!labTestId) return;
+      
       // Fetch the test details based on the labTestId
-      await getLabTestDetails(labTestId);  // This should set the selectedLabTest in the store
+      await getLabTestDetails(labTestId);
 
-      const testDetails = usePatientLabTestStore.getState().selectedLabTest;
+      // Type assertion to access the store state
+      const storeState = usePatientLabTestStore.getState() as PatientLabTestStore;
+      const testDetails = storeState.selectedLabTest;
+      
       console.log("Fetched Lab Test:", testDetails);
       if (testDetails) {
         setLabTest(testDetails);  // Set labTest state to display test name
@@ -38,7 +66,7 @@ function BookLabTest() {
   }, [getLabTestDetails, labTestId]);
 
   const handleBookNow = async () => {
-    if (!selectedDate || !selectedTime) {
+    if (!selectedDate || !selectedTime || !labTestId) {
       alert("Please select both a date and time.");
       return;
     }
@@ -48,7 +76,7 @@ function BookLabTest() {
     const localDate = new Date(localDateTimeString);
     const combinedDateTime = localDate.toISOString();
 
-    const labTestData = {
+    const labTestData: LabTestBookingData = {
       offeredTestId: labTestId,
       datetime: combinedDateTime,
     };

@@ -1,15 +1,35 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BookAppointment from "../Patient/BookAppointment";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
+
+// Define interfaces for the types
+interface Doctor {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  specialization?: string;
+  id?: string;
+  [key: string]: any;
+}
+
+interface AppointmentData {
+  doctorId: string;
+  datetime: string;
+  description: string;
+  [key: string]: any;
+}
+
+interface AppointmentStore {
+  getDoctors: () => Promise<void>;
+  createAppointment: (data: AppointmentData) => Promise<void>;
+  doctors: Doctor[];
+}
 
 function PatientDashboard() {
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const { getDoctors, doctors = [] } = useAppointmentStore();
-  const { createAppointment } = useAppointmentStore();
+  const { getDoctors, doctors = [], createAppointment } = useAppointmentStore() as AppointmentStore;
   const navigate = useNavigate();
 
   // Fetch doctors from the backend
@@ -27,7 +47,7 @@ function PatientDashboard() {
     fetchDoctors();
   }, [getDoctors]);
 
-  const handleBookAppointment = async (appointmentData) => {
+  const handleBookAppointment = async (appointmentData: AppointmentData) => {
     console.log("Appointment Data:", appointmentData);
 
     try {
@@ -41,11 +61,12 @@ function PatientDashboard() {
       alert("Failed to book appointment. Please try again.");
     }
   };
+  
   const handleCancel = () => {
     setShowBookingForm(false);
   };
 
-  const handleBookAppointmentClick = (doctorId) => {
+  const handleBookAppointmentClick = (doctorId: string) => {
     navigate(`/BookAppointment/${doctorId}`); // Navigate with doctorId in URL
   };
 
@@ -125,17 +146,17 @@ function PatientDashboard() {
           <p className="text-gray-500">Loading doctors...</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {doctors.map((doctor) => (
+            {doctors.map((doctor: Doctor) => (
               <div
-                key={doctor.id}
+                key={doctor._id || doctor.id}
                 className="bg-white border-1 border-gray-300 shadow-md rounded-lg p-6 hover:shadow-lg transition"
               >
-                <h3 className="text-lg font-semibold text-gray-800">{doctor.firstName +
-                  " " +
-                  doctor.lastName}</h3>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {`${doctor.firstName || ""} ${doctor.lastName || ""}`.trim()}
+                </h3>
                 <button
                   onClick={() => handleBookAppointmentClick(doctor._id)}
-                  className="mt-4  bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#4c6280]"
+                  className="mt-4 bg-[#243954] text-white px-4 py-2 rounded-lg hover:bg-[#4c6280]"
                 >
                   Book Appointment
                 </button>
@@ -144,17 +165,6 @@ function PatientDashboard() {
           </div>
         )}
       </div>
-
-      {/* Book Appointment Form */}
-      {showBookingForm && selectedDoctor && (
-
-        <BookAppointment
-          doctorName={selectedDoctor.firstName + " " + selectedDoctor.lastName}
-          onBookAppointment={handleBookAppointment}
-          onCancel={handleCancel}
-        />
-
-      )}
 
       {/* Recent Activity */}
       <div className="mt-10">

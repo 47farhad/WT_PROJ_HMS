@@ -1,14 +1,39 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"
 import { useAdminStore } from "../../store/useAdminStore";
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 import '../../css/hideScroll.css'
 import ConfirmationModal from "../../components/ConfirmationModal";
 
-function AdminPatientDetails() {
+// Define interface for medical info
+interface MedicalInfo {
+    dateOfBirth?: string;
+    gender?: string;
+    insuranceProvider?: string;
+    policyNumber?: string;
+    allergies?: string[];
+    chronicConditions?: string[];
+    currentMedications?: string[];
+    [key: string]: any;
+}
 
-    const { patientId } = useParams();
+// Define interface for patient
+interface PatientDetails {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    profilePic?: string;
+    contact?: string;
+    emergencyContact?: string;
+    address?: string;
+    medicalInfo: MedicalInfo;
+    [key: string]: any;
+}
+
+function AdminPatientDetails() {
+    const { patientId } = useParams<{ patientId: string }>();
     const { getPatientDetails, patient, convertToDoctor, convertToAdmin, isConvertingPatient } = useAdminStore();
 
     const [showConvertButton, setShowConvertButton] = useState(false);
@@ -17,10 +42,14 @@ function AdminPatientDetails() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        getPatientDetails(patientId);
+        if (patientId) {
+            getPatientDetails(patientId);
+        }
     }, [getPatientDetails, patientId]);
 
     const handleConvert = async () => {
+        if (!patientId) return;
+
         if(doctorConfirmationShown){
             await convertToDoctor(patientId);
         }
@@ -31,27 +60,42 @@ function AdminPatientDetails() {
         navigate('Patients')
     };
 
+    // Loading state UI
+    const renderLoadingState = () => {
+        return (
+            <div className="flex justify-center items-center h-full">
+                <div className="text-lg text-gray-600">Loading patient details...</div>
+            </div>
+        );
+    };
+
+    if (!patient) {
+        return renderLoadingState();
+    }
+
+    // Safe type casting since we know patient is not null at this point
+    const typedPatient = patient as unknown as PatientDetails;
+    
     return (
-        (patient) &&
-        (<>
+        <>
             <div className="flex flex-row mx-5 mb-5 h-full">
                 {/* Entire left side, patient info, notes, medical info and health statuses */}
                 <div className="flex flex-col w-[80%] h-full items-center">
                     {/* Big card with name and pfp */}
                     <div className="w-full px-6 py-5 bg-[#F5F5F5] rounded-2xl flex flex-row items-center">
                         <div className="flex flex-row h-full border-r-1 pr-8 border-[#C4C4C4] items-center">
-                            <img src={patient.profilePic} className="size-20 rounded-xl" />
+                            <img src={typedPatient.profilePic} className="size-20 rounded-xl" alt="Patient profile" />
 
                             <div className="flex flex-col ml-5 h-full justify-between py-1 flex-1">
                                 <span className="text-4xl text-[#233855] flex justify-start">
-                                    {patient.firstName + ' ' + patient.lastName}
+                                    {typedPatient.firstName + ' ' + typedPatient.lastName}
                                 </span>
                                 <div className="flex justify-start">
                                     <span className="text-sm text-[#87888A]">
                                         Patient Id:
                                     </span>
                                     <span className="ml-1 text-sm text-[#4C4D4F] truncate">
-                                        {patient._id}
+                                        {typedPatient._id}
                                     </span>
                                 </div>
                             </div>
@@ -64,14 +108,14 @@ function AdminPatientDetails() {
                                     Phone Number
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left mb-1">
-                                    {patient.contact}
+                                    {typedPatient.contact || '-'}
                                 </span>
 
                                 <span className="text-sm text-[#88898B] font-sans text-left mt-1">
                                     Email
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {patient.email}
+                                    {typedPatient.email}
                                 </span>
                             </div>
 
@@ -80,14 +124,14 @@ function AdminPatientDetails() {
                                     Emergency Contact
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left mb-1">
-                                    {patient.emergencyContact}
+                                    {typedPatient.emergencyContact || '-'}
                                 </span>
 
                                 <span className="text-sm text-[#88898B] font-sans text-left mt-1">
                                     Address
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {patient.address}
+                                    {typedPatient.address || '-'}
                                 </span>
                             </div>
 
@@ -152,7 +196,7 @@ function AdminPatientDetails() {
                                                 Gender
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.gender}
+                                                {typedPatient.medicalInfo?.gender || '-'}
                                             </span>
                                         </div>
 
@@ -161,9 +205,9 @@ function AdminPatientDetails() {
                                                 Age
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo?.dateOfBirth ? (
+                                                {typedPatient.medicalInfo?.dateOfBirth ? (
                                                     (() => {
-                                                        const dob = new Date(patient.medicalInfo.dateOfBirth);
+                                                        const dob = new Date(typedPatient.medicalInfo.dateOfBirth);
                                                         const today = new Date();
                                                         let age = today.getFullYear() - dob.getFullYear();
                                                         const monthDiff = today.getMonth() - dob.getMonth();
@@ -183,7 +227,9 @@ function AdminPatientDetails() {
                                                 Date of Birth
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.dateOfBirth ? format(parseISO(patient.medicalInfo.dateOfBirth), 'dd-MM-yyyy') : '-'}
+                                                {typedPatient.medicalInfo?.dateOfBirth 
+                                                    ? format(new Date(typedPatient.medicalInfo.dateOfBirth), 'dd-MM-yyyy') 
+                                                    : '-'}
                                             </span>
                                         </div>
                                     </div>
@@ -194,7 +240,7 @@ function AdminPatientDetails() {
                                                 Insurance Provider
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.insuranceProvider}
+                                                {typedPatient.medicalInfo?.insuranceProvider || '-'}
                                             </span>
                                         </div>
 
@@ -203,7 +249,7 @@ function AdminPatientDetails() {
                                                 Insurance Number
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.policyNumber}
+                                                {typedPatient.medicalInfo?.policyNumber || '-'}
                                             </span>
                                         </div>
                                     </div>
@@ -222,8 +268,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {patient.medicalInfo?.allergies?.length > 0 ? (
-                                                patient.medicalInfo.allergies.map((allergy, index) => (
+                                            {typedPatient.medicalInfo?.allergies && typedPatient.medicalInfo.allergies.length > 0 ? (
+                                                typedPatient.medicalInfo.allergies.map((allergy: string, index: number) => (
                                                     <li key={`allergy-${index}`}>{allergy}</li>
                                                 ))
                                             ) : (
@@ -243,8 +289,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {patient.medicalInfo?.chronicConditions?.length > 0 ? (
-                                                patient.medicalInfo.chronicConditions.map((condition, index) => (
+                                            {typedPatient.medicalInfo?.chronicConditions && typedPatient.medicalInfo.chronicConditions.length > 0 ? (
+                                                typedPatient.medicalInfo.chronicConditions.map((condition: string, index: number) => (
                                                     <li key={`condition-${index}`}>{condition}</li>
                                                 ))
                                             ) : (
@@ -264,8 +310,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {patient.medicalInfo?.currentMedications?.length > 0 ? (
-                                                patient.medicalInfo.currentMedications.map((medication, index) => (
+                                            {typedPatient.medicalInfo?.currentMedications && typedPatient.medicalInfo.currentMedications.length > 0 ? (
+                                                typedPatient.medicalInfo.currentMedications.map((medication: string, index: number) => (
                                                     <li key={`medication-${index}`}>{medication}</li>
                                                 ))
                                             ) : (
@@ -311,13 +357,14 @@ function AdminPatientDetails() {
             </div>
 
             <ConfirmationModal 
-            isOpen={doctorConfirmationShown || adminConfirmationShown}
-            onConfirm={() => {handleConvert(); setDoctorConfirmationShown(false); setAdminConfirmationShown(false);}}
-            onCancel={() => {setDoctorConfirmationShown(false); setAdminConfirmationShown(false);}}
-            title={`Convert to ${doctorConfirmationShown ? 'Doctor' : 'Admin'}`}
-            message={`Are you sure you want to convert this account to a ${doctorConfirmationShown ? 'Doctor' : 'Admin'}? This change is irreversible.`}
+                isOpen={doctorConfirmationShown || adminConfirmationShown}
+                onConfirm={() => {handleConvert(); setDoctorConfirmationShown(false); setAdminConfirmationShown(false);}}
+                onCancel={() => {setDoctorConfirmationShown(false); setAdminConfirmationShown(false);}}
+                title={`Convert to ${doctorConfirmationShown ? 'Doctor' : 'Admin'}`}
+                message={`Are you sure you want to convert this account to a ${doctorConfirmationShown ? 'Doctor' : 'Admin'}? This change is irreversible.`}
+                showLoading={isConvertingPatient}
             />
-        </>)
+        </>
     )
 }
 
