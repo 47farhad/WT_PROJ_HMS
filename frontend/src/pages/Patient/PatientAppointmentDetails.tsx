@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
+import { useNotesStore } from "../../store/useNotesStore";
+import { useReviewsStore } from "../../store/useReviewsStore";
 import { format, parseISO, isAfter } from "date-fns";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { toast } from "react-hot-toast";
@@ -14,9 +16,10 @@ function PatientAppointmentDetails() {
     isAppointmentLoading,
   } = useAppointmentStore();
 
-  const [patientNotes, setPatientNotes] = useState([]);
-  const [showReviewSection, setShowReviewSection] = useState(false);
+  const { getNotesbyAppointmentId, appointmentNotes } = useNotesStore();
+  const { createReviews } = useReviewsStore();
 
+  const [showReviewSection, setShowReviewSection] = useState(false);
   const [review, setReview] = useState({
     rating: 0,
     comment: "",
@@ -24,22 +27,53 @@ function PatientAppointmentDetails() {
     isSubmitting: false
   });
 
-  useEffect(() => {
-    if (appointmentId) {
-      getAppointmentDetails(appointmentId);
-    }
-  }, [appointmentId, getAppointmentDetails]);
+   useEffect(() => {
+      if (appointmentId) {
+        getAppointmentDetails(appointmentId);
+        getNotesbyAppointmentId(appointmentId);
+      }
+    }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId]);
+
+  const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
 
   useEffect(() => {
     if (selectedAppointment?.datetime) {
       const appointmentDate = parseISO(selectedAppointment.datetime);
       const now = new Date();
-      setShowReviewSection(isAfter(now, appointmentDate));
+      const isPastAppointment = isAfter(now, appointmentDate);
+
+      // Check if review exists in the appointment data or in your store
+      const hasExistingReview = selectedAppointment.review || false;
+
+      setShowReviewSection(isPastAppointment && !hasExistingReview);
+      setHasSubmittedReview(hasExistingReview);
     }
   }, [selectedAppointment]);
 
   const handleRatingChange = (rating) => {
     setReview({ ...review, rating });
+  };
+
+  const renderNotes = () => {
+     const note = appointmentNotes[appointmentId]; // Extract note for the specific appointment ID
+
+if (!note) {
+  return (
+    <div className="flex items-center justify-center h-full">
+      <p className="text-gray-500 italic">No notes available for this appointment</p>
+    </div>
+  );
+}
+
+return (
+  <div className="border border-gray-300 rounded-lg p-3 h-full">
+    <p className="text-gray-500 text-sm mb-1">
+      {note.createdAt && format(new Date(note.createdAt), "MMM d, yyyy")}
+    </p>
+    <h3 className="text-md font-bold text-[#243954] mb-2">{note.header}</h3>
+    <p className="text-gray-700 text-md">{note.text}</p>
+  </div>
+);
   };
 
   const handleHoverRating = (rating) => {
@@ -50,7 +84,7 @@ function PatientAppointmentDetails() {
     setReview({ ...review, comment: e.target.value });
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (review.rating === 0) {
       toast.warning("Please select a rating");
       return;
@@ -58,16 +92,27 @@ function PatientAppointmentDetails() {
 
     setReview({ ...review, isSubmitting: true });
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      toast.success("Thank you for your feedback!");
+    try {
+      const reviewsData = {
+        rating: review.rating,
+        reviewText: review.comment
+      };
+
+      await createReviews(appointmentId, reviewsData);
+
       setReview({
         rating: 0,
         comment: "",
         hoverRating: 0,
         isSubmitting: false
       });
-    }, 1500);
+
+      // Update the review status
+      setHasSubmittedReview(true);
+      setShowReviewSection(false);
+    } catch (error) {
+      setReview({ ...review, isSubmitting: false });
+    }
   };
 
   if (isAppointmentLoading || !selectedAppointment) {
@@ -94,11 +139,12 @@ function PatientAppointmentDetails() {
             </div>
 
             <div className="flex items-end">
-              <span className={`px-4 py-2 rounded-full text-sm font-medium ${selectedAppointment.status === "confirmed" ? "bg-green-100 text-green-800" :
-                  selectedAppointment.status === "completed" ? "bg-blue-100 text-blue-800" :
-                    selectedAppointment.status === "cancelled" ? "bg-red-100 text-red-800" :
-                      "bg-gray-100 text-gray-800"
-                }`}>
+              <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+                selectedAppointment.status === "confirmed" ? "bg-green-100 text-green-800" :
+                selectedAppointment.status === "completed" ? "bg-blue-100 text-blue-800" :
+                selectedAppointment.status === "cancelled" ? "bg-red-100 text-red-800" :
+                "bg-gray-100 text-gray-800"
+              }`}>
                 {selectedAppointment.status}
               </span>
             </div>
@@ -141,21 +187,13 @@ function PatientAppointmentDetails() {
           </div>
 
           {/* Patient Notes */}
-          <div className="flex flex-col w-[67%] border-2 border-gray-300 rounded-2xl p-5 h-[111%] bg-white">
-            <div className="flex justify-between items-center mb-5 border-b border-gray-300 pb-3">
-              <span className="text-lg font-semibold text-[#243954]">
+          <div className="flex flex-col w-[67%] border-2 border-gray-300 rounded-2xl p-4 h-[111%] bg-white">
+            <div className="flex justify-between items-center mb-4 border-b border-[#E6E6E8] pb-2">
+              <span className="text-lg font-semibold text-[#04080B]">
                 Patient Notes
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-5 overflow-y-auto">
-              {patientNotes.map(note => (
-                <div key={note.id} className="border border-gray-300 rounded-lg p-4 h-full flex flex-col">
-                  <p className="text-gray-500 text-sm mb-2">{note.date}</p>
-                  <h3 className="text-md font-semibold text-[#243954] mb-3">{note.title}</h3>
-                  <p className="text-gray-700 text-sm flex-grow">{note.description}</p>
-                </div>
-              ))}
-            </div>
+            {renderNotes()}
           </div>
         </div>
       </div>
@@ -186,7 +224,7 @@ function PatientAppointmentDetails() {
           </div>
         </div>
 
-        {/* Review Section - Only shown if appointment is in the past */}
+        {/* Review Section - Only shown if appointment is in the past and no review exists */}
         {showReviewSection && (
           <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-[#243954] mb-5">Rate Your Experience</h3>
@@ -205,10 +243,11 @@ function PatientAppointmentDetails() {
                     className="focus:outline-none transition-transform hover:scale-110"
                   >
                     <StarIcon
-                      className={`h-9 w-9 ${star <= (review.hoverRating || review.rating)
+                      className={`h-9 w-9 ${
+                        star <= (review.hoverRating || review.rating)
                           ? "text-yellow-400"
                           : "text-gray-300"
-                        }`}
+                      }`}
                     />
                   </button>
                 ))}
@@ -237,10 +276,11 @@ function PatientAppointmentDetails() {
             <button
               onClick={handleSubmitReview}
               disabled={review.rating === 0 || review.isSubmitting}
-              className={`w-full py-3 px-5 rounded-lg font-medium transition-colors ${review.rating === 0
+              className={`w-full py-3 px-5 rounded-lg font-medium transition-colors ${
+                review.rating === 0
                   ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                   : "bg-[#243954] text-white hover:bg-[#1e2e4a]"
-                }`}
+              }`}
             >
               {review.isSubmitting ? (
                 <span className="flex items-center justify-center">
@@ -257,16 +297,21 @@ function PatientAppointmentDetails() {
           </div>
         )}
 
-        {/* Message if review section shouldn't be shown */}
         {!showReviewSection && (
           <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200 flex items-center justify-center">
             <div className="text-center">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <h3 className="mt-2 text-lg font-medium text-gray-900">Appointment Not Completed</h3>
+              <h3 className="mt-2 text-lg font-medium text-gray-900">
+                {hasSubmittedReview ?
+                  "Thank you for your review!" :
+                  "Appointment Not Completed"}
+              </h3>
               <p className="mt-1 text-gray-500">
-                You can submit your review after the appointment time has passed.
+                {hasSubmittedReview ?
+                  "Your feedback has been submitted." :
+                  "You can submit your review after the appointment time has passed."}
               </p>
             </div>
           </div>

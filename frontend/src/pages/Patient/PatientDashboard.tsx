@@ -113,7 +113,7 @@ function PatientDashboard() {
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-1">Appointments</h3>
               <p className="text-3xl font-bold text-gray-900">
-                {todayAppointments.length}
+                {appointments?.data?.length || 0}
               </p>
             </div>
           </div>
@@ -162,7 +162,7 @@ function PatientDashboard() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-1">Lab Tests</h3>
-              <p className="text-3xl font-bold text-gray-900">{todayLabTests.length}</p>
+              <p className="text-3xl font-bold text-gray-900">{labTests?.data?.length || 0}</p>
             </div>
           </div>
           <Link to="/LabTests" className="text-sm text-amber-600 hover:underline mt-3 block">View and book →</Link>

@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useNotesStore } from '../../store/useNotesStore'; 
+import { toast } from 'react-hot-toast';
 
 const Notes = () => {
-    const [notes, setNotes] = useState([]);
     const [newNote, setNewNote] = useState({
-        title: '',
-        description: ''
+        header: '', 
+        text: ''    
     });
-     const navigate = useNavigate();
-    const [submissionMessage, setSubmissionMessage] = useState('');
-
+    const navigate = useNavigate();
+    const { appointmentId } = useParams(); // Get appointmentId from URL
+    const { createNotes, isCreatingNotes } = useNotesStore();
+    
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setNewNote(prev => ({
@@ -18,15 +20,35 @@ const Notes = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!newNote.title || !newNote.description) return;
+        
+        if (!newNote.header || !newNote.text) {
+            toast.error('Both header and text are required');
+            return;
+        }
 
-        setSubmissionMessage('Note created successfully!');
-        setTimeout(() => setSubmissionMessage(''), 3000);
-        setNewNote({ title: '', description: '' });
+        if (!appointmentId) {
+            toast.error('No appointment specified');
+            return;
+        }
+
+        try {
+            await createNotes(appointmentId, {
+                header: newNote.header,
+                text: newNote.text
+            });
+            
+            // Reset form after successful submission
+            setNewNote({ header: '', text: '' });
+            
+            // Optionally navigate away or show success message
+            toast.success('Note created successfully!');
+            // navigate(-1); // Uncomment if you want to go back after creation
+        } catch (error) {
+            // Error handling is already done in the store
+        }
     };
-
 
     return (
         <div className="h-full w-full flex items-center justify-center overflow-y-auto" style={{zoom:"133%"}}>
@@ -35,21 +57,16 @@ const Notes = () => {
                     <h2 className="text-2xl font-semibold text-[#243954] mb-6 text-center">
                         NOTE
                     </h2>
-                    {submissionMessage && (
-                        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-center">
-                            {submissionMessage}
-                        </div>
-                    )}
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="flex flex-col space-y-2">
-                            <label htmlFor="title" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="header" className="text-sm font-medium text-gray-700">
                                 Condition/Title
                             </label>
                             <input
                                 type="text"
-                                id="title"
-                                name="title"
-                                value={newNote.title}
+                                id="header"
+                                name="header"
+                                value={newNote.header}
                                 onChange={handleInputChange}
                                 placeholder="e.g. Asthma, Hypertension"
                                 className="p-3 border border-gray-300 bg-white rounded-md outline-gray-500"
@@ -58,13 +75,13 @@ const Notes = () => {
                         </div>
 
                         <div className="flex flex-col space-y-2">
-                            <label htmlFor="description" className="text-sm font-medium text-gray-700">
+                            <label htmlFor="text" className="text-sm font-medium text-gray-700">
                                 Notes
                             </label>
                             <textarea
-                                id="description"
-                                name="description"
-                                value={newNote.description}
+                                id="text"
+                                name="text"
+                                value={newNote.text}
                                 onChange={handleInputChange}
                                 placeholder="Enter your notes here..."
                                 rows="6"
@@ -76,9 +93,10 @@ const Notes = () => {
                         <div className="flex space-x-4 justify-center">
                             <button
                                 type="submit"
-                                className="px-6 py-2 bg-[#243954] text-white rounded-md hover:bg-[#1a2d42] transition-colors"
+                                className="px-6 py-2 bg-[#243954] text-white rounded-md hover:bg-[#1a2d42] transition-colors disabled:opacity-50"
+                                disabled={isCreatingNotes}
                             >
-                                Submit
+                                {isCreatingNotes ? 'Creating...' : 'Submit'}
                             </button>
                             <button
                                 type="button"
