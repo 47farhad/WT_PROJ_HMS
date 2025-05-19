@@ -1,6 +1,6 @@
-export const isAdmin = (req: any, res: any, next: any) => {
+export const isAdminOrDoc = (req: any, res: any, next: any) => {
     try {
-        if (req.user.userType !== 'Admin'&& req.user.userType !== 'Doctor') {
+        if (req.user.userType !== 'Admin' && req.user.userType !== 'Doctor') {
             return res.status(401).json({ message: "Unauthorized " })
         }
 

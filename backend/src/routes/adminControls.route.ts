@@ -7,6 +7,7 @@ import * as adminAppointmentController from '../controllers/adminAppointmentCont
 import * as adminDoctorController from '../controllers/adminDoctorController.js';
 import * as requestController from '../controllers/request.controller.js';
 import * as adminScheduleController from '../controllers/adminScheduleController.js';
+import { isAdminOrDoc } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
@@ -17,8 +18,8 @@ router.use((req, res, next) => {
 });
 
 // User management routes
-router.get('/getPatients', protectRoute, isAdmin, getPatients);
-router.get('/getPatientDetails/:id', protectRoute, isAdmin, getPatientDetails);
+router.get('/getPatients', protectRoute, isAdminOrDoc, getPatients);
+router.get('/getPatientDetails/:id', protectRoute, isAdminOrDoc, getPatientDetails);
 router.patch('/convertPatientToDoctor/:id', protectRoute, isAdmin, convertToDoctor);
 router.patch('/convertPatientToAdmin/:id', protectRoute, isAdmin, convertToAdmin);
 

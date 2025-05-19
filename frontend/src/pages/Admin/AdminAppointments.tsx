@@ -5,19 +5,19 @@ import { motion } from 'framer-motion';
 
 const AdminAppointments: React.FC = () => {
   // Get state and actions from the store
-  const { 
-    appointments, 
-    isAppointmentsLoading, 
+  const {
+    appointments,
+    isAppointmentsLoading,
     getAppointments,
     updateAppointment
   } = useAdminAppointmentStore();
-  
+
   // Local state for filters
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  
+
   // Fetch data on component mount
   useEffect(() => {
     console.log('AdminAppointments component mounted');
@@ -39,26 +39,26 @@ const AdminAppointments: React.FC = () => {
     if (!appointments.data || appointments.data.length === 0) {
       return [];
     }
-    
+
     return appointments.data.filter(appointment => {
       // Apply status filter
       if (selectedStatus && appointment.status !== selectedStatus) {
         return false;
       }
-      
+
       // Apply date range filter
       if (startDate || endDate) {
         const appointmentDate = appointment.date;
-        
+
         if (startDate && appointmentDate < startDate) {
           return false;
         }
-        
+
         if (endDate && appointmentDate > endDate) {
           return false;
         }
       }
-      
+
       // Apply search filter (patient name or doctor name)
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -67,11 +67,11 @@ const AdminAppointments: React.FC = () => {
           appointment.doctorName?.toLowerCase().includes(query)
         );
       }
-      
+
       return true;
     });
   }, [appointments.data, selectedStatus, startDate, endDate, searchQuery]);
-  
+
   // Reset filters
   const handleResetFilters = () => {
     setSelectedStatus('');
@@ -79,19 +79,19 @@ const AdminAppointments: React.FC = () => {
     setEndDate('');
     setSearchQuery('');
   };
-  
+
   // Manual refresh function
   const handleRefresh = () => {
     toast.success('Refreshing appointments data');
     getAppointments();
   };
-  
+
   // Handle appointment status update
   const handleStatusUpdate = (id: string, newStatus: string) => {
     console.log(`Updating appointment ${id} to status ${newStatus}`);
     updateAppointment(id, newStatus);
   };
-  
+
   // Render loading state
   if (isAppointmentsLoading && (!appointments.data || appointments.data.length === 0)) {
     return (
@@ -100,17 +100,17 @@ const AdminAppointments: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
-    <div className="container mx-auto p-4 max-w-full">
-      <motion.div 
+    <div className="container mx-auto p-4 max-w-full h-full max-h-[calc(100vh-88px)] overflow-y-scroll">
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="flex justify-between items-center mb-6"
       >
         <h1 className="text-2xl font-bold text-[#243954]">Appointment Management</h1>
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={handleRefresh}
@@ -119,9 +119,9 @@ const AdminAppointments: React.FC = () => {
           Refresh Data
         </motion.button>
       </motion.div>
-      
+
       {/* Filters */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.2 }}
@@ -144,7 +144,7 @@ const AdminAppointments: React.FC = () => {
               <option value="cancelled">Cancelled</option>
             </select>
           </div>
-          
+
           {/* Date Range Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
@@ -155,7 +155,7 @@ const AdminAppointments: React.FC = () => {
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#243954] transition-all duration-200"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
             <input
@@ -165,7 +165,7 @@ const AdminAppointments: React.FC = () => {
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#243954] transition-all duration-200"
             />
           </div>
-          
+
           {/* Search Input */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
@@ -189,9 +189,9 @@ const AdminAppointments: React.FC = () => {
           </div>
         </div>
       </motion.div>
-      
+
       {/* Stats and information */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
@@ -219,9 +219,9 @@ const AdminAppointments: React.FC = () => {
           </div>
         </div>
       </motion.div>
-      
+
       {/* Appointments Table */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.4 }}
@@ -237,14 +237,13 @@ const AdminAppointments: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Time</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Reason</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredAppointments.length > 0 ? (
                 filteredAppointments.map((appointment) => (
-                  <motion.tr 
-                    key={appointment._id} 
+                  <motion.tr
+                    key={appointment._id}
                     className="hover:bg-gray-50 transition-colors duration-150"
                     whileHover={{ backgroundColor: "rgba(243, 244, 246, 0.7)" }}
                     initial={{ opacity: 0 }}
@@ -268,45 +267,14 @@ const AdminAppointments: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' : 
-                          appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                          appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          appointment.status === 'completed' ? 'bg-purple-100 text-purple-800' :
-                          'bg-gray-100 text-gray-800'}`
+                        ${appointment.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                          appointment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              appointment.status === 'completed' ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-800'}`
                       }>
                         {appointment.status ? appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1) : 'Unknown'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-3">
-                        {appointment.status !== 'confirmed' && (
-                          <motion.button
-                            whileHover={{ scale: 1.1, fontWeight: "bold" }}
-                            onClick={() => handleStatusUpdate(appointment._id, 'confirmed')}
-                            className="text-green-600 hover:text-green-900 transition-colors duration-200"
-                          >
-                            Confirm
-                          </motion.button>
-                        )}
-                        {appointment.status !== 'cancelled' && (
-                          <motion.button
-                            whileHover={{ scale: 1.1, fontWeight: "bold" }}
-                            onClick={() => handleStatusUpdate(appointment._id, 'cancelled')}
-                            className="text-red-600 hover:text-red-900 transition-colors duration-200"
-                          >
-                            Cancel
-                          </motion.button>
-                        )}
-                        {appointment.status !== 'completed' && (
-                          <motion.button
-                            whileHover={{ scale: 1.1, fontWeight: "bold" }}
-                            onClick={() => handleStatusUpdate(appointment._id, 'completed')}
-                            className="text-blue-600 hover:text-blue-900 transition-colors duration-200"
-                          >
-                            Complete
-                          </motion.button>
-                        )}
-                      </div>
                     </td>
                   </motion.tr>
                 ))

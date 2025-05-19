@@ -355,7 +355,7 @@ export const getDoctorAppointmentStats = async (req: any, res: any) => {
     const stats = await Appointment.aggregate([
       {
         $match: {
-          doctorId: doctorId
+          doctorId: new mongoose.Types.ObjectId(doctorId)
         }
       },
       {
@@ -390,8 +390,8 @@ export const getDoctorAppointmentStats = async (req: any, res: any) => {
 
     // Format response
     const result = {
-      totalAppointments: stats[0]?.totalAppointments || 0,
-      upcomingAppointments: stats[0]?.upcomingAppointments || 0,
+      totalAppointments: stats[0]?.totalAppointments,
+      upcomingAppointments: stats[0]?.upcomingAppointments,
      
     };
 

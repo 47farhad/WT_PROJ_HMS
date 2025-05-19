@@ -12,8 +12,8 @@ function DoctorPatientDetails() {
     const { authUser } = useAuthStore();
     const { patientId } = useParams();
     const { getPatientDetails, patient } = useAdminStore();
-    const { patientDetailsAppointments, } = useAppointmentStore();
-    const { patientDetailsReports } = usePatientLabTestStore();
+    const { patientDetailsAppointments, getPatientDetailsAppointments } = useAppointmentStore();
+    const { patientDetailsReports, getDetailsReport } = usePatientLabTestStore();
     const { getNotesbyPatientId, patientNotes, isNotesLoading } = useNotesStore();
 
 
@@ -21,8 +21,10 @@ function DoctorPatientDetails() {
         if (patientId) {
             getPatientDetails(patientId);
             getNotesbyPatientId(patientId);
+            getPatientDetailsAppointments(patientId);
+            getDetailsReport(patientId);
         }
-    }, [patientId, getPatientDetails, getNotesbyPatientId]);
+    }, [patientId, getPatientDetails, getNotesbyPatientId, getPatientDetailsAppointments, getDetailsReport]);
     console.log(patientNotes);
     const handleDownload = (url) => {
         const link = document.createElement('a');
@@ -481,25 +483,41 @@ function DoctorPatientDetails() {
                             Past
                         </span>
 
-                        {/* Past appointments - Only show if doctor matches */}
-                        {patientDetailsAppointments?.past?.filter(appt => appt.doctorId._id === authUser._id).slice(0, 2).map((pastAppointment, index) => (
-                            <div key={index} className="flex flex-col items-baseline w-full bg-white rounded-2xl p-3 gap-1">
+                        {(patientDetailsAppointments && patientDetailsAppointments.past[0]) &&
+                            (<div className="flex flex-col items-baseline w-full bg-white rounded-2xl p-3 gap-1">
                                 <span className="text-[#223A54] font-sans font-semibold text-sm">
-                                    {pastAppointment.description}
+                                    {patientDetailsAppointments.past[0].description}
                                 </span>
                                 <span className="text-[#05090C] font-sans font-semibold text-xl">
-                                    {"Dr. " + pastAppointment.doctorId.firstName + " " + pastAppointment.doctorId.lastName}
+                                    {"Dr. " + patientDetailsAppointments.past[0].doctorId.firstName + " " + patientDetailsAppointments.past[0].doctorId.lastName}
                                 </span>
                                 <div className="flex flex-row items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#4B4C4E" viewBox="0 0 24 24">
                                         <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
                                     </svg>
                                     <span className="text-[#4B4C4E] font-sans font-semibold text-sm">
-                                        {format(parseISO(pastAppointment.datetime), 'EEEE, dd MMMM yyyy - hh:mm a', { timeZone: 'UTC' })}
+                                        {format(parseISO(patientDetailsAppointments.past[0].datetime), 'EEEE, dd MMMM yyyy - hh:mm a', { timeZone: 'UTC' })}
                                     </span>
                                 </div>
-                            </div>
-                        ))}
+                            </div>)}
+
+                        {(patientDetailsAppointments && patientDetailsAppointments.past[1]) &&
+                            (<div className="flex flex-col items-baseline w-full bg-white rounded-2xl p-3 gap-1">
+                                <span className="text-[#223A54] font-sans font-semibold text-sm">
+                                    {patientDetailsAppointments.past[1].description}
+                                </span>
+                                <span className="text-[#05090C] font-sans font-semibold text-xl">
+                                    {"Dr. " + patientDetailsAppointments.past[1].doctorId.firstName + " " + patientDetailsAppointments.past[1].doctorId.lastName}
+                                </span>
+                                <div className="flex flex-row items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="#4B4C4E" viewBox="0 0 24 24">
+                                        <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" />
+                                    </svg>
+                                    <span className="text-[#4B4C4E] font-sans font-semibold text-sm">
+                                        {format(parseISO(patientDetailsAppointments.past[1].datetime), 'EEEE, dd MMMM yyyy - hh:mm a', { timeZone: 'UTC' })}
+                                    </span>
+                                </div>
+                            </div>)}
                     </div>
                 </div>
             </div>

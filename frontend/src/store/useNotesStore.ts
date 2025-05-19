@@ -3,7 +3,7 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
 export const useNotesStore = create((set, get) => ({
-    appointmentNotes: {}, // Notes mapped by appointmentId
+    appointmentNotes: null,
     patientNotes: {},     // Notes mapped by patientId
     pagination: {},       // Pagination for patient notes
     isNotesLoading: false,
@@ -14,18 +14,6 @@ export const useNotesStore = create((set, get) => ({
         try {
             set({ isCreatingNotes: true });
             const res = await axiosInstance.post(`/note/createNote/${appointmentId}`, notesData);
-
-            // Add to appointmentNotes
-            set((state) => {
-                const prevNotes = state.appointmentNotes[appointmentId] || [];
-                return {
-                    isCreatingNotes: false,
-                    appointmentNotes: {
-                        ...state.appointmentNotes,
-                        [appointmentId]: [res.data, ...prevNotes]
-                    }
-                };
-            });
 
             toast.success("Notes created successfully");
             return res.data;
@@ -45,15 +33,12 @@ export const useNotesStore = create((set, get) => ({
 
             set((state) => ({
                 isNotesLoading: false,
-                appointmentNotes: {
-                    ...state.appointmentNotes,
-                    [appointmentId]: res.data
-                }
+                appointmentNotes: res.data
             }));
 
             return res.data;
         } catch (error) {
-            set({ isNotesLoading: false });
+            set({ isNotesLoading: false, appointmentNotes: null });
             const errorMessage = error.response?.data?.message || "Failed to fetch notes";
             toast.error(errorMessage);
             throw error;

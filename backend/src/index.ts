@@ -20,8 +20,6 @@ import prescriptionRoutes from "./routes/prescription.routes.js";
 import noteRoutes from "./routes/note.route.js"
 import reviewRoutes from "./routes/review.route.js"
 
-import { app, server } from "./lib/socket.js";
-
 dotenv.config();
 const PORT = process.env.PORT;
 

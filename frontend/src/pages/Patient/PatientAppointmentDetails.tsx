@@ -17,9 +17,8 @@ function PatientAppointmentDetails() {
   } = useAppointmentStore();
 
   const { getNotesbyAppointmentId, appointmentNotes } = useNotesStore();
-  const { createReviews } = useReviewsStore();
+  const { createReviews, getReviews, givenReviews, isReviewsLoading } = useReviewsStore();
 
-  const [showReviewSection, setShowReviewSection] = useState(false);
   const [review, setReview] = useState({
     rating: 0,
     comment: "",
@@ -27,12 +26,13 @@ function PatientAppointmentDetails() {
     isSubmitting: false
   });
 
-   useEffect(() => {
-      if (appointmentId) {
-        getAppointmentDetails(appointmentId);
-        getNotesbyAppointmentId(appointmentId);
-      }
-    }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId]);
+  useEffect(() => {
+    if (appointmentId) {
+      getAppointmentDetails(appointmentId);
+      getNotesbyAppointmentId(appointmentId);
+      getReviews(appointmentId)
+    }
+  }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId, getReviews]);
 
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
 
@@ -45,7 +45,6 @@ function PatientAppointmentDetails() {
       // Check if review exists in the appointment data or in your store
       const hasExistingReview = selectedAppointment.review || false;
 
-      setShowReviewSection(isPastAppointment && !hasExistingReview);
       setHasSubmittedReview(hasExistingReview);
     }
   }, [selectedAppointment]);
@@ -55,25 +54,19 @@ function PatientAppointmentDetails() {
   };
 
   const renderNotes = () => {
-     const note = appointmentNotes[appointmentId]; // Extract note for the specific appointment ID
-
-if (!note) {
-  return (
-    <div className="flex items-center justify-center h-full">
+    if (!appointmentNotes) return (<div className="flex items-center justify-center h-full">
       <p className="text-gray-500 italic">No notes available for this appointment</p>
-    </div>
-  );
-}
+    </div>)
 
-return (
-  <div className="border border-gray-300 rounded-lg p-3 h-full">
-    <p className="text-gray-500 text-sm mb-1">
-      {note.createdAt && format(new Date(note.createdAt), "MMM d, yyyy")}
-    </p>
-    <h3 className="text-md font-bold text-[#243954] mb-2">{note.header}</h3>
-    <p className="text-gray-700 text-md">{note.text}</p>
-  </div>
-);
+    return (
+      <div className="border border-gray-300 rounded-lg p-3 h-full">
+        <p className="text-gray-500 text-sm mb-1">
+          {appointmentNotes.createdAt && format(new Date(appointmentNotes.createdAt), "MMM d, yyyy")}
+        </p>
+        <h3 className="text-md font-bold text-[#243954] mb-2">{appointmentNotes.header}</h3>
+        <p className="text-gray-700 text-md">{appointmentNotes.text}</p>
+      </div>
+    );
   };
 
   const handleHoverRating = (rating) => {
@@ -109,13 +102,12 @@ return (
 
       // Update the review status
       setHasSubmittedReview(true);
-      setShowReviewSection(false);
     } catch (error) {
       setReview({ ...review, isSubmitting: false });
     }
   };
 
-  if (isAppointmentLoading || !selectedAppointment) {
+  if (isAppointmentLoading || !selectedAppointment || isReviewsLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#243954]"></div>
@@ -139,12 +131,11 @@ return (
             </div>
 
             <div className="flex items-end">
-              <span className={`px-4 py-2 rounded-full text-sm font-medium ${
-                selectedAppointment.status === "confirmed" ? "bg-green-100 text-green-800" :
+              <span className={`px-4 py-2 rounded-full text-sm font-medium ${selectedAppointment.status === "confirmed" ? "bg-green-100 text-green-800" :
                 selectedAppointment.status === "completed" ? "bg-blue-100 text-blue-800" :
-                selectedAppointment.status === "cancelled" ? "bg-red-100 text-red-800" :
-                "bg-gray-100 text-gray-800"
-              }`}>
+                  selectedAppointment.status === "cancelled" ? "bg-red-100 text-red-800" :
+                    "bg-gray-100 text-gray-800"
+                }`}>
                 {selectedAppointment.status}
               </span>
             </div>
@@ -225,7 +216,7 @@ return (
         </div>
 
         {/* Review Section - Only shown if appointment is in the past and no review exists */}
-        {showReviewSection && (
+        {(!givenReviews && isAfter(new Date(), parseISO(selectedAppointment.datetime))) && (
           <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-[#243954] mb-5">Rate Your Experience</h3>
 
@@ -243,11 +234,10 @@ return (
                     className="focus:outline-none transition-transform hover:scale-110"
                   >
                     <StarIcon
-                      className={`h-9 w-9 ${
-                        star <= (review.hoverRating || review.rating)
-                          ? "text-yellow-400"
-                          : "text-gray-300"
-                      }`}
+                      className={`h-9 w-9 ${star <= (review.hoverRating || review.rating)
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                        }`}
                     />
                   </button>
                 ))}
@@ -276,11 +266,10 @@ return (
             <button
               onClick={handleSubmitReview}
               disabled={review.rating === 0 || review.isSubmitting}
-              className={`w-full py-3 px-5 rounded-lg font-medium transition-colors ${
-                review.rating === 0
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-[#243954] text-white hover:bg-[#1e2e4a]"
-              }`}
+              className={`w-full py-3 px-5 rounded-lg font-medium transition-colors ${review.rating === 0
+                ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                : "bg-[#243954] text-white hover:bg-[#1e2e4a]"
+                }`}
             >
               {review.isSubmitting ? (
                 <span className="flex items-center justify-center">
@@ -297,23 +286,40 @@ return (
           </div>
         )}
 
-        {!showReviewSection && (
-          <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200 flex items-center justify-center">
-            <div className="text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <h3 className="mt-2 text-lg font-medium text-gray-900">
-                {hasSubmittedReview ?
-                  "Thank you for your review!" :
-                  "Appointment Not Completed"}
-              </h3>
-              <p className="mt-1 text-gray-500">
-                {hasSubmittedReview ?
-                  "Your feedback has been submitted." :
-                  "You can submit your review after the appointment time has passed."}
+        {givenReviews && (
+          <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200">
+            <h3 className="text-lg font-semibold text-[#243954] mb-5">Your Review</h3>
+
+            {/* Rating Display */}
+            <div className="mb-5">
+              <p className="text-gray-600 mb-3">Your rating:</p>
+              <div className="flex justify-center gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <StarIcon
+                    key={star}
+                    className={`h-9 w-9 ${star <= givenReviews.rating ? "text-yellow-400" : "text-gray-300"
+                      }`}
+                  />
+                ))}
+              </div>
+              <p className="text-center text-sm text-gray-500 mt-2">
+                You rated this {givenReviews.rating} star{givenReviews.rating !== 1 ? "s" : ""}
               </p>
             </div>
+
+            {/* Review Text Display */}
+            {givenReviews.reviewText && (
+              <div className="mb-4">
+                <p className="text-gray-600 mb-2">Your feedback:</p>
+                <div className="bg-white p-4 rounded-lg border border-gray-200">
+                  <p className="text-gray-800">{givenReviews.reviewText}</p>
+                </div>
+              </div>
+            )}
+
+            <p className="text-sm text-gray-400 text-center mt-4">
+              Submitted on {new Date(givenReviews.createdAt).toLocaleDateString()}
+            </p>
           </div>
         )}
       </div>

@@ -41,7 +41,7 @@ export const useReviewsStore = create((set, get) => ({
             
             return res.data;
         } catch (error) {
-            set({ isReviewsLoading: false });
+            set({ isReviewsLoading: false, givenReviews: null });
             const errorMessage = error.response?.data?.message || "Failed to fetch reviews";
             toast.error(errorMessage);
             throw error;

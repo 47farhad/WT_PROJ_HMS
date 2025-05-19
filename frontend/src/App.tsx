@@ -14,10 +14,12 @@ function App() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
+    console.log('checkings')
     checkAuth();
-  }, [checkAuth])
+  }, [checkAuth, authUser])
 
   if (isCheckingAuth) {
+    console.log('checking')
     return (
       <div>
         {/* Temporary loading page, add a proper loading screen here later */}

@@ -11,7 +11,7 @@ import {
 } from "../controllers/appointment.controller.js";
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import { verifyPatient } from "../middlewares/appointment.middleware.js";
-import { isAdmin } from "../middlewares/admin.middleware.js";
+import { isAdminOrDoc } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ router.get("/getAppointment/:id", protectRoute, getAppointmentDetails);
 
 // Get all appointments for the logged-in user
 router.get("/getAllAppointments", protectRoute, getAllAppointments);
-router.get("/getPatientDetailsAppointment/:patientId", protectRoute, isAdmin, getPatientDetailsAppointments);
+router.get("/getPatientDetailsAppointment/:patientId", protectRoute, isAdminOrDoc, getPatientDetailsAppointments);
 router.get("/getDoctors", getDoctors);
 
 // Get a specific doctor's details

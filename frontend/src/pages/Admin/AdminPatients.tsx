@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { useAdminStore } from "../../store/useAdminStore";
 import { useNavigate } from "react-router-dom";
@@ -43,15 +43,13 @@ function AdminPatients() {
         };
     }, [getPatients, patients.pagination, patients.data.length]);
 
-    // Handle date change
-    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleDateChange = (e) => {
         const { name, value } = e.target;
         if (name === "startDate") setStartDate(value);
         if (name === "endDate") setEndDate(value);
     };
-    
-    // Handle patient click
-    const handlePatientClick = (patientId: string) => {
+
+    const handleClick = (patientId) => {
         navigate(`/Patients/${patientId}`);
     };
 

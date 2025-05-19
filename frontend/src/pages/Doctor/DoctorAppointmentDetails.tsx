@@ -49,7 +49,7 @@ function DoctorAppointmentDetails() {
 
   // Handle the single note or null case
   const renderNotes = () => {
-    const note = appointmentNotes[appointmentId]; // Extract note for the specific appointment ID
+    const note = appointmentNotes; // Extract note for the specific appointment ID
    
    if (!note) {
      return (

@@ -187,6 +187,8 @@ function AdminDashboard() {
         } catch (err) {
           console.error('Error fetching payments:', err);
         }
+
+        console.log(appointments)
         
         // Process recent appointments (up to 5)
         const formattedAppointments = appointments
@@ -194,18 +196,7 @@ function AdminDashboard() {
           .slice(0, 5)
           .map((appointment: Appointment) => {
             // Extract patient name
-            let patientName = 'Unknown Patient';
-            if (appointment.patientId) {
-              if (typeof appointment.patientId === 'object') {
-                patientName = `${appointment.patientId.firstName || ''} ${appointment.patientId.lastName || ''}`.trim();
-              } else {
-                // If patientId is not an object but an ID, try to find the patient in the patients list
-                const patient = patients.find((p: any) => p._id === appointment.patientId);
-                if (patient) {
-                  patientName = `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
-                }
-              }
-            }
+            let patientName = appointment.patientName || 'Unknown';
             
             // Extract doctor name
             let doctorName = 'Unknown Doctor';
@@ -222,7 +213,7 @@ function AdminDashboard() {
             }
             
             // Format date and time
-            const dateObj = new Date(appointment.datetime);
+            const dateObj = new Date(appointment.date);
             let formattedDate = 'Invalid Date';
             let formattedTime = '';
             
@@ -262,18 +253,7 @@ function AdminDashboard() {
           .slice(0, 5)
           .map((payment: Payment) => {
             // Extract patient name
-            let patientName = 'Unknown Patient';
-            if (payment.patientId) {
-              if (typeof payment.patientId === 'object') {
-                patientName = `${payment.patientId.firstName || ''} ${payment.patientId.lastName || ''}`.trim();
-              } else {
-                // If patientId is not an object but an ID, try to find the patient in the patients list
-                const patient = patients.find((p: any) => p._id === payment.patientId);
-                if (patient) {
-                  patientName = `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
-                }
-              }
-            }
+            let patientName = payment.patientName || 'Unknown Patient';
             
             // Format date
             let formattedDate = 'Invalid Date';
@@ -335,9 +315,9 @@ function AdminDashboard() {
   // Format currency
   const formatCurrency = (amount: number) => {
     try {
-      return `Rs ${amount}`;
+      return `$ ${amount}`;
     } catch (e) {
-      return `Rs 0`;
+      return `$ 0`;
     }
   };
 
@@ -383,7 +363,7 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 h-full max-h-[calc(100vh-88px)] overflow-y-scroll">
       {/* Welcome Section */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center">

@@ -110,7 +110,7 @@ const AdminPayments: React.FC = () => {
   const hasSummary = summary && summary.overall;
 
   return (
-    <div className="container mx-auto p-4 max-w-full">
+    <div className="container mx-auto p-4 max-w-full h-full max-h-[calc(100vh-88px)] overflow-y-scroll">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -283,7 +283,6 @@ const AdminPayments: React.FC = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Amount</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Action</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -320,28 +319,6 @@ const AdminPayments: React.FC = () => {
                       }>
                         {payment.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex space-x-3">
-                        {payment.status !== 'Paid' && (
-                          <motion.button
-                            whileHover={{ scale: 1.1, fontWeight: "bold" }}
-                            onClick={() => updatePaymentStatus(payment._id, 'Paid')}
-                            className="text-green-600 hover:text-green-900 transition-colors duration-200"
-                          >
-                            Mark Paid
-                          </motion.button>
-                        )}
-                        {payment.status !== 'Pending' && (
-                          <motion.button
-                            whileHover={{ scale: 1.1, fontWeight: "bold" }}
-                            onClick={() => updatePaymentStatus(payment._id, 'Pending')}
-                            className="text-yellow-600 hover:text-yellow-900 transition-colors duration-200"
-                          >
-                            Mark Pending
-                          </motion.button>
-                        )}
-                      </div>
                     </td>
                   </motion.tr>
                 ))

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom"
 import { useAdminStore } from "../../store/useAdminStore";
-import { useNotesStore } from "../../store/useNotesStore";
 import { format, parseISO } from 'date-fns';
 
 import defaultPFP from '/pictures/avatar.png'
@@ -12,11 +11,11 @@ import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
 
 function AdminPatientDetails() {
-    const { patientId } = useParams<{ patientId: string }>();
+
+    const { patientId } = useParams();
     const { getPatientDetails, patient, convertToDoctor, convertToAdmin, isConvertingPatient } = useAdminStore();
     const { patientDetailsAppointments, getPatientDetailsAppointments } = useAppointmentStore();
     const { getDetailsReport, patientDetailsReports } = usePatientLabTestStore();
-    const { getNotesbyPatientId, givenNotes, isNotesLoading } = useNotesStore(); // Add notes store
 
     const [showConvertButton, setShowConvertButton] = useState(false);
     const [doctorConfirmationShown, setDoctorConfirmationShown] = useState(false);
@@ -27,8 +26,7 @@ function AdminPatientDetails() {
         getPatientDetails(patientId);
         getPatientDetailsAppointments(patientId);
         getDetailsReport(patientId);
-        getNotesbyPatientId(patientId);
-    }, [getPatientDetails, patientId, getPatientDetailsAppointments, getDetailsReport, getNotesbyPatientId]);
+    }, [getPatientDetails, patientId, getPatientDetailsAppointments, getDetailsReport]);
 
     const handleConvert = async () => {
         if (doctorConfirmationShown) {
@@ -52,7 +50,8 @@ function AdminPatientDetails() {
     };
 
     return (
-        <>
+        (patient) &&
+        (<>
             <div className="flex flex-row mx-5 mb-5 h-full">
                 {/* Entire left side, patient info, notes, medical info and health statuses */}
                 <div className="flex flex-col w-[80%] h-full items-center">
@@ -63,14 +62,14 @@ function AdminPatientDetails() {
 
                             <div className="flex flex-col ml-5 h-full justify-between py-1 flex-1">
                                 <span className="text-4xl text-[#233855] flex justify-start">
-                                    {typedPatient.firstName + ' ' + typedPatient.lastName}
+                                    {patient.firstName + ' ' + patient.lastName}
                                 </span>
                                 <div className="flex justify-start">
                                     <span className="text-sm text-[#87888A]">
                                         Patient Id:
                                     </span>
                                     <span className="ml-1 text-sm text-[#4C4D4F] truncate">
-                                        {typedPatient._id}
+                                        {patient._id}
                                     </span>
                                 </div>
                             </div>
@@ -83,14 +82,14 @@ function AdminPatientDetails() {
                                     Phone Number
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left mb-1">
-                                    {typedPatient.contact || '-'}
+                                    {patient.contact}
                                 </span>
 
                                 <span className="text-sm text-[#88898B] font-sans text-left mt-1">
                                     Email
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {typedPatient.email}
+                                    {patient.email}
                                 </span>
                             </div>
 
@@ -99,14 +98,14 @@ function AdminPatientDetails() {
                                     Emergency Contact
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left mb-1">
-                                    {typedPatient.emergencyContact || '-'}
+                                    {patient.emergencyContact}
                                 </span>
 
                                 <span className="text-sm text-[#88898B] font-sans text-left mt-1">
                                     Address
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {typedPatient.address || '-'}
+                                    {patient.address}
                                 </span>
                             </div>
 
@@ -150,45 +149,10 @@ function AdminPatientDetails() {
                     {/* Div with notes on left, General info and patient notes on right */}
                     <div className="flex flex-row w-full mt-5 h-[48%]">
                         {/* Notes */}
-                        {/* Notes Section - Updated */}
-                        <div className="flex flex-col w-[33%] border-2 border-[#E6E6E8] rounded-2xl p-4 h-full overflow-hidden">
-                            <span className="text-lg font-semibold text-[#04080B] font-sans text-center border-b-1 border-[#E6E6E8] pb-2 mb-3">
+                        <div className="flex flex-col w-[33%] border-2 border-[#E6E6E8] rounded-2xl p-1 h-full">
+                            <span className="text-lg font-semibold text-[#04080B] font-sans text-center border-b-1 border-[#E6E6E8]">
                                 Notes
                             </span>
-
-                            {isNotesLoading ? (
-                                <div className="flex justify-center items-center h-full">
-                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#243954]"></div>
-                                </div>
-                            ) : givenNotes.length > 0 ? (
-                                <div className="overflow-y-auto scrollbar-hide space-y-3">
-                                    {givenNotes.map(note => (
-                                        <div key={note._id} className="bg-white p-3 rounded-lg border border-gray-200">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <h3 className="text-md font-semibold text-[#243954]">
-                                                    {note.header}
-                                                </h3>
-                                                <span className="text-xs text-gray-500">
-                                                    {format(new Date(note.createdAt), 'MMM d, yyyy')}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-gray-700 whitespace-pre-line">
-                                                {note.text}
-                                            </p>
-                                            <div className="mt-2 text-xs text-gray-500">
-                                                Appointment: {note.appointmentId}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                                    <svg className="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <p className="text-center">No notes available for this patient</p>
-                                </div>
-                            )}
                         </div>
 
                         {/* General Info and Allergies/Conditions/Medication */}
@@ -206,7 +170,7 @@ function AdminPatientDetails() {
                                                 Gender
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {typedPatient.medicalInfo?.gender || '-'}
+                                                {patient.medicalInfo.gender}
                                             </span>
                                         </div>
 
@@ -215,9 +179,9 @@ function AdminPatientDetails() {
                                                 Age
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {typedPatient.medicalInfo?.dateOfBirth ? (
+                                                {patient.medicalInfo?.dateOfBirth ? (
                                                     (() => {
-                                                        const dob = new Date(typedPatient.medicalInfo.dateOfBirth);
+                                                        const dob = new Date(patient.medicalInfo.dateOfBirth);
                                                         const today = new Date();
                                                         let age = today.getFullYear() - dob.getFullYear();
                                                         const monthDiff = today.getMonth() - dob.getMonth();
@@ -237,9 +201,7 @@ function AdminPatientDetails() {
                                                 Date of Birth
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {typedPatient.medicalInfo?.dateOfBirth 
-                                                    ? format(new Date(typedPatient.medicalInfo.dateOfBirth), 'dd-MM-yyyy') 
-                                                    : '-'}
+                                                {patient.medicalInfo.dateOfBirth ? format(parseISO(patient.medicalInfo.dateOfBirth), 'dd-MM-yyyy') : '-'}
                                             </span>
                                         </div>
                                     </div>
@@ -250,7 +212,7 @@ function AdminPatientDetails() {
                                                 Insurance Provider
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {typedPatient.medicalInfo?.insuranceProvider || '-'}
+                                                {patient.medicalInfo.insuranceProvider}
                                             </span>
                                         </div>
 
@@ -259,7 +221,7 @@ function AdminPatientDetails() {
                                                 Insurance Number
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {typedPatient.medicalInfo?.policyNumber || '-'}
+                                                {patient.medicalInfo.policyNumber}
                                             </span>
                                         </div>
                                     </div>
@@ -278,8 +240,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {typedPatient.medicalInfo?.allergies && typedPatient.medicalInfo.allergies.length > 0 ? (
-                                                typedPatient.medicalInfo.allergies.map((allergy: string, index: number) => (
+                                            {patient.medicalInfo?.allergies?.length > 0 ? (
+                                                patient.medicalInfo.allergies.map((allergy, index) => (
                                                     <li key={`allergy-${index}`}>{allergy}</li>
                                                 ))
                                             ) : (
@@ -299,8 +261,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {typedPatient.medicalInfo?.chronicConditions && typedPatient.medicalInfo.chronicConditions.length > 0 ? (
-                                                typedPatient.medicalInfo.chronicConditions.map((condition: string, index: number) => (
+                                            {patient.medicalInfo?.chronicConditions?.length > 0 ? (
+                                                patient.medicalInfo.chronicConditions.map((condition, index) => (
                                                     <li key={`condition-${index}`}>{condition}</li>
                                                 ))
                                             ) : (
@@ -320,8 +282,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {typedPatient.medicalInfo?.currentMedications && typedPatient.medicalInfo.currentMedications.length > 0 ? (
-                                                typedPatient.medicalInfo.currentMedications.map((medication: string, index: number) => (
+                                            {patient.medicalInfo?.currentMedications?.length > 0 ? (
+                                                patient.medicalInfo.currentMedications.map((medication, index) => (
                                                     <li key={`medication-${index}`}>{medication}</li>
                                                 ))
                                             ) : (
@@ -580,7 +542,7 @@ function AdminPatientDetails() {
                 title={`Convert to ${doctorConfirmationShown ? 'Doctor' : 'Admin'}`}
                 message={`Are you sure you want to convert this account to a ${doctorConfirmationShown ? 'Doctor' : 'Admin'}? This change is irreversible.`}
             />
-        </>
+        </>)
     )
 }
 

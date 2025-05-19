@@ -67,6 +67,7 @@ function DoctorDashboard() {
 
   // Calculate stats from the store
   const totalConfirmedAppointmentsCount = appointmentStats.total || 0;
+  const totalUpcomingAppointmentsCount = upcomingAppointments.data?.length || 0;
   const totalPatientsCount = patients.data?.length || 0;
   const monthlyEarnings = totalConfirmedAppointmentsCount * 50 * 0.02;
 
@@ -158,7 +159,7 @@ function DoctorDashboard() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-700 mb-1">Appointments</h3>
-              <p className="text-3xl font-bold text-gray-900">{totalConfirmedAppointmentsCount}</p>
+              <p className="text-3xl font-bold text-gray-900">{appointmentStats.upcoming}</p>
             </div>
           </div>
           <Link to="/Appointments" className="text-sm text-blue-600 hover:underline mt-3 block">View schedule →</Link>
