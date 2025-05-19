@@ -2,16 +2,43 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 
-export const useTransactionStore = create((set, get) => ({
-    transactions: {
-        data: [],
-        pagination: {
-            currentPage: 1,
-            hasMore: true,
-            isPageLoading: false,
-            totalPages: 1
-        }
+interface Transaction {
+  _id: string;
+  status: string;
+  [key: string]: any;
+}
+
+interface Pagination {
+  currentPage: number;
+  hasMore: boolean;
+  isPageLoading: boolean;
+  totalPages: number;
+}
+
+interface TransactionStoreState {
+  transactions: {
+    data: Transaction[];
+    pagination: Pagination;
+  };
+  isTransactionLoading: boolean;
+  isTransactionsLoading: boolean;
+  selectedTransaction: Transaction | null;
+
+  getTransactionDetails: (transactionId: string) => Promise<void>;
+  getAllTransactions: (page?: number, limit?: number) => Promise<void>;
+  updateTransaction: (transactionId: string, status: string) => Promise<void>;
+}
+
+export const useTransactionStore = create<TransactionStoreState>((set, get) => ({
+  transactions: {
+    data: [],
+    pagination: {
+      currentPage: 1,
+      hasMore: true,
+      isPageLoading: false,
+      totalPages: 1,
     },
+  },
 
     isTransactionLoading: false,
     isTransactionsLoading: false,
@@ -91,4 +118,3 @@ export const useTransactionStore = create((set, get) => ({
         }
     }
 }));
-

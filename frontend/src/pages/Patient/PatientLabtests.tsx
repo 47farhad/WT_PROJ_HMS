@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { ChevronUp, ChevronDown } from "lucide-react";
@@ -22,10 +22,10 @@ function PatientLabTest() {
       data: labTests,
       pagination
     }
-  } = usePatientLabTestStore();
+  } = usePatientLabTestStore() as PatientLabTestStore;
 
-  const labTestEndRef = useRef(null);
-  const labTestContainerRef = useRef(null);
+  const labTestEndRef = useRef<HTMLTableRowElement>(null);
+  const labTestContainerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
   useEffect(() => {
@@ -40,6 +40,8 @@ function PatientLabTest() {
 
   useEffect(() => {
     const container = labTestContainerRef.current;
+    
+    if (!container) return;
 
     const handleScroll = () => {
       if (!container || !labTestEndRef.current) return;
@@ -51,6 +53,7 @@ function PatientLabTest() {
       const reachedBottom = Math.abs(endRefPosition - containerPosition) <= threshold;
       setIsAtBottom(reachedBottom);
     };
+    
     container.addEventListener('scroll', handleScroll);
 
     return () => {
@@ -75,7 +78,7 @@ function PatientLabTest() {
     else if (name === "endDate") setEndDate(value);
   };
 
-  const filteredTests = (labTests || []).filter((test) => {
+  const filteredTests = (labTests || []).filter((test: LabTest) => {
     const testDate = new Date(test.datetime);
     const isStatusMatch = statusFilter === "all" || test.status === statusFilter;
     const isStartMatch = !startDate || testDate >= new Date(startDate);
@@ -83,7 +86,7 @@ function PatientLabTest() {
     return isStatusMatch && isStartMatch && isEndMatch;
   });
 
-  const handleCancelTestClick = (labTestId) => {
+  const handleCancelTestClick = (labTestId: string) => {
     setTestToCancel(labTestId);
     setIsModalOpen(true); // Open the modal
   };
@@ -196,7 +199,7 @@ function PatientLabTest() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200 text-center font-medium">
-              {filteredTests.map((test) => (
+              {filteredTests.map((test: LabTest) => (
                 <tr
                   key={test._id}
                   className="hover:bg-sky-100 transition-colors duration-200"
@@ -260,6 +263,7 @@ function PatientLabTest() {
         onConfirm={handleConfirmCancel}
         title="Cancel Test"
         message="Are you sure you want to cancel this test?"
+        showLoading={false}
       />
     </div>
   );

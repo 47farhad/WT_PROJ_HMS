@@ -1,11 +1,10 @@
-import { useEffect, useState } from "react"
-import AdminLabTestCard from "../../components/AdminLabTestCard"
-import "../../css/hideScroll.css"
+import { useEffect, useState } from "react" 
+import AdminLabTestCard from "../../components/AdminLabTestCard" 
+import "../../css/hideScroll.css" 
 import { useLabTestStore } from "../../store/useLabTestStore";
 import { useNavigate } from "react-router-dom";
 
 function AdminLabTests() {
-
     const [searchQuery, setSearchQuery] = useState('');
     const { createLabTest, offeredLabTests, getOfferedLabTest, isOfferedLabTestsLoading, isCreatingLabTest } = useLabTestStore();
     const navigate = useNavigate();
@@ -20,8 +19,8 @@ function AdminLabTests() {
 
     if (isOfferedLabTestsLoading) {
         return (
-            <div>
-                Loading
+            <div className="flex justify-center items-center h-full">
+                <div className="text-lg text-gray-600">Loading lab tests...</div>
             </div>
         )
     }
@@ -75,11 +74,11 @@ function AdminLabTests() {
             <div className="flex-1 px-5 pb-5 overflow-y-auto scrollbar-hide">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                     {offeredLabTests
-                        .filter(test =>
+                        .filter((test: LabTest) =>
                             test.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             test.description.toLowerCase().includes(searchQuery.toLowerCase())
                         )
-                        .map((test) => (
+                        .map((test: LabTest) => (
                             <AdminLabTestCard
                                 id={test._id}
                                 key={test._id}
@@ -87,7 +86,7 @@ function AdminLabTests() {
                                 description={test.description}
                                 price={test.price}
                                 requirements={test.requirements}
-                                status={test.status as 'available' | 'unavailable'}
+                                status={test.status}
                             />
                         ))}
                 </div>

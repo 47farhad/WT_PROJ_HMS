@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useNotesStore } from "../../store/useNotesStore";
@@ -8,7 +8,7 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { toast } from "react-hot-toast";
 
 function PatientAppointmentDetails() {
-  const { appointmentId } = useParams();
+  const { appointmentId } = useParams<{ appointmentId: string }>();
   const navigate = useNavigate();
   const {
     selectedAppointment,

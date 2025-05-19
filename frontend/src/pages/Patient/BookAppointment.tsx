@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
+import type { AppointmentData } from "../../store/useAppointmentStore";
 
 function BookAppointment() {
-  const { doctorId } = useParams();
+  const { doctorId } = useParams<{ doctorId: string }>();
   const navigate = useNavigate();
   const { getDoctor, appointmentDoctor, createAppointment } = useAppointmentStore();
   const [selectedDate, setSelectedDate] = useState("");
@@ -31,11 +32,13 @@ function BookAppointment() {
   ];
 
   useEffect(() => {
-    getDoctor(doctorId);
+    if (doctorId) {
+      getDoctor(doctorId);
+    }
   }, [getDoctor, doctorId]);
 
   const handleBookNow = async () => {
-    if (!selectedDate || !selectedTime || !description) {
+    if (!selectedDate || !selectedTime || !description || !doctorId) {
       alert("Please fill all fields before booking.");
       return;
     }
@@ -45,10 +48,11 @@ function BookAppointment() {
 
     const combinedDateTime = localDate.toISOString();
 
-    const appointmentData = {
-      doctorId,
+    const appointmentData: AppointmentData = {
+      doctorId: doctorId,
       datetime: combinedDateTime,
       description,
+      reason: description,
     };
 
     await createAppointment(appointmentData);
@@ -221,7 +225,7 @@ function BookAppointment() {
             </label>
             <textarea
               id="description"
-              rows="4"
+              rows={4}
               className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#243954] focus:border-[#243954] outline-none transition"
               placeholder="Describe your symptoms or reason for appointment"
               value={description}

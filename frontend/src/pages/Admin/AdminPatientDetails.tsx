@@ -12,8 +12,7 @@ import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
 
 function AdminPatientDetails() {
-
-    const { patientId } = useParams();
+    const { patientId } = useParams<{ patientId: string }>();
     const { getPatientDetails, patient, convertToDoctor, convertToAdmin, isConvertingPatient } = useAdminStore();
     const { patientDetailsAppointments, getPatientDetailsAppointments } = useAppointmentStore();
     const { getDetailsReport, patientDetailsReports } = usePatientLabTestStore();
@@ -53,8 +52,7 @@ function AdminPatientDetails() {
     };
 
     return (
-        (patient) &&
-        (<>
+        <>
             <div className="flex flex-row mx-5 mb-5 h-full">
                 {/* Entire left side, patient info, notes, medical info and health statuses */}
                 <div className="flex flex-col w-[80%] h-full items-center">
@@ -65,14 +63,14 @@ function AdminPatientDetails() {
 
                             <div className="flex flex-col ml-5 h-full justify-between py-1 flex-1">
                                 <span className="text-4xl text-[#233855] flex justify-start">
-                                    {patient.firstName + ' ' + patient.lastName}
+                                    {typedPatient.firstName + ' ' + typedPatient.lastName}
                                 </span>
                                 <div className="flex justify-start">
                                     <span className="text-sm text-[#87888A]">
                                         Patient Id:
                                     </span>
                                     <span className="ml-1 text-sm text-[#4C4D4F] truncate">
-                                        {patient._id}
+                                        {typedPatient._id}
                                     </span>
                                 </div>
                             </div>
@@ -85,14 +83,14 @@ function AdminPatientDetails() {
                                     Phone Number
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left mb-1">
-                                    {patient.contact}
+                                    {typedPatient.contact || '-'}
                                 </span>
 
                                 <span className="text-sm text-[#88898B] font-sans text-left mt-1">
                                     Email
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {patient.email}
+                                    {typedPatient.email}
                                 </span>
                             </div>
 
@@ -101,14 +99,14 @@ function AdminPatientDetails() {
                                     Emergency Contact
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left mb-1">
-                                    {patient.emergencyContact}
+                                    {typedPatient.emergencyContact || '-'}
                                 </span>
 
                                 <span className="text-sm text-[#88898B] font-sans text-left mt-1">
                                     Address
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {patient.address}
+                                    {typedPatient.address || '-'}
                                 </span>
                             </div>
 
@@ -208,7 +206,7 @@ function AdminPatientDetails() {
                                                 Gender
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.gender}
+                                                {typedPatient.medicalInfo?.gender || '-'}
                                             </span>
                                         </div>
 
@@ -217,9 +215,9 @@ function AdminPatientDetails() {
                                                 Age
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo?.dateOfBirth ? (
+                                                {typedPatient.medicalInfo?.dateOfBirth ? (
                                                     (() => {
-                                                        const dob = new Date(patient.medicalInfo.dateOfBirth);
+                                                        const dob = new Date(typedPatient.medicalInfo.dateOfBirth);
                                                         const today = new Date();
                                                         let age = today.getFullYear() - dob.getFullYear();
                                                         const monthDiff = today.getMonth() - dob.getMonth();
@@ -239,7 +237,9 @@ function AdminPatientDetails() {
                                                 Date of Birth
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.dateOfBirth ? format(parseISO(patient.medicalInfo.dateOfBirth), 'dd-MM-yyyy') : '-'}
+                                                {typedPatient.medicalInfo?.dateOfBirth 
+                                                    ? format(new Date(typedPatient.medicalInfo.dateOfBirth), 'dd-MM-yyyy') 
+                                                    : '-'}
                                             </span>
                                         </div>
                                     </div>
@@ -250,7 +250,7 @@ function AdminPatientDetails() {
                                                 Insurance Provider
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.insuranceProvider}
+                                                {typedPatient.medicalInfo?.insuranceProvider || '-'}
                                             </span>
                                         </div>
 
@@ -259,7 +259,7 @@ function AdminPatientDetails() {
                                                 Insurance Number
                                             </span>
                                             <span className="text-md font-semibold text-[#4B4C4E] font-sans">
-                                                {patient.medicalInfo.policyNumber}
+                                                {typedPatient.medicalInfo?.policyNumber || '-'}
                                             </span>
                                         </div>
                                     </div>
@@ -278,8 +278,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {patient.medicalInfo?.allergies?.length > 0 ? (
-                                                patient.medicalInfo.allergies.map((allergy, index) => (
+                                            {typedPatient.medicalInfo?.allergies && typedPatient.medicalInfo.allergies.length > 0 ? (
+                                                typedPatient.medicalInfo.allergies.map((allergy: string, index: number) => (
                                                     <li key={`allergy-${index}`}>{allergy}</li>
                                                 ))
                                             ) : (
@@ -299,8 +299,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {patient.medicalInfo?.chronicConditions?.length > 0 ? (
-                                                patient.medicalInfo.chronicConditions.map((condition, index) => (
+                                            {typedPatient.medicalInfo?.chronicConditions && typedPatient.medicalInfo.chronicConditions.length > 0 ? (
+                                                typedPatient.medicalInfo.chronicConditions.map((condition: string, index: number) => (
                                                     <li key={`condition-${index}`}>{condition}</li>
                                                 ))
                                             ) : (
@@ -320,8 +320,8 @@ function AdminPatientDetails() {
 
                                     <div className="flex-1 overflow-y-auto px-5 pb-5 scrollbar-hide">
                                         <ul className="text-md font-semibold text-[#4B4C4E] font-sans list-disc pl-6 space-y-1">
-                                            {patient.medicalInfo?.currentMedications?.length > 0 ? (
-                                                patient.medicalInfo.currentMedications.map((medication, index) => (
+                                            {typedPatient.medicalInfo?.currentMedications && typedPatient.medicalInfo.currentMedications.length > 0 ? (
+                                                typedPatient.medicalInfo.currentMedications.map((medication: string, index: number) => (
                                                     <li key={`medication-${index}`}>{medication}</li>
                                                 ))
                                             ) : (
@@ -580,7 +580,7 @@ function AdminPatientDetails() {
                 title={`Convert to ${doctorConfirmationShown ? 'Doctor' : 'Admin'}`}
                 message={`Are you sure you want to convert this account to a ${doctorConfirmationShown ? 'Doctor' : 'Admin'}? This change is irreversible.`}
             />
-        </>)
+        </>
     )
 }
 

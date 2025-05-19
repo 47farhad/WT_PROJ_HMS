@@ -1,8 +1,34 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format } from "date-fns";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
+
+// Define interfaces for the types
+interface Appointment {
+  _id: string;
+  datetime: string;
+  status: string;
+  description?: string;
+  doctorFirstName?: string;
+  doctorLastName?: string;
+  [key: string]: any;
+}
+
+interface Pagination {
+  currentPage: number;
+  hasMore: boolean;
+  isPageLoading: boolean;
+}
+
+interface AppointmentStore {
+  getAllAppointments: (page?: number) => void;
+  isAppointmentsLoading: boolean;
+  appointments: {
+    data: Appointment[];
+    pagination: Pagination;
+  };
+}
 
 function PatientAppointments() {
   const [startDate, setStartDate] = useState("");
@@ -15,10 +41,10 @@ function PatientAppointments() {
     getAllAppointments,
     isAppointmentsLoading,
     appointments: { data: appointments, pagination }
-  } = useAppointmentStore();
+  } = useAppointmentStore() as AppointmentStore;
 
-  const appointmentEndRef = useRef(null);
-  const appointmentContainerRef = useRef(null);
+  const appointmentEndRef = useRef<HTMLTableRowElement>(null);
+  const appointmentContainerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
   const navigate = useNavigate();
@@ -40,9 +66,12 @@ function PatientAppointments() {
 
   useEffect(() => {
     const container = appointmentContainerRef.current;
+    
+    if (!container) return;
 
     const handleScroll = () => {
       if (!container || !appointmentEndRef.current) return;
+      
       const endRefPosition = appointmentEndRef.current.getBoundingClientRect().bottom;
       const containerPosition = container.getBoundingClientRect().bottom;
       const threshold = 5;
@@ -54,11 +83,11 @@ function PatientAppointments() {
     return () => container.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleClick = (appointmentId) => {
+  const handleClick = (appointmentId: string) => {
     navigate(`/AppointmentDetails/${appointmentId}`);
   };
 
-  const handleDateChange = (e) => {
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     if (name === "startDate") setStartDate(value);
     if (name === "endDate") setEndDate(value);

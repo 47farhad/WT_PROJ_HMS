@@ -1,3 +1,4 @@
+// appointment.model.ts
 import mongoose from 'mongoose';
 
 const appointmentSchema = new mongoose.Schema({
@@ -21,13 +22,13 @@ const appointmentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['confirmed', 'pending', 'cancelled'],
+    enum: ['confirmed', 'pending', 'cancelled', 'completed'],
     default: 'pending'
   }
 },
-  {
-    timestamps: true
-  }
+{
+  timestamps: true
+}
 );
 
 appointmentSchema.index({ patientId: 1 });

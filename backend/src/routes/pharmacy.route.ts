@@ -1,7 +1,6 @@
 import express from "express";
 
-import { protectRoute } from "../middlewares/auth.middleware.js";
-import { isAdmin } from "../middlewares/admin.middleware.js";
+import { isAdmin, protectRoute } from "../middlewares/auth.middleware.js";
 import { createOfferedMedicine, deleteOfferedMedicine, getOfferedMedicine, updateOfferedMedicine } from "../controllers/pharmacy.controller.js";
 
 

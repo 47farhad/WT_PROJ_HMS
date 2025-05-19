@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import BookAppointment from "../Patient/BookAppointment";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
 
 function PatientDashboard() {
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const { authUser } = useAuthStore();
   const { getAllAppointments, appointments, getAppointmentDetails } = useAppointmentStore();

@@ -15,12 +15,21 @@ import { isAdmin } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
+// Create a new appointment
 router.post("/createAppointment", protectRoute, verifyPatient, createAppointment);
+
+// Update an existing appointment
 router.put("/updateAppointment/:id", protectRoute, updateAppointment);
+
+// Get details of a specific appointment
 router.get("/getAppointment/:id", protectRoute, getAppointmentDetails);
+
+// Get all appointments for the logged-in user
 router.get("/getAllAppointments", protectRoute, getAllAppointments);
 router.get("/getPatientDetailsAppointment/:patientId", protectRoute, isAdmin, getPatientDetailsAppointments);
 router.get("/getDoctors", getDoctors);
+
+// Get a specific doctor's details
 router.get("/getDoctor/:id", getDoctor);
 router.get('/getDoctorStats/:doctorId', getDoctorAppointmentStats);
 
