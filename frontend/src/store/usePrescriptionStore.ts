@@ -17,6 +17,7 @@ export const usePrescriptionStore = create((set, get) => ({
     isCreatingPrescription: false,
     detailedPrescription: null,
     isDetailedPrescriptionLoading: false,
+    givenPrescription: null,
 
     createPrescription: async (appointmentId, prescriptionData) => {
         try {
@@ -26,7 +27,6 @@ export const usePrescriptionStore = create((set, get) => ({
             // Update state with the new prescription
             set((state) => ({
                 isCreatingPrescription: false,
-                givenPrescription: [res.data, ...state.givenPrescription]
             }));
 
             toast.success("Prescription created successfully");
@@ -42,7 +42,7 @@ export const usePrescriptionStore = create((set, get) => ({
     getPrescription: async (appointmentId) => {
         try {
             set({ isPrescriptionLoading: true });
-            const res = await axiosInstance.get(`/prescription/getByAppointment/${appointmentId}`);
+            const res = await axiosInstance.get(`/prescription/getPrescription/${appointmentId}`);
 
             set({
                 givenPrescription: res.data,
@@ -53,7 +53,6 @@ export const usePrescriptionStore = create((set, get) => ({
         } catch (error) {
             set({ isPrescriptionLoading: false });
             const errorMessage = error.response?.data?.message || "Failed to fetch prescriptions";
-            toast.error(errorMessage);
             throw error;
         }
     },

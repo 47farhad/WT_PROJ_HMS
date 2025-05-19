@@ -86,21 +86,42 @@ export const getPrescription = async (req: any, res: any) => {
     try {
         const { appointmentId } = req.params;
         const userId = req.user._id;
+        const userType = req.user.userType;
 
-        // Find the appointment to verify patient ownership
+        // Find the appointment to verify access
         const appointment = await Appointment.findOne({
             _id: appointmentId,
-            patient: userId
+            $or: [
+                { patientId: userId },
+                { doctorId: userId }
+            ]
         });
 
         if (!appointment) {
-            return res.status(404).json({
-                success: false,
-                message: "Appointment not found or you don't have access to it"
-            });
+            return res.status(404).json({ message: "Appointment not found or you don't have access to it" });
         }
 
-        // Find the prescription for this appointment
+        // Additional check for Admin users
+        if (userType === 'Admin') {
+            // Admins can access any prescription
+            const prescription = await Prescription.findOne({ appointmentId })
+                .populate({
+                    path: 'items.medicineId',
+                    select: 'name description price requiresPrescription'
+                })
+                .populate({
+                    path: 'appointmentId',
+                    select: 'date time status patientId doctorId'
+                });
+
+            if (!prescription) {
+                return res.status(404).json({ message: "No prescription found for this appointment" });
+            }
+
+            return res.status(200).json(prescription);
+        }
+
+        // For Doctors and Patients
         const prescription = await Prescription.findOne({ appointmentId })
             .populate({
                 path: 'items.medicineId',
@@ -112,19 +133,10 @@ export const getPrescription = async (req: any, res: any) => {
             });
 
         if (!prescription) {
-            return res.status(404).json({
-                success: false,
-                message: "No prescription found for this appointment"
-            });
+            return res.status(404).json({ message: "No prescription found for this appointment" });
         }
 
-        res.status(200).json({
-            success: true,
-            prescription: {
-                ...prescription.toObject(),
-                isValid: new Date(prescription.expiryDate) >= new Date()
-            }
-        });
+        res.status(200).json(prescription);
 
     } catch (error) {
         console.log("Error in controller: getPrescription", error);

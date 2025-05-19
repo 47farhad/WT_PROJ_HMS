@@ -4,6 +4,7 @@ import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { useNotesStore } from "../../store/useNotesStore";
 import { format, parseISO, isAfter } from "date-fns";
 import ConfirmationModal from "../../components/ConfirmationModal";
+import { usePrescriptionStore } from "../../store/usePrescriptionStore";
 
 function DoctorAppointmentDetails() {
   const { appointmentId } = useParams();
@@ -15,9 +16,9 @@ function DoctorAppointmentDetails() {
     updateAppointmentStatus,
   } = useAppointmentStore();
 
-  // Change to use the single note instead of array
   const { getNotesbyAppointmentId, appointmentNotes, isNotesLoading } = useNotesStore();
-
+  const { givenPrescription, getPrescription, isPrescriptionLoading } = usePrescriptionStore();
+        
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
   const [showActionButtons, setShowActionButtons] = useState(false);
@@ -26,8 +27,9 @@ function DoctorAppointmentDetails() {
     if (appointmentId) {
       getAppointmentDetails(appointmentId);
       getNotesbyAppointmentId(appointmentId);
+      getPrescription(appointmentId);
     }
-  }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId]);
+  }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId, getPrescription]);
 
   useEffect(() => {
     if (selectedAppointment?.datetime) {
