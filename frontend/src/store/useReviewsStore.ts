@@ -10,7 +10,7 @@ export const useReviewsStore = create((set, get) => ({
     createReviews: async (appointmentId,reviewsData) => {
         try {
             set({ isCreatingReviews: true });
-            const res = await axiosInstance.post(`/reviews/createReviews/${appointmentId}`,reviewsData);
+            const res = await axiosInstance.post(`/review/createReview/${appointmentId}`,reviewsData);
             
             // Update state with the new reviews
             set((state) => ({
@@ -32,7 +32,7 @@ export const useReviewsStore = create((set, get) => ({
     getReviews: async (appointmentId) => {
         try {
             set({ isReviewsLoading: true });
-            const res = await axiosInstance.get(`/reviews/getReviews/${appointmentId}`);
+            const res = await axiosInstance.get(`/review/getReview/${appointmentId}`);
             
             set({
                 givenReviews: res.data,

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
+import { useNotesStore } from "../../store/useNotesStore";
 import { format, parseISO, isAfter } from "date-fns";
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { usePrescriptionStore } from "../../store/usePrescriptionStore";
@@ -15,19 +16,20 @@ function DoctorAppointmentDetails() {
     updateAppointmentStatus,
   } = useAppointmentStore();
 
+  const { getNotesbyAppointmentId, appointmentNotes, isNotesLoading } = useNotesStore();
   const { givenPrescription, getPrescription, isPrescriptionLoading } = usePrescriptionStore();
-
+        
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
-  const [doctorNotes, setDoctorNotes] = useState([]);
   const [showActionButtons, setShowActionButtons] = useState(false);
 
   useEffect(() => {
     if (appointmentId) {
       getAppointmentDetails(appointmentId);
-      getPrescription(appointmentId)
+      getNotesbyAppointmentId(appointmentId);
+      getPrescription(appointmentId);
     }
-  }, [appointmentId, getAppointmentDetails, getPrescription]);
+  }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId, getPrescription]);
 
   useEffect(() => {
     if (selectedAppointment?.datetime) {
@@ -44,6 +46,30 @@ function DoctorAppointmentDetails() {
       </div>
     );
   }
+
+  // Handle the single note or null case
+  const renderNotes = () => {
+    const note = appointmentNotes[appointmentId]; // Extract note for the specific appointment ID
+   
+   if (!note) {
+     return (
+       <div className="flex items-center justify-center h-full">
+         <p className="text-gray-500 italic">No notes available for this appointment</p>
+       </div>
+     );
+   }
+   
+   return (
+     <div className="border border-gray-300 rounded-lg p-3 h-full">
+       <p className="text-gray-500 text-sm mb-1">
+         {note.createdAt && format(new Date(note.createdAt), "MMM d, yyyy")}
+       </p>
+       <h3 className="text-md font-bold text-[#243954] mb-2">{note.header}</h3>
+       <p className="text-gray-700 text-md">{note.text}</p>
+     </div>
+   );
+  };
+
 
   const handleStatusChange = (status) => {
     setNewStatus(status);
@@ -123,25 +149,18 @@ function DoctorAppointmentDetails() {
             </div>
           </div>
 
-          {/* Patient Notes */}
+            {/* Patient Notes */}
           <div className="flex flex-col w-[67%] border-2 border-gray-300 rounded-2xl p-4 h-full bg-white">
             <div className="flex justify-between items-center mb-4 border-b border-[#E6E6E8] pb-2">
               <span className="text-lg font-semibold text-[#04080B]">
                 Patient Notes
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-4 overflow-y-auto">
-              {doctorNotes.map(note => (
-                <div key={note.id} className="border border-gray-300 rounded-lg p-3 h-full">
-                  <p className="text-gray-500 text-sm mb-1">{note.date}</p>
-                  <h3 className="text-md font-bold text-[#243954] mb-2">{note.title}</h3>
-                  <p className="text-gray-700 text-md">{note.description}</p>
-                </div>
-              ))}
-            </div>
+            {renderNotes()}
           </div>
         </div>
       </div>
+
 
       {/* Right side - Actions and related info */}
       <div className="flex flex-col w-[25%] h-full space-y-5"> {/* Added space-y-5 */}
