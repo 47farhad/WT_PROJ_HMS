@@ -67,7 +67,7 @@ const PatientPayments: React.FC = () => {
   );
 
   return (
-    <div className="h-full w-full p-5 pt-0 overflow-y-auto">
+    <div className="h-full w-full p-5 pt-0 overflow-y-auto" style={{ zoom: "120%" }}>
       <div className="w-full mx-auto">
         {/* Top Controls */}
         <div className="flex justify-between items-center flex-wrap gap-3 p-2 mb-4">
@@ -78,8 +78,8 @@ const PatientPayments: React.FC = () => {
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-2 py-1 rounded-md text-sm font-medium transition ${statusFilter === status
-                    ? "bg-[#243954] text-white"
-                    : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
+                  ? "bg-[#243954] text-white"
+                  : "bg-gray-200 text-[#243954] hover:bg-[#243954] hover:text-white"
                   }`}
               >
                 {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -196,8 +196,8 @@ const PatientPayments: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-y-auto rounded-xl shadow-lg border border-gray-200">
-          <div className="overflow-y-scroll h-[210px]">
+        <div className="flex-1 overflow-y-auto rounded-xl shadow-lg border border-gray-200">
+          <div className="overflow-y-scroll h-full">
             <table className="min-w-full table-auto">
               <thead className="sticky top-0 bg-[#243954] text-white">
                 <tr>
@@ -217,24 +217,24 @@ const PatientPayments: React.FC = () => {
                       <td className="px-6 py-4 text-sm text-gray-900">
                         <span
                           className={`cursor-pointer px-2 py-1 rounded-full text-xs font-medium ${transaction.type === 'Appointment'
-                              ? 'bg-blue-100 text-blue-800'
-                              : transaction.type === 'Medication'
-                                ? 'bg-green-100 text-green-800'
-                                : transaction.type === 'LabTest'
-                                  ? 'bg-purple-100 text-purple-800'
-                                  : 'bg-gray-100 text-gray-800'
+                            ? 'bg-blue-100 text-blue-800'
+                            : transaction.type === 'Order'
+                              ? 'bg-green-100 text-green-800'
+                              : transaction.type === 'LabTest'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-gray-100 text-gray-800'
                             }`}
                           onClick={() => {
                             if (transaction.type === 'Appointment') {
                               navigate(`/AppointmentDetails/${transaction.referenceId}`);
-                            } else if (transaction.type === 'Medication') {
-                              navigate(`/MedicationDetails/${transaction.referenceId}`);
+                            } else if (transaction.type === 'Order') {
+                              navigate(`/Orders/${transaction.referenceId}`);
                             } else if (transaction.type === 'LabTest') {
                               navigate(`/Labtests/${transaction.referenceId}`);
                             }
                           }}
                         >
-                          {transaction.type}
+                          {transaction.type == "Order" ? 'Medication' : transaction.type}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-900">
@@ -248,10 +248,10 @@ const PatientPayments: React.FC = () => {
                               : undefined
                           }
                           className={`cursor-pointer px-2 py-1 rounded-full text-xs font-medium ${transaction.status === 'paid'
-                              ? 'bg-green-100 text-green-800'
-                              : transaction.status === 'failed'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-gray-100 text-gray-800'
+                            ? 'bg-green-100 text-green-800'
+                            : transaction.status === 'failed'
+                              ? 'bg-red-100 text-red-800'
+                              : 'bg-gray-100 text-gray-800'
                             } ${transaction.status === 'unpaid' ? 'hover:underline' : ''}`}
                         >
                           {transaction.status}

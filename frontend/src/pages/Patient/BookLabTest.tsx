@@ -50,13 +50,9 @@ function BookLabTest() {
       if (!labTestId) return;
       
       // Fetch the test details based on the labTestId
-      await getLabTestDetails(labTestId);
+      await getLabTestDetails(labTestId);  // This should set the selectedLabTest in the store
 
-      // Type assertion to access the store state
-      const storeState = usePatientLabTestStore.getState() as PatientLabTestStore;
-      const testDetails = storeState.selectedLabTest;
-      
-      console.log("Fetched Lab Test:", testDetails);
+      const testDetails = usePatientLabTestStore.getState().selectedLabTest;
       if (testDetails) {
         setLabTest(testDetails);  // Set labTest state to display test name
       }
@@ -95,7 +91,7 @@ function BookLabTest() {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center z-50"style={{ zoom: "120%" }}>
       <div
         className="absolute inset-0"
         style={{

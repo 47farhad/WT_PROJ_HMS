@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import Appointment from "../models/appointment.model.js"
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
@@ -6,19 +6,67 @@ import { getSocketID, io } from "../lib/socket.js";
 
 export const getUsersForSidebar = async (req: any, res: any) => {
     try {
-        const reqUserID = req.user._id;
+        const reqUser = req.user;
+        const reqUserID = reqUser._id;
+        const userType = reqUser.userType;
 
         // Pagination parameters
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 20;
         const skip = (page - 1) * limit;
 
-        // Get paginated users and last messages in a single aggregation
-        const result = await User.aggregate([
-            // Match all users except current user
-            { $match: { _id: { $ne: reqUserID } } },
+        // Base match conditions
+        let matchConditions: any[] = [{ _id: { $ne: reqUserID } }];
 
-            // Lookup last message first (before sorting)
+        // Role-specific filters
+        if (userType === 'Patient') {
+            // Patients can only see Doctors they have confirmed appointments with
+            const doctorIds = await Appointment.distinct('doctorId', {
+                patientId: reqUserID,
+                status: 'confirmed'
+            });
+
+            matchConditions.push({
+                $and: [
+                    { _id: { $in: doctorIds } },
+                    { userType: 'Doctor' }
+                ]
+            });
+        }
+        else if (userType === 'Doctor') {
+            // Doctors can see:
+            // 1. Admins
+            // 2. Patients they have confirmed appointments with
+            const patientIds = await Appointment.distinct('patientId', {
+                doctorId: reqUserID,
+                status: 'confirmed'
+            });
+
+            matchConditions.push({
+                $or: [
+                    { userType: 'Admin' },
+                    {
+                        $and: [
+                            { _id: { $in: patientIds } },
+                            { userType: 'Patient' }
+                        ]
+                    }
+                ]
+            });
+        }
+        else if (userType === 'Admin') {
+            // Admins can see other Admins and Doctors
+            matchConditions.push({
+                $or: [
+                    { userType: 'Admin' },
+                    { userType: 'Doctor' }
+                ]
+            });
+        }
+
+        const result = await User.aggregate([
+            { $match: { $and: matchConditions } },
+            // Rest of the aggregation pipeline remains the same...
             {
                 $lookup: {
                     from: "messages",
@@ -50,27 +98,17 @@ export const getUsersForSidebar = async (req: any, res: any) => {
                     as: "lastMessage"
                 }
             },
-
-            // Unwind to get single object
             { $unwind: { path: "$lastMessage", preserveNullAndEmptyArrays: true } },
-
-            // Add a field for sorting (handles null cases)
             {
                 $addFields: {
                     lastMessageTime: {
-                        $ifNull: ["$lastMessage.createdAt", new Date(0)] // Unix epoch for nulls
+                        $ifNull: ["$lastMessage.createdAt", new Date(0)]
                     }
                 }
             },
-
-            // Now sort by the last message time
             { $sort: { "lastMessageTime": -1 } },
-
-            // Pagination
             { $skip: skip },
             { $limit: limit },
-
-            // Project final fields
             {
                 $project: {
                     firstName: 1,
@@ -83,8 +121,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
             }
         ]);
 
-        // Get total count for pagination metadata
-        const totalUsers = await User.countDocuments({ _id: { $ne: reqUserID } });
+        const totalUsers = await User.countDocuments({ $and: matchConditions });
         const totalPages = Math.ceil(totalUsers / limit);
 
         res.status(200).json({
@@ -104,28 +141,58 @@ export const getUsersForSidebar = async (req: any, res: any) => {
 export const getMessages = async (req: any, res: any) => {
     try {
         const { id: chatUserID } = req.params;
-        const reqUserID = req.user._id;
+        const reqUser = req.user;
+        const reqUserID = reqUser._id;
+        const userType = reqUser.userType;
 
-        // Pagination parameters (with defaults)
+        const chatUser = await User.findById(chatUserID);
+        if (!chatUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        let hasPermission: any = false;
+
+        if (userType === 'Patient') {
+            hasPermission = chatUser.userType === 'Doctor' &&
+                await Appointment.exists({
+                    doctorId: chatUserID,
+                    patientId: reqUserID,
+                    status: 'confirmed'
+                });
+        }
+        else if (userType === 'Doctor') {
+            hasPermission = chatUser.userType === 'Admin' ||
+                (chatUser.userType === 'Patient' &&
+                    await Appointment.exists({
+                        doctorId: reqUserID,
+                        patientId: chatUserID,
+                        status: 'confirmed'
+                    }));
+        }
+        else if (userType === 'Admin') {
+            hasPermission = ['Admin', 'Doctor'].includes(chatUser.userType);
+        }
+
+        if (!hasPermission) {
+            return res.status(403).json({ message: "You don't have permission to access this chat" });
+        }
+
+        // Rest of the function remains the same...
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 50;
         const skip = (page - 1) * limit;
 
-        // Get messages with pagination (sorted newest first in DB)
         const messages = await Message.find({
             $or: [
                 { senderId: reqUserID, receiverId: chatUserID },
                 { senderId: chatUserID, receiverId: reqUserID }
             ]
         })
-            .sort({ createdAt: -1 }) // Newest first in DB
+            .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
 
-        // Reverse for frontend (oldest first)
         const reversedMessages = [...messages].reverse();
-
-        // Get total count
         const totalMessages = await Message.countDocuments({
             $or: [
                 { senderId: reqUserID, receiverId: chatUserID },
@@ -141,8 +208,7 @@ export const getMessages = async (req: any, res: any) => {
                 hasNextPage: page < Math.ceil(totalMessages / limit),
             }
         });
-    }
-    catch (error: any) {
+    } catch (error: any) {
         console.log("Error in getMessages controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
@@ -152,8 +218,43 @@ export const sendMessage = async (req: any, res: any) => {
     try {
         const { text, image } = req.body;
         const { id: receiverID } = req.params;
-        const reqUserID = req.user._id;
+        const reqUser = req.user;
+        const reqUserID = reqUser._id;
+        const userType = reqUser.userType;
 
+        const receiver = await User.findById(receiverID);
+        if (!receiver) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        let hasPermission: any = false;
+
+        if (userType === 'Patient') {
+            hasPermission = receiver.userType === 'Doctor' &&
+                await Appointment.exists({
+                    doctorId: receiverID,
+                    patientId: reqUserID,
+                    status: 'confirmed'
+                });
+        }
+        else if (userType === 'Doctor') {
+            hasPermission = receiver.userType === 'Admin' ||
+                (receiver.userType === 'Patient' &&
+                    await Appointment.exists({
+                        doctorId: reqUserID,
+                        patientId: receiverID,
+                        status: 'confirmed'
+                    }));
+        }
+        else if (userType === 'Admin') {
+            hasPermission = ['Admin', 'Doctor'].includes(receiver.userType);
+        }
+
+        if (!hasPermission) {
+            return res.status(403).json({ message: "You don't have permission to message this user" });
+        }
+
+        // Rest of the function remains the same...
         let imageUrl;
         if (image) {
             const uploadResponse = await cloudinary.uploader.upload(image);
@@ -170,15 +271,13 @@ export const sendMessage = async (req: any, res: any) => {
         await newMessage.save();
 
         const receiverSocketID = getSocketID(receiverID);
-        if(receiverSocketID){
+        if (receiverSocketID) {
             io.to(receiverSocketID).emit("newMessage", newMessage);
-            console.log(newMessage)
         }
 
         res.status(200).json(newMessage);
-    }
-    catch (error: any) {
+    } catch (error: any) {
         console.log("Error in sendMessage controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
     }
-}
+};

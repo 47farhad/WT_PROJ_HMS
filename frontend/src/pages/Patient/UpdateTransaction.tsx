@@ -51,16 +51,11 @@ const UpdateTransaction = () => {
       return toast.error("Cardholder name is required");
     }
 
-    try {
-      // Proceed to update the transaction
-      await updateTransaction(transactionId!, 'paid');
-      toast.success("Payment successful!");
-      // Redirect or show confirmation
-      navigate('/Payments');
-    } catch (error) {
-      toast.error("Payment failed. Please try again.");
-      console.error("Payment error:", error);
-    }
+    // Proceed to update the transaction
+    await updateTransaction(transactionId);
+
+    // Redirect or show confirmation
+    navigate('/Payments'); // Adjust route as needed
   };
 
   if (!selectedTransaction) {
@@ -68,7 +63,7 @@ const UpdateTransaction = () => {
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
+    <div className="fixed inset-0 flex items-center justify-center z-50"style={{ zoom: "120%" }}>
       <div className="absolute inset-0 bg-gradient-to-br from-blue-100 via-green-50 to-purple-100"></div>
       <div className="relative z-10 w-full max-w-md p-8 bg-white rounded-2xl shadow-xl">
         <h2 className="text-2xl font-bold mb-2 text-center text-gray-800">Payment for Transaction</h2>

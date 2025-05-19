@@ -2,34 +2,12 @@ import { useEffect, useState } from "react"
 import AdminLabTestCard from "../../components/AdminLabTestCard" 
 import "../../css/hideScroll.css" 
 import { useLabTestStore } from "../../store/useLabTestStore";
-
-// Define interfaces for our types
-interface LabTest {
-    _id: string;
-    name: string;
-    description: string;
-    price: number;
-    requirements: string[];
-    status: 'available' | 'unavailable';
-}
-
-interface LabTestStore {
-    createLabTest: () => Promise<void>;
-    offeredLabTests: LabTest[];
-    getOfferedLabTest: () => Promise<void>;
-    isOfferedLabTestsLoading: boolean;
-    isCreatingLabTest: boolean;
-}
+import { useNavigate } from "react-router-dom";
 
 function AdminLabTests() {
     const [searchQuery, setSearchQuery] = useState('');
-    const { 
-        createLabTest, 
-        offeredLabTests, 
-        getOfferedLabTest, 
-        isOfferedLabTestsLoading, 
-        isCreatingLabTest 
-    } = useLabTestStore() as LabTestStore;
+    const { createLabTest, offeredLabTests, getOfferedLabTest, isOfferedLabTestsLoading, isCreatingLabTest } = useLabTestStore();
+    const navigate = useNavigate();
 
     useEffect(() => {
         getOfferedLabTest();
@@ -39,7 +17,7 @@ function AdminLabTests() {
         await createLabTest();
     }
 
-    if(isOfferedLabTestsLoading){
+    if (isOfferedLabTestsLoading) {
         return (
             <div className="flex justify-center items-center h-full">
                 <div className="text-lg text-gray-600">Loading lab tests...</div>
@@ -79,13 +57,17 @@ function AdminLabTests() {
                         />
                     </div>
                 </div>
-                <button 
-                    className={`flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg transition-colors ${isCreatingLabTest ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#1a2c42]'}`}
-                    onClick={handleCreateTest}
-                    disabled={isCreatingLabTest}
-                >
-                    {isCreatingLabTest ? 'Creating...' : 'Create New Test'}
-                </button>
+                <div className="flex flex-row gap-2">
+                    <button className="flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg hover:bg-[#1a2c42] transition-colors"
+                        onClick={() => navigate('/BookedTests')}>
+                        View Bookings
+                    </button>
+                    <button className="flex justify-end px-3 py-2 bg-[#243954] text-white text-sm md:text-md lg:text-base rounded-lg hover:bg-[#1a2c42] transition-colors"
+                        onClick={handleCreateTest}
+                        disabled={isCreatingLabTest}>
+                        Create New Test
+                    </button>
+                </div>
             </div>
 
             {/* Scrollable Content */}

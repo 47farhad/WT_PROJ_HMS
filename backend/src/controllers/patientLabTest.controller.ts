@@ -5,6 +5,9 @@ import OfferedTest from '../models/offeredTest.model.js';
 
 import { createTransaction } from './transaction.controller.js';
 
+import cloudinary from '../lib/cloudinary.js';
+import fs from 'fs';
+
 export const bookLabTest = async (req: any, res: any) => {
     const { offeredTestId, datetime } = req.body;
     const reqUser = req.user;
@@ -18,48 +21,19 @@ export const bookLabTest = async (req: any, res: any) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        // Prevent booking the same test 
-        const duplicateBySameUser = await PatientLabTest.findOne({
-            offeredTestId,
-            patientId: reqUser._id,
-            status: { $ne: 'cancelled' }
-        }).session(session);
-
-        if (duplicateBySameUser) {
-            await session.abortTransaction();
-            return res.status(409).json({ message: 'You have already booked this LabTest' });
-        }
-
-        // Prevent double booking at the same time
-        const userConflictAtSameTime = await PatientLabTest.findOne({
-            datetime: new Date(datetime),
-            patientId: reqUser._id,
-            status: { $ne: 'cancelled' }
-        }).session(session);
-
-        if (userConflictAtSameTime) {
-            await session.abortTransaction();
-            return res.status(409).json({ message: 'You already have booked another Lab Test at this time' });
-        }
-
         // Check if someone else has already booked and paid
         const existingLabTest = await PatientLabTest.findOne({
             offeredTestId,
             datetime: new Date(datetime),
+            status: "confirmed"
         }).session(session);
 
         if (existingLabTest) {
-            const existingPaidTransaction = await Transaction.findOne({
-                referenceId: existingLabTest._id,
-                type: 'LabTest',
-                status: 'paid',
-            }).session(session);
+            await session.abortTransaction();
+            return res.status(409).json({ message: 'PatientLabTest already confirmed and paid for by another user' });
 
-            if (existingPaidTransaction) {
-                await session.abortTransaction();
-                return res.status(409).json({ message: 'PatientLabTest already confirmed and paid for by another user' });
-            }
         }
+        
         const offeredTest = await OfferedTest.findById(offeredTestId).session(session);
         if (!offeredTest || offeredTest.status !== 'available') {
             await session.abortTransaction();
@@ -71,7 +45,7 @@ export const bookLabTest = async (req: any, res: any) => {
             offeredTestId,
             datetime,
             patientId: reqUser._id,
-            name: offeredTest.name, 
+            name: offeredTest.name,
         });
 
         await newPatientLabTest.save({ session });
@@ -81,6 +55,7 @@ export const bookLabTest = async (req: any, res: any) => {
             userId: reqUser._id,
             referenceId: newPatientLabTest._id,
             type: 'LabTest',
+            amount: offeredTest.price
         }, session);
 
         await session.commitTransaction();
@@ -102,23 +77,27 @@ export const bookLabTest = async (req: any, res: any) => {
 export const getAllLabTests = async (req: any, res: any) => {
     try {
         const reqUser = req.user;
-
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 20;
         const skip = (page - 1) * limit;
 
-        const labTestsList = await PatientLabTest.aggregate([
-            // Match tests for the specific patient
-            { $match: { patientId: reqUser._id } },
+        // Base match condition - only filter by patient if not admin
+        const baseMatch = reqUser.userType === 'Admin'
+            ? { status: 'confirmed' }  // Only confirmed tests for admin
+            : { patientId: reqUser._id };
+
+        const aggregationPipeline: any[] = [
+            // Conditional matching
+            { $match: baseMatch },
 
             // Sort by creation date
             { $sort: { createdAt: -1 } },
 
-            // Skip and limit for pagination
+            // Pagination
             { $skip: skip },
             { $limit: limit },
 
-            // Lookup to join with offeredtests collection
+            // Join with offered tests
             {
                 $lookup: {
                     from: "offeredtests",
@@ -127,23 +106,55 @@ export const getAllLabTests = async (req: any, res: any) => {
                     as: "testDetails"
                 }
             },
+            { $unwind: "$testDetails" }
+        ];
 
-            // Unwind the testDetails array
-            { $unwind: "$testDetails" },
+        // For admin, join with User collection to get patient details
+        if (reqUser.userType === 'Admin') {
+            aggregationPipeline.push(
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "patientId",
+                        foreignField: "_id",
+                        as: "patientDetails"
+                    }
+                },
+                { $unwind: "$patientDetails" }
+            );
+        }
 
-            // Project desired fields
-            {
-                $project: {
-                    datetime: 1,
-                    result: 1,
-                    status: 1,
-                    "testName": "$testDetails.name",
-                    "testPrice": "$testDetails.price"
-                }
-            }
-        ]);
+        // Common projection for both user types
+        const commonProjection = {
+            datetime: 1,
+            result: 1,
+            "testName": "$testDetails.name",
+            "testPrice": "$testDetails.price"
+        };
 
-        const total = await PatientLabTest.countDocuments({ patientId: reqUser._id });
+        // Admin-specific projection
+        const adminProjection = {
+            ...commonProjection,
+            "patientId": 1,
+            "patientFirstName": "$patientDetails.firstName",
+            "patientLastName": "$patientDetails.lastName",
+            "patientProfilePicture": "$patientDetails.profilePic"
+        };
+
+        // Regular user projection
+        const userProjection = {
+            ...commonProjection,
+            status: 1
+        };
+
+        aggregationPipeline.push({
+            $project: reqUser.userType === 'Admin' ? adminProjection : userProjection
+        });
+
+        const labTestsList = await PatientLabTest.aggregate(aggregationPipeline);
+
+        // Count documents with same condition
+        const total = await PatientLabTest.countDocuments(baseMatch);
         const totalPages = Math.ceil(total / limit);
 
         res.status(200).json({
@@ -154,6 +165,7 @@ export const getAllLabTests = async (req: any, res: any) => {
                 hasMore: page < totalPages
             }
         });
+
     } catch (error: any) {
         console.error("Error in getAllLabTests:", error.message);
         res.status(500).json({ message: "Internal Server Error" });
@@ -195,6 +207,7 @@ export const cancelLabTest = async (req: any, res: any) => {
         if (patientLabTest.status === 'cancelled') {
             await Transaction.deleteMany({
                 type: 'LabTest',
+                status: 'unpaid',
                 referenceId: patientLabTestId
             });
         }
@@ -208,6 +221,7 @@ export const cancelLabTest = async (req: any, res: any) => {
         return res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 export const getLabTestDetails = async (req: any, res: any) => {
     try {
         const labTestId = req.params.id;
@@ -222,5 +236,118 @@ export const getLabTestDetails = async (req: any, res: any) => {
     } catch (error) {
         console.log("Error in controller: getLabTestDetails", error);
         return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const uploadResult = async (req: any, res: any) => {
+    try {
+        const { testId } = req.params;
+
+        // Validate file exists
+        if (!req.file) {
+            return res.status(400).json({ message: "No file uploaded" });
+        }
+
+        // Validate file type
+        if (req.file.mimetype !== 'application/pdf') {
+            fs.unlinkSync(req.file.path);
+            return res.status(400).json({ message: "Only PDF files are allowed" });
+        }
+
+        const uploadOptions: any = {
+            resource_type: 'raw',
+            public_id: `test_${testId}`,
+            type: 'upload',
+            access_mode: 'public',
+            flags: 'attachment',
+            filename_override: `test-result-${testId}.pdf`,
+            context: `filename=test-result-${testId}`
+        };
+
+        const result = await cloudinary.uploader.upload(req.file.path, uploadOptions);
+
+        // Clean up temp file
+        fs.unlinkSync(req.file.path);
+
+        // Update the lab test document with the result URL
+        const updatedTest = await PatientLabTest.findByIdAndUpdate(
+            testId,
+            {
+                $set: {
+                    result: result.secure_url,
+                }
+            },
+            { new: true }
+        );
+
+        if (!updatedTest) {
+            return res.status(404).json({ message: "Test not found" });
+        }
+
+        // Return response with download link
+        return res.status(200).json({ result: result.secure_url });
+
+    }
+    catch (error: any) {
+        console.error("Error uploading test result:", error);
+
+        // Clean up temp file if it exists
+        if (req.file?.path && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+
+        return res.status(500).json({ message: "Failed to upload test result" });
+    }
+};
+
+export const getPatientDetailsLabReports = async (req: any, res: any) => {
+    try {
+        const { patientId } = req.params;
+
+        const labReports = await PatientLabTest.aggregate([
+            {
+                $match: {
+                    patientId: new mongoose.Types.ObjectId(patientId),
+                    result: { $exists: true, $ne: "" }
+                }
+            },
+            {
+                $sort: { datetime: -1 }
+            },
+            {
+                $limit: 3
+            },
+            {
+                $lookup: {
+                    from: "offeredtests", // Collection name (usually lowercase plural)
+                    localField: "offeredTestId",
+                    foreignField: "_id",
+                    as: "offeredTest"
+                }
+            },
+            {
+                $unwind: "$offeredTest" // Convert array to object
+            },
+            {
+                $project: {
+                    date: "$datetime",
+                    testName: "$offeredTest.name",
+                    resultUrl: "$result",
+                    _id: 1
+                }
+            }
+        ]);
+
+        // Format empty test names
+        const formattedReports = labReports.map(report => ({
+            ...report,
+            testName: report.testName || 'Unknown Test'
+        }));
+
+        res.status(200).json(formattedReports);
+
+    } catch (error) {
+        console.error('Error fetching lab reports:', error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };
