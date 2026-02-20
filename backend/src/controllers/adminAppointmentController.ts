@@ -11,15 +11,11 @@ export const getAllAppointments = async (req: Request, res: Response): Promise<v
         const limit = parseInt(req.query.limit as string) || 10;
         const skip = (page - 1) * limit;
         
-        console.log('Getting all appointments for admin...');
-        
         // Step 1: Get appointments without populate
         const appointments = await Appointment.find()
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
-        
-        console.log(`Found ${appointments.length} appointments`);
         
         // Step 2: Extract patientIds and doctorIds from appointments
         const patientIds: mongoose.Types.ObjectId[] = [];
@@ -30,16 +26,12 @@ export const getAllAppointments = async (req: Request, res: Response): Promise<v
             if (appointment.doctorId) doctorIds.push(appointment.doctorId);
         });
         
-        console.log(`Found ${patientIds.length} patient IDs and ${doctorIds.length} doctor IDs`);
-        
         // Step 3: Fetch user data for these IDs
         const patients = await User.find({ _id: { $in: patientIds } })
             .select('_id firstName lastName');
         
         const doctors = await User.find({ _id: { $in: doctorIds } })
             .select('_id firstName lastName');
-        
-        console.log(`Found ${patients.length} patients and ${doctors.length} doctors`);
         
         // Step 4: Create lookup maps
         const patientMap: Record<string, { firstName: string; lastName: string; fullName: string }> = {};
@@ -105,8 +97,6 @@ export const getAllAppointments = async (req: Request, res: Response): Promise<v
                 updatedAt: appointment.updatedAt
             };
         });
-        
-        console.log(`Formatted ${formattedAppointments.length} appointments`);
         
         // Step 6: Get total count for pagination
         const total = await Appointment.countDocuments();
@@ -216,8 +206,6 @@ export const updateAppointment = async (req: Request, res: Response): Promise<vo
     try {
         const { id } = req.params;
         const { status } = req.body;
-        
-        console.log(`Updating appointment ${id} with status: ${status}`);
         
         // Only update the status field
         const updatedAppointment = await Appointment.findByIdAndUpdate(

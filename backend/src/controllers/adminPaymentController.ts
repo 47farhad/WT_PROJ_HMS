@@ -6,25 +6,18 @@ import mongoose from 'mongoose';
 // Get all transactions for admin view
 export const getAllPayments = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('Getting all payments...');
-    
     // Handle pagination with proper type casting
     const page = parseInt(req.query.page as string || '1');
     const limit = parseInt(req.query.limit as string || '20');
     const skip = (page - 1) * limit;
     
-    console.log(`Pagination: page=${page}, limit=${limit}, skip=${skip}`);
-    
     // Get total count for pagination
     const totalCount = await Transaction.countDocuments();
-    console.log(`Total transactions in database: ${totalCount}`);
     
     // Get all transactions with pagination
     const transactions = await Transaction.find().sort({ createdAt: -1 }).skip(skip).limit(limit);
-    console.log(`Found ${transactions.length} transactions for current page`);
     
     if (transactions.length === 0) {
-      console.log('No transactions found - returning empty array');
       res.status(200).json({
         success: true,
         count: 0,
@@ -36,11 +29,6 @@ export const getAllPayments = async (req: Request, res: Response): Promise<void>
         }
       });
       return;
-    }
-    
-    if (transactions.length > 0) {
-      // Log the first transaction to see its structure
-      console.log('Sample transaction:', JSON.stringify(transactions[0], null, 2));
     }
     
     // Prepare data for admin panel
@@ -99,11 +87,8 @@ export const getAllPayments = async (req: Request, res: Response): Promise<void>
         createdAt: transaction.createdAt
       };
       
-      console.log(`Formatted payment: ${payment.invoiceId} - ${payment.patientName} - ${payment.displayTreatment} - ${payment.status}`);
       return payment;
     }));
-    
-    console.log(`Returning ${paymentsData.length} formatted payments`);
     
     res.status(200).json({
       success: true,
@@ -128,8 +113,6 @@ export const getAllPayments = async (req: Request, res: Response): Promise<void>
 // Get summary statistics (total amounts, counts by status)
 export const getPaymentsSummary = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('Getting payments summary...');
-    
     // Get overall totals
     const overall = await Transaction.aggregate([
       { $group: { 
@@ -145,8 +128,6 @@ export const getPaymentsSummary = async (req: Request, res: Response): Promise<v
       }}
     ]);
     
-    console.log('Overall aggregation result:', overall);
-    
     // Get counts by status
     const statusCounts = await Transaction.aggregate([
       { $group: { 
@@ -157,8 +138,6 @@ export const getPaymentsSummary = async (req: Request, res: Response): Promise<v
       { $sort: { count: -1 } }
     ]);
     
-    console.log('Status counts:', statusCounts);
-    
     // Get totals by type
     const typeTotals = await Transaction.aggregate([
       { $group: { 
@@ -168,8 +147,6 @@ export const getPaymentsSummary = async (req: Request, res: Response): Promise<v
       }},
       { $sort: { total: -1 } }
     ]);
-    
-    console.log('Type totals:', typeTotals);
     
     res.status(200).json({
       success: true,
@@ -197,20 +174,15 @@ export const getPaymentsSummary = async (req: Request, res: Response): Promise<v
 // Get a single transaction by ID
 export const getPaymentById = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log(`Getting payment details for ID: ${req.params.id}`);
-    
     const transaction = await Transaction.findById(req.params.id);
     
     if (!transaction) {
-      console.log('Payment not found');
       res.status(404).json({
         success: false,
         message: 'Payment not found'
       });
       return;
     }
-    
-    console.log('Transaction found:', JSON.stringify(transaction, null, 2));
     
     // Get patient info
     let patientName = 'Unknown Patient';
@@ -248,8 +220,6 @@ export const getPaymentById = async (req: Request, res: Response): Promise<void>
       updatedAt: transaction.updatedAt
     };
     
-    console.log('Sending formatted payment data');
-    
     res.status(200).json({
       success: true,
       data: paymentData
@@ -268,11 +238,9 @@ export const getPaymentById = async (req: Request, res: Response): Promise<void>
 export const updatePaymentStatus = async (req: Request, res: Response): Promise<void> => {
   try {
     const { status } = req.body;
-    console.log(`Updating payment ${req.params.id} status to: ${status}`);
     
     // Validate status
     if (!['unpaid', 'paid', 'failed'].includes(status)) {
-      console.log('Invalid status value provided');
       res.status(400).json({
         success: false,
         message: 'Invalid status value. Must be one of: unpaid, paid, failed'
@@ -283,7 +251,6 @@ export const updatePaymentStatus = async (req: Request, res: Response): Promise<
     const transaction = await Transaction.findById(req.params.id);
     
     if (!transaction) {
-      console.log('Payment not found');
       res.status(404).json({
         success: false,
         message: 'Payment not found'
@@ -294,7 +261,6 @@ export const updatePaymentStatus = async (req: Request, res: Response): Promise<
     // Update transaction
     transaction.status = status;
     await transaction.save();
-    console.log('Transaction updated successfully');
     
     // Format response
     const date = new Date(transaction.createdAt);
@@ -328,7 +294,6 @@ export const updatePaymentStatus = async (req: Request, res: Response): Promise<
       status: statusMap[transaction.status] || transaction.status
     };
     
-    console.log('Sending updated payment data');
     
     res.status(200).json({
       success: true,
