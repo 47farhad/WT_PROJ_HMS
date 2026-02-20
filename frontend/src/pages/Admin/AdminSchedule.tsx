@@ -261,69 +261,6 @@ function AdminSchedule() {
         </div>
       </div>
 
-      {/* Navigation buttons and date display */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => handleNavigate(new Date())}
-            className="px-4 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
-          >
-            Today
-          </button>
-          <button
-            onClick={() => handleNavigate(subWeeks(currentDate, 1))}
-            className="px-4 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
-          >
-            Back
-          </button>
-          <button
-            onClick={() => handleNavigate(addWeeks(currentDate, 1))}
-            className="px-4 py-1.5 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors"
-          >
-            Next
-          </button>
-        </div>
-
-        {/* Current date range display */}
-        <div className="text-lg font-medium">
-          {format(visibleDates.start, "MMM d")} – {format(visibleDates.end, "d, yyyy")}
-        </div>
-
-        {/* View selector */}
-        <div className="flex rounded-md overflow-hidden">
-          <button
-            onClick={() => handleViewChange(Views.DAY)}
-            className={`px-4 py-1.5 text-sm ${
-              calendarView === Views.DAY
-                ? "bg-[#243954] text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Day
-          </button>
-          <button
-            onClick={() => handleViewChange(Views.WEEK)}
-            className={`px-4 py-1.5 text-sm ${
-              calendarView === Views.WEEK
-                ? "bg-[#243954] text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Week
-          </button>
-          <button
-            onClick={() => handleViewChange(Views.MONTH)}
-            className={`px-4 py-1.5 text-sm ${
-              calendarView === Views.MONTH
-                ? "bg-[#243954] text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-          >
-            Month
-          </button>
-        </div>
-      </div>
-
       {/* Loading indicator */}
       {isLoading && (
         <div className="flex-grow flex items-center justify-center">

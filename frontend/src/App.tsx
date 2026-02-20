@@ -16,7 +16,7 @@ function App() {
   useEffect(() => {
     console.log('checkings')
     checkAuth();
-  }, [checkAuth, authUser])
+  }, [])
 
   if (isCheckingAuth) {
     console.log('checking')

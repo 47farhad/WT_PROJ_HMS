@@ -236,7 +236,7 @@ function PatientAppointments() {
 
       {/* Appointment Table */}
       <div
-        className="flex flex-1 overflow-y-auto rounded-xl shadow-lg border border-gray-300"
+        className="flex-1 overflow-y-auto rounded-xl shadow-lg border border-gray-300"
         ref={appointmentContainerRef}
       >
         <table className="min-w-full table-auto bg-white text-sm">

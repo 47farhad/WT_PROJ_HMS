@@ -317,19 +317,8 @@ const AdminDoctors: React.FC = () => {
   return (
     <div className="w-full p-6">
       <div className="max-w-screen-xl mx-auto">
-        {/* Header with title and refresh button */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#243954]">Doctor Management</h1>
-          <button 
-            onClick={handleRefreshData}
-            className="px-4 py-2 bg-[#243954] text-white rounded-md hover:bg-[#1a2a40] transition-colors"
-          >
-            Refresh Data
-          </button>
-        </div>
-
         {/* Filters section */}
-        <div className="bg-white rounded-lg shadow-md p-5 mb-6">
+        <div className="bg-white rounded-lg shadow p-5 mb-6">
           <h2 className="text-lg font-semibold text-gray-700 mb-4">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -406,7 +395,7 @@ const AdminDoctors: React.FC = () => {
         )}
 
         {/* Doctors Table */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
           {loading ? (
             <div className="p-6 flex justify-center">
               <Spinner />

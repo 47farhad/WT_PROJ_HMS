@@ -27,12 +27,26 @@ function PatientAppointmentDetails() {
   });
 
   useEffect(() => {
+  const fetchData = async () => {
     if (appointmentId) {
-      getAppointmentDetails(appointmentId);
-      getNotesbyAppointmentId(appointmentId);
-      getReviews(appointmentId)
+      // Wait for the details to be fetched and returned
+      const details = await getAppointmentDetails(appointmentId);
+      
+      if (details && details.appointment && details.appointment.datetime) {
+        const appointmentDate = new Date(details.appointment.datetime);
+        const now = new Date();
+
+        // Check if the date has passed
+        if (appointmentDate < now) {
+          getNotesbyAppointmentId(appointmentId);
+          getReviews(appointmentId);
+        }
+      }
     }
-  }, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId, getReviews]);
+  };
+
+  fetchData();
+}, [appointmentId, getAppointmentDetails, getNotesbyAppointmentId, getReviews]);
 
   const [hasSubmittedReview, setHasSubmittedReview] = useState(false);
 
@@ -286,7 +300,7 @@ function PatientAppointmentDetails() {
           </div>
         )}
 
-        {givenReviews && (
+        {(givenReviews && isAfter(new Date(), parseISO(selectedAppointment.datetime))) && (
           <div className="bg-gray-50 rounded-2xl shadow-sm h-[60%] p-6 border border-gray-200">
             <h3 className="text-lg font-semibold text-[#243954] mb-5">Your Review</h3>
 

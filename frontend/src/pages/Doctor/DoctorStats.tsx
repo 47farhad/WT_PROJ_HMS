@@ -1,9 +1,9 @@
 function DoctorStats() {
-    return (
-        <div>
-            Doctor stats
-        </div>
-    )
+  return (
+    <div>
+        we didnt make this
+    </div>
+  );
 }
 
-export default DoctorStats
+export default DoctorStats;

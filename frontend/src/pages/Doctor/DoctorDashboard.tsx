@@ -138,7 +138,7 @@ function DoctorDashboard() {
   };
 
   return (
-    <div className="overflow-y-auto p-5 h-full w-full bg-white">
+    <div className="overflow-y-auto p-5 h-full w-full bg-white scrollbar-hide">
       {/* Welcome Header */}
       <div className="mb-8 animate-slide-up">
         <h1 className="text-3xl font-bold text-gray-800">

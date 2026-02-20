@@ -110,22 +110,13 @@ const AdminPayments: React.FC = () => {
   const hasSummary = summary && summary.overall;
 
   return (
-    <div className="container mx-auto p-4 max-w-full h-full max-h-[calc(100vh-88px)] overflow-y-scroll">
+    <div className="container mx-auto px-4 pb-4 pt-0 max-w-full h-full max-h-[calc(100vh-88px)] overflow-y-scroll">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="flex justify-between items-center mb-6"
       >
-        <h1 className="text-2xl font-bold text-[#243954]">Payment Management</h1>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleRefresh}
-          className="px-4 py-2 bg-[#243954] text-white rounded-md hover:bg-[#1a2c42] transition-colors duration-200 shadow-sm hover:shadow-md"
-        >
-          Refresh Data
-        </motion.button>
       </motion.div>
       
       {/* Summary Cards */}

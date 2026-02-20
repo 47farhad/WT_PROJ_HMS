@@ -262,7 +262,7 @@ function Settings() {
                         </label>
                         <textarea
                             id="address"
-                            value={address}
+                            value={typeof address === 'string' ? address : address?.street || ""}
                             onChange={(e) => setAddress(e.target.value)}
                             rows={5}
                             className="border border-gray-300 rounded-md px-3 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
