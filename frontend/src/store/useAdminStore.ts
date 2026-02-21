@@ -188,7 +188,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 		// Fetches everything needed for the dashboard in parallel
 		await Promise.all([
 			get().getDoctors(),
-			get().getPatients(1, 5), // Limit 5 for "Recent"
+			get().getPatients(1, 25), // Limit 5 for "Recent"
 			get().getAppointments(1, {}), // Page 1 for "Recent" + Total count
 			get().getTransactions(1), // Page 1 for "Recent" + Total count
 		]);
