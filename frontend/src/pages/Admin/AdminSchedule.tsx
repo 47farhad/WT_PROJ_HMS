@@ -98,16 +98,19 @@ function AdminSchedule() {
     switch (calendarView) {
       case Views.DAY:
         start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        end = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        // Set to the very end of the day
+        end = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
         break;
       case Views.WEEK:
         const weekStart = startOfWeek(today, { weekStartsOn: 0 });
         start = weekStart;
-        end = addDays(weekStart, 6);
+        // Set to the very end of Saturday
+        end = new Date(addDays(weekStart, 6).setHours(23, 59, 59));
         break;
       case Views.MONTH:
         start = new Date(today.getFullYear(), today.getMonth(), 1);
-        end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        // Set to the very end of the last day of the month
+        end = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59);
         break;
       default:
         start = subWeeks(today, 1);

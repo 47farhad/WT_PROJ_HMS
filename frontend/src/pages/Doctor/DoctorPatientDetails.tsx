@@ -18,14 +18,24 @@ function DoctorPatientDetails() {
 
 
     useEffect(() => {
-        if (patientId) {
-            getPatientDetails(patientId);
-            getNotesbyPatientId(patientId);
-            getPatientDetailsAppointments(patientId);
-            getDetailsReport(patientId);
-        }
+        const fetchAllData = async () => {
+            if (patientId) {
+                try {
+                    await Promise.all([
+                        getPatientDetails(patientId),
+                        getNotesbyPatientId(patientId),
+                        getPatientDetailsAppointments(patientId),
+                        getDetailsReport(patientId)
+                    ]);
+                } catch (error) {
+                    console.error("Failed to fetch patient data:", error);
+                }
+            }
+        };
+
+        fetchAllData();
     }, [patientId, getPatientDetails, getNotesbyPatientId, getPatientDetailsAppointments, getDetailsReport]);
-    console.log(patientNotes);
+
     const handleDownload = (url) => {
         const link = document.createElement('a');
         link.href = url;
@@ -44,7 +54,7 @@ function DoctorPatientDetails() {
                     {/* Big card with name and pfp */}
                     <div className="w-full px-6 py-5 bg-[#F5F5F5] rounded-2xl flex flex-row items-center">
                         <div className="flex flex-row h-full border-r-1 pr-8 border-[#C4C4C4] items-center">
-                            <img src={patient.profilePic} className="size-20 rounded-xl" />
+                            <img src={(patient.profilePic ? patient.profilePic : null)} className="size-20 rounded-xl" />
 
                             <div className="flex flex-col ml-5 h-full justify-between py-1 flex-1">
                                 <span className="text-4xl text-[#233855] flex justify-start">
@@ -91,7 +101,7 @@ function DoctorPatientDetails() {
                                     Address
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {patient.address}
+                                    {patient?.address.street}
                                 </span>
                             </div>
 

@@ -9,6 +9,7 @@ import '../../css/hideScroll.css'
 import ConfirmationModal from "../../components/ConfirmationModal";
 import { useAppointmentStore } from "../../store/useAppointmentStore";
 import { usePatientLabTestStore } from "../../store/usePatientLabTestStore";
+import { useNotesStore } from "../../store/useNotesStore";
 
 function AdminPatientDetails() {
 
@@ -16,6 +17,7 @@ function AdminPatientDetails() {
     const { getPatientDetails, patient, convertToDoctor, convertToAdmin, isConvertingPatient } = useAdminStore();
     const { patientDetailsAppointments, getPatientDetailsAppointments } = useAppointmentStore();
     const { getDetailsReport, patientDetailsReports } = usePatientLabTestStore();
+    const { getNotesbyPatientId, patientNotes, isNotesLoading } = useNotesStore();
 
     const [showConvertButton, setShowConvertButton] = useState(false);
     const [doctorConfirmationShown, setDoctorConfirmationShown] = useState(false);
@@ -26,7 +28,8 @@ function AdminPatientDetails() {
         getPatientDetails(patientId);
         getPatientDetailsAppointments(patientId);
         getDetailsReport(patientId);
-    }, [getPatientDetails, patientId, getPatientDetailsAppointments, getDetailsReport]);
+        getNotesbyPatientId(patientId);
+    }, [getPatientDetails, patientId, getPatientDetailsAppointments, getDetailsReport, getNotesbyPatientId]);
 
     const handleConvert = async () => {
         if (doctorConfirmationShown) {
@@ -105,7 +108,7 @@ function AdminPatientDetails() {
                                     Address
                                 </span>
                                 <span className="text-md font-semibold text-[#4B4C4E] font-sans text-left">
-                                    {patient.address}
+                                    {patient?.address.street}
                                 </span>
                             </div>
 
@@ -149,10 +152,44 @@ function AdminPatientDetails() {
                     {/* Div with notes on left, General info and patient notes on right */}
                     <div className="flex flex-row w-full mt-5 h-[48%]">
                         {/* Notes */}
-                        <div className="flex flex-col w-[33%] border-2 border-[#E6E6E8] rounded-2xl p-1 h-full">
-                            <span className="text-lg font-semibold text-[#04080B] font-sans text-center border-b-1 border-[#E6E6E8]">
+                        {/* Notes Section - Updated */}
+                        <div className="flex flex-col w-[33%] border-2 border-[#E6E6E8] rounded-2xl p-4 h-full overflow-hidden">
+                            <span className="text-lg font-semibold text-[#04080B] font-sans text-center border-b-1 border-[#E6E6E8] pb-2 mb-3">
                                 Notes
                             </span>
+                            {isNotesLoading ? (
+                                <div className="flex justify-center items-center h-full">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#243954]"></div>
+                                </div>
+                            ) : patientNotes && patientNotes[patientId] && patientNotes[patientId].length > 0 ? (
+                                <div className="overflow-y-auto scrollbar-hide space-y-3">
+                                    {patientNotes[patientId].map(note => (
+                                        <div key={note._id} className="bg-white p-3 rounded-lg border border-gray-200">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <h3 className="text-md font-semibold text-[#243954]">
+                                                    {note.header}
+                                                </h3>
+                                                <span className="text-xs text-gray-500">
+                                                    {note.createdAt && format(new Date(note.createdAt), 'MMM d, yyyy')}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-gray-700 whitespace-pre-line">
+                                                {note.text}
+                                            </p>
+                                            <div className="mt-2 text-xs text-gray-500">
+                                                Appointment: {note.appointmentId}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                    <svg className="h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <p className="text-center">No notes available for this patient</p>
+                                </div>
+                            )}
                         </div>
 
                         {/* General Info and Allergies/Conditions/Medication */}
