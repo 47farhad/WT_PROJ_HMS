@@ -12,14 +12,15 @@ import {
 import { protectRoute } from "../middlewares/auth.middleware.js";
 import { verifyPatient } from "../middlewares/appointment.middleware.js";
 import { isAdminOrDoc } from "../middlewares/admin.middleware.js";
+import { productionCheck } from "../middlewares/production.middleware.js";
 
 const router = express.Router();
 
 // Create a new appointment
-router.post("/createAppointment", protectRoute, verifyPatient, createAppointment);
+router.post("/createAppointment", protectRoute, productionCheck, verifyPatient, createAppointment);
 
 // Update an existing appointment
-router.put("/updateAppointment/:id", protectRoute, updateAppointment);
+router.put("/updateAppointment/:id", protectRoute, productionCheck, updateAppointment);
 
 // Get details of a specific appointment
 router.get("/getAppointment/:id", protectRoute, getAppointmentDetails);
