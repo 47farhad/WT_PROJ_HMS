@@ -1,11 +1,25 @@
+import { redis } from '../lib/redis.js';
 import LabTest from '../models/labtest.model.js';
 import OfferedTest from "../models/offeredTest.model.js";
+
+// Helper function to clear Page 1 caches
+const invalidateCatalogCache = async () => {
+    try {
+        await redis.del(
+            'offered_tests:Admin:page:1:limit:20',
+            'offered_tests:User:page:1:limit:20'
+        );
+    } catch (error) {
+        console.error("Redis cache clearing failed:", error);
+    }
+};
 
 export const createOfferedTest = async (req: any, res: any) => {
     try {
         const defaultTest = new OfferedTest();
-
         const savedTest = await defaultTest.save();
+
+        await invalidateCatalogCache();
 
         res.status(201).json(savedTest);
 
@@ -18,10 +32,17 @@ export const createOfferedTest = async (req: any, res: any) => {
 export const getOfferedLabTests = async (req: any, res: any) => {
     try {
         const reqUserType = req.user.userType;
-
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 20;
         const skip = (page - 1) * limit;
+
+        const roleKey = reqUserType === 'Admin' ? 'Admin' : 'User';
+        const cacheKey = `offered_tests:${roleKey}:page:${page}:limit:${limit}`;
+
+        const cachedData = await redis.get(cacheKey);
+        if (cachedData) {
+            return res.status(200).json(cachedData);
+        }
 
         let query = {};
         if (reqUserType !== 'Admin') {
@@ -33,11 +54,10 @@ export const getOfferedLabTests = async (req: any, res: any) => {
             .skip(skip)
             .limit(limit);
 
-
         const total = await OfferedTest.countDocuments(query);
         const totalPages = Math.ceil(total / limit);
 
-        res.status(200).json({
+        const responseData = {
             labTests,
             pagination: {
                 currentPage: page,
@@ -45,14 +65,17 @@ export const getOfferedLabTests = async (req: any, res: any) => {
                 hasMore: page < totalPages,
                 totalItems: total
             }
-        });
+        };
+
+        await redis.set(cacheKey, responseData, { ex: 3600 });
+
+        res.status(200).json(responseData);
 
     } catch (error) {
         console.log("Error in getOfferedLabTests controller", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
-
 
 export const deleteLabTest = async (req: any, res: any) => {
     try {
@@ -67,6 +90,8 @@ export const deleteLabTest = async (req: any, res: any) => {
         if (!deletedTest) {
             return res.status(404).json({ message: "Lab test not found" });
         }
+
+        await invalidateCatalogCache();
 
         res.status(200).json({
             message: "Lab test deleted successfully",
@@ -141,6 +166,8 @@ export const updateOfferedTest = async (req: any, res: any) => {
             updateData,
             { new: true, runValidators: true }
         );
+
+        await invalidateCatalogCache();
 
         res.status(200).json(updatedTest);
 

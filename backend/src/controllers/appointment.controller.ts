@@ -4,6 +4,7 @@ import User from '../models/user.model.js';
 import Transaction from '../models/transaction.model.js'
 
 import { createTransaction } from './transaction.controller.js';
+import { redis } from '../lib/redis.js';
 
 export const createAppointment = async (req: any, res: any) => {
   const { datetime, doctorId, description } = req.body;
@@ -321,13 +322,25 @@ export const getDoctors = async (req: any, res: any) => {
 export const getDoctor = async (req: any, res: any) => {
   try {
     const doctorId = req.params.id;
+
+    const cacheKey = `doctor:profile:${doctorId}`;
+    const cachedDoctor = await redis.get(cacheKey);
+
+    if (cachedDoctor) {
+      return res.status(200).json(cachedDoctor);
+    }
+
     const doctor = await User.findById(doctorId, { password: 0 });
 
     if ((doctor !== null) && doctor.userType !== 'Doctor') {
       return res.status(404).json({ message: "Doctor not found" });
     }
 
-    res.status(200).json(doctor)
+    if (doctor) {
+      await redis.set(cacheKey, doctor, { ex: 600 });
+    }
+
+    res.status(200).json(doctor);
   }
   catch (error: any) {
     console.error("Error in getDoctor:", error);

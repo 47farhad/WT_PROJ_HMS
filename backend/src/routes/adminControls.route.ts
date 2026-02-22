@@ -11,12 +11,6 @@ import { isAdminOrDoc } from "../middlewares/admin.middleware.js";
 
 const router = express.Router();
 
-// Debug middleware to log all requests
-router.use((req, res, next) => {
-  console.log(`Admin API Request: ${req.method} ${req.originalUrl}`);
-  next();
-});
-
 // User management routes
 router.get('/getPatients', protectRoute, isAdminOrDoc, getPatients);
 router.get('/getPatientDetails/:id', protectRoute, isAdminOrDoc, getPatientDetails);

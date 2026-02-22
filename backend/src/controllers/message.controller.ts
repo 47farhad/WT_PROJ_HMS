@@ -137,7 +137,7 @@ export const getUsersForSidebar = async (req: any, res: any) => {
         };
 
         // Save the MongoDB result to Upstash
-        await redis.set(cacheKey, responseData, { ex: 60 });
+        await redis.set(cacheKey, responseData, { ex: 300 });
 
         // Finally, send the data to the user
         res.status(200).json(responseData);
