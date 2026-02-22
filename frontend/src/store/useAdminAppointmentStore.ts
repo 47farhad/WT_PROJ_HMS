@@ -82,7 +82,7 @@ export const useAdminAppointmentStore = create<AdminAppointmentStore>((set, get)
       console.log('Fetching appointments data...');
       
       // Make API request with full URL
-      const response = await axios.get(`http://localhost:5001/api/admin/appointments?page=${page}&limit=${limit}`, {
+      const response = await axios.get(`/admin/appointments?page=${page}&limit=${limit}`, {
         withCredentials: true
       });
       
@@ -193,7 +193,7 @@ export const useAdminAppointmentStore = create<AdminAppointmentStore>((set, get)
       console.log(`Updating appointment ${id} to status ${status}`);
       
       // Make API request
-      const response = await axios.put(`http://localhost:5001/api/admin/appointments/${id}`, {
+      const response = await axios.put(`/admin/appointments/${id}`, {
         status // Only send the status field
       }, {
         withCredentials: true
