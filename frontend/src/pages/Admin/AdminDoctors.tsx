@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 
 // Define API base URL (matching AdminDashboard.tsx)
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 
 // Define types for our data
 interface WorkScheduleItem {
