@@ -69,7 +69,7 @@ function DoctorDashboard() {
   const totalConfirmedAppointmentsCount = appointmentStats.total || 0;
   const totalUpcomingAppointmentsCount = upcomingAppointments.data?.length || 0;
   const totalPatientsCount = patients.data?.length || 0;
-  const monthlyEarnings = totalConfirmedAppointmentsCount * 50 * 0.02;
+  const monthlyEarnings = totalConfirmedAppointmentsCount * 50 * 0.2; // Assuming $50 per appointment and 20% commission
 
   useEffect(() => {
     getAllAppointments();
@@ -190,7 +190,7 @@ function DoctorDashboard() {
               </svg>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-1">Earnings</h3>
+              <h3 className="text-lg font-semibold text-gray-700 mb-1">Comission</h3>
               <p className="text-3xl font-bold text-gray-900">${monthlyEarnings}</p>
             </div>
           </div>
