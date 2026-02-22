@@ -55,7 +55,7 @@ function MainPage() {
     setSelectedNavPage(location.pathname.split('/').filter(segment => segment !== '')[0]);
 
     if (!authUser) {
-      navigate('/Login');
+      navigate('/');
     }
 
   }, [setSelectedNavPage, location.pathname, authUser, navigate])
