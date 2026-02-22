@@ -72,8 +72,6 @@ export const login = async (req: any, res: any) => {
 
         generateToken(user._id, res);
 
-        // Return user data with specific fields (from first version)
-        // and remove password field completely (from second version)
         const userWithoutPassword: any = user.toObject();
         delete userWithoutPassword.password;
 
