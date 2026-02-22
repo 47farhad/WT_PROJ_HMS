@@ -229,7 +229,7 @@ function LandingPage() {
           <div className="text-center md:text-right">
             <p className="text-gray-800 font-medium">Computer Science Capstone Project</p>
             <p className="text-sm text-gray-500 mt-1">
-              Developed by Ayesha Arshad, Farhad Khan, and Humna Tariq © 2026
+              Developed by Ayesha Arshad, Farhad Khan, and Humna Tariq © 2025
             </p>
           </div>
         </div>
