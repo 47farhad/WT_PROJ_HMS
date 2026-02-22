@@ -3,6 +3,7 @@ import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 import { getSocketID, io } from "../lib/socket.js";
+import { redis } from "../lib/redis.js";
 
 export const getUsersForSidebar = async (req: any, res: any) => {
     try {
@@ -15,12 +16,18 @@ export const getUsersForSidebar = async (req: any, res: any) => {
         const limit = parseInt(req.query.limit as string) || 20;
         const skip = (page - 1) * limit;
 
-        // Base match conditions
+        // Define the key and check the cache
+        const cacheKey = `sidebar:${reqUserID}:page:${page}:limit:${limit}`;
+        const cachedData = await redis.get(cacheKey);
+
+        // return if redis has it
+        if (cachedData) {
+            return res.status(200).json(cachedData);
+        }
+        
         let matchConditions: any[] = [{ _id: { $ne: reqUserID } }];
 
-        // Role-specific filters
         if (userType === 'Patient') {
-            // Patients can only see Doctors they have confirmed appointments with
             const doctorIds = await Appointment.distinct('doctorId', {
                 patientId: reqUserID,
                 status: 'confirmed'
@@ -34,9 +41,6 @@ export const getUsersForSidebar = async (req: any, res: any) => {
             });
         }
         else if (userType === 'Doctor') {
-            // Doctors can see:
-            // 1. Admins
-            // 2. Patients they have confirmed appointments with
             const patientIds = await Appointment.distinct('patientId', {
                 doctorId: reqUserID,
                 status: 'confirmed'
@@ -55,7 +59,6 @@ export const getUsersForSidebar = async (req: any, res: any) => {
             });
         }
         else if (userType === 'Admin') {
-            // Admins can see other Admins and Doctors
             matchConditions.push({
                 $or: [
                     { userType: 'Admin' },
@@ -66,7 +69,6 @@ export const getUsersForSidebar = async (req: any, res: any) => {
 
         const result = await User.aggregate([
             { $match: { $and: matchConditions } },
-            // Rest of the aggregation pipeline remains the same...
             {
                 $lookup: {
                     from: "messages",
@@ -124,14 +126,22 @@ export const getUsersForSidebar = async (req: any, res: any) => {
         const totalUsers = await User.countDocuments({ $and: matchConditions });
         const totalPages = Math.ceil(totalUsers / limit);
 
-        res.status(200).json({
+        // Group the final response into a single object
+        const responseData = {
             users: result,
             pagination: {
                 currentPage: page,
                 totalPages,
                 hasMore: page < totalPages,
             }
-        });
+        };
+
+        // Save the MongoDB result to Upstash
+        await redis.set(cacheKey, responseData, { ex: 60 });
+
+        // Finally, send the data to the user
+        res.status(200).json(responseData);
+
     } catch (error: any) {
         console.log("Error in getUsersForSidebar controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
@@ -177,10 +187,19 @@ export const getMessages = async (req: any, res: any) => {
             return res.status(403).json({ message: "You don't have permission to access this chat" });
         }
 
-        // Rest of the function remains the same...
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 50;
         const skip = (page - 1) * limit;
+
+        const sortedIds = [reqUserID.toString(), chatUserID.toString()].sort();
+        const cacheKey = `chat:${sortedIds[0]}_${sortedIds[1]}:page:${page}:limit:${limit}`;
+
+        const cachedData = await redis.get(cacheKey);
+
+        // If messages are in cache, return them immediately
+        if (cachedData) {
+            return res.status(200).json(cachedData);
+        }
 
         const messages = await Message.find({
             $or: [
@@ -200,14 +219,18 @@ export const getMessages = async (req: any, res: any) => {
             ]
         });
 
-        res.status(200).json({
+        const responseData = {
             messages: reversedMessages,
             pagination: {
                 currentPage: page,
                 totalPages: Math.ceil(totalMessages / limit),
                 hasNextPage: page < Math.ceil(totalMessages / limit),
             }
-        });
+        };
+        await redis.set(cacheKey, responseData, { ex: 300 });
+
+        res.status(200).json(responseData);
+
     } catch (error: any) {
         console.log("Error in getMessages controller", error.message);
         res.status(500).json({ message: "Internal Server Error" });
@@ -269,6 +292,22 @@ export const sendMessage = async (req: any, res: any) => {
         });
 
         await newMessage.save();
+
+        try {
+            // Sort IDs to match the exact key created in getMessages
+            const sortedIds = [reqUserID.toString(), receiverID.toString()].sort();
+            const chatCacheKey = `chat:${sortedIds[0]}_${sortedIds[1]}:page:1:limit:50`;
+            
+            // Define both sidebar keys
+            const senderSidebarKey = `sidebar:${reqUserID}:page:1:limit:20`;
+            const receiverSidebarKey = `sidebar:${receiverID}:page:1:limit:20`;
+
+            // Delete all three keys at once
+            await redis.del(chatCacheKey, senderSidebarKey, receiverSidebarKey);
+
+        } catch (error) {
+            // still send the message even if redis blips
+        }
 
         const receiverSocketID = getSocketID(receiverID);
         if (receiverSocketID) {

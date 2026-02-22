@@ -29,19 +29,19 @@ router.get("/payments/summary", protectRoute, isAdmin, adminPaymentController.ge
 router.get("/payments/:id", protectRoute, isAdmin, adminPaymentController.getPaymentById);
 router.patch("/payments/:id/status", protectRoute, isAdmin, adminPaymentController.updatePaymentStatus);
 
-// Appointment routes (previously in adminRoutes.ts)
+// Appointment routes
 router.get('/appointments', protectRoute, isAdmin, adminAppointmentController.getAllAppointments);
 router.get('/doctors/schedules', protectRoute, isAdmin, adminAppointmentController.getDoctorSchedules);
 router.put('/appointments/:id', protectRoute, isAdmin, adminAppointmentController.updateAppointment);
 router.put('/doctors/:id/schedule', protectRoute, isAdmin, adminAppointmentController.updateDoctorSchedule);
 
-// Doctor routes (previously in adminRoutes.ts)
+// Doctor routes
 router.get('/doctors', protectRoute, isAdmin, adminDoctorController.getAllDoctors);
 router.get('/doctors/:id', protectRoute, isAdmin, adminDoctorController.getDoctorById);
 router.put('/doctors/:id', protectRoute, isAdmin, adminDoctorController.updateDoctor);
 router.get('/doctors/:id/schedule', protectRoute, isAdmin, adminDoctorController.getDoctorSchedule);
 
-// Request routes (previously in adminRoutes.ts)
+// Request routes
 router.get('/requests', protectRoute, isAdmin, requestController.getAllRequests);
 router.get('/requests/doctor/:doctorId', protectRoute, isAdmin, requestController.getDoctorRequests);
 router.patch('/requests/:requestId/status', protectRoute, isAdmin, requestController.updateRequestStatus);
