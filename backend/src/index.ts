@@ -49,7 +49,7 @@ app.use("/api/note", noteRoutes);
 app.use("/api/review", reviewRoutes)
 
 // Start server
-server.listen(PORT, () => {
+server.listen({ port: PORT, host: "0.0.0.0" }, () => {
     console.log("Backend is up on port: " + PORT);
     connectDB();
 });
