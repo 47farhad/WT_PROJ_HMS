@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 
 import defaultPFP from '/pictures/avatar.png'
 
-const BASE_URL = 'http://localhost:5001';
+const BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
