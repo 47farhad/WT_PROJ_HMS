@@ -1,7 +1,7 @@
 // src/store/useAdminPaymentStore.ts
 import { create } from "zustand";
 import toast from "react-hot-toast";
-import axios from "axios";
+import { axiosInstance } from "../lib/axios";
 
 // Define the Payment interface
 interface Payment {
@@ -85,7 +85,7 @@ export const useAdminPaymentStore = create<AdminPaymentStore>((set, get) => ({
       console.log('Fetching payments data...');
       
       // Make API request
-      const response = await axios.get(`/admin/payments?page=${page}&limit=${limit}`, {
+      const response = await axiosInstance.get(`/admin/payments?page=${page}&limit=${limit}`, {
         withCredentials: true
       });
       
@@ -133,7 +133,7 @@ export const useAdminPaymentStore = create<AdminPaymentStore>((set, get) => ({
       console.log('Fetching payment summary...');
       
       // Make API request
-      const response = await axios.get('/admin/payments/summary', {
+      const response = await axiosInstance.get('/admin/payments/summary', {
         withCredentials: true
       });
       
@@ -180,7 +180,7 @@ export const useAdminPaymentStore = create<AdminPaymentStore>((set, get) => ({
       console.log(`Updating payment ${id} to status ${backendStatus}`);
       
       // Make API request
-      const response = await axios.patch(`/admin/payments/${id}/status`, {
+      const response = await axiosInstance.patch(`/admin/payments/${id}/status`, {
         status: backendStatus
       }, {
         withCredentials: true

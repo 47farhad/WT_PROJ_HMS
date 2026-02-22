@@ -1,7 +1,7 @@
 // src/store/useAdminAppointmentStore.ts
 import { create } from "zustand";
 import toast from "react-hot-toast";
-import axios from "axios";
+import { axiosInstance } from "../lib/axios";
 
 // Define interface for the raw appointment data from API
 interface RawAppointment {
@@ -82,7 +82,7 @@ export const useAdminAppointmentStore = create<AdminAppointmentStore>((set, get)
       console.log('Fetching appointments data...');
       
       // Make API request with full URL
-      const response = await axios.get(`/admin/appointments?page=${page}&limit=${limit}`, {
+      const response = await axiosInstance.get(`/admin/appointments?page=${page}&limit=${limit}`, {
         withCredentials: true
       });
       
@@ -193,7 +193,7 @@ export const useAdminAppointmentStore = create<AdminAppointmentStore>((set, get)
       console.log(`Updating appointment ${id} to status ${status}`);
       
       // Make API request
-      const response = await axios.put(`/admin/appointments/${id}`, {
+      const response = await axiosInstance.put(`/admin/appointments/${id}`, {
         status // Only send the status field
       }, {
         withCredentials: true

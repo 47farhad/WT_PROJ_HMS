@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import axios from "axios";
+import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 
@@ -86,7 +86,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       // Use the admin schedule route to get doctors with schedules
-      const response = await axios.get("/admin/schedule/doctors", {
+      const response = await axiosInstance.get("/admin/schedule/doctors", {
         withCredentials: true
       });
       
@@ -119,7 +119,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       // Use the admin schedule route to get appointments
-      const response = await axios.get("/admin/schedule/appointments", {
+      const response = await axiosInstance.get("/admin/schedule/appointments", {
         withCredentials: true
       });
       
@@ -152,7 +152,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       // Use the admin schedule route to update appointment
-      const response = await axios.put(`/admin/schedule/appointments/${appointmentId}`, updates, {
+      const response = await axiosInstance.put(`/admin/schedule/appointments/${appointmentId}`, updates, {
         withCredentials: true
       });
       
@@ -194,7 +194,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
       set({ isLoading: true, error: null });
       
       // Use the admin schedule route to update doctor work schedule
-      const response = await axios.put(`/admin/schedule/doctors/${doctorId}/workschedule`, { 
+      const response = await axiosInstance.put(`/admin/schedule/doctors/${doctorId}/workschedule`, { 
         workSchedule 
       }, {
         withCredentials: true
