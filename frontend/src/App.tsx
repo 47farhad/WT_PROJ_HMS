@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
+import { Analytics } from '@vercel/analytics/react'
 
 import MainPage from './pages/MainPage.tsx'
 import LandingPage from './pages/LandingPage.tsx'
@@ -43,6 +44,7 @@ function App() {
       </Routes>
 
       <Toaster />
+      <Analytics />
     </>
   )
 }
