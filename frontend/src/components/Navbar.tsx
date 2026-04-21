@@ -50,7 +50,6 @@ function Navbar() {
             {(userType === 'Admin') && (<NavbarItem imageURI={labtestsIcon} imageURIH={labtestsIconH} text="Labtests"/>)}
             {(userType === 'Doctor' || userType === 'Admin') && (<NavbarItem imageURI={patientIcon} imageURIH={patientIconH} text="Patients"/>)}
             <NavbarItem imageURI={chatIcon} imageURIH={chatIconH} text="Messages"/>
-            {(userType === 'Doctor') && (<NavbarItem imageURI={statsIcon} imageURIH={statsIconH} text="Stats"/>)}
         </div>
     )
 }
